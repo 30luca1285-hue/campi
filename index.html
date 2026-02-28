@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestione Oliveto v02</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Gestione Oliveto v03</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -160,9 +160,65 @@ input[readonly]{background:var(--bg)}
 .mic-btn{width:100%;padding:13px;border:1px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-size:.84rem;font-weight:600;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-bottom:10px}
 .mic-btn.recording{background:#fee2e2;border-color:#ef4444;color:#dc2626;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* HAMBURGER BUTTON (mobile only) */
+.hamburger-btn{display:none;position:fixed;top:11px;left:11px;z-index:61;background:var(--green-dark);color:#fff;border:none;border-radius:8px;width:38px;height:38px;font-size:1.15rem;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+/* NAV OVERLAY (mobile) */
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:59}
+.nav-overlay.open{display:block}
+
+/* ===================================================
+   RESPONSIVE — iPhone / mobile (max 768px)
+   =================================================== */
+@media (max-width:768px){
+  /* Sidebar: nascosta, slide-in */
+  .sidebar{transform:translateX(-100%);transition:transform .26s ease;z-index:60}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger-btn{display:flex}
+  /* Main occupa tutto */
+  .main{margin-left:0}
+  /* Header: spazio per hamburger */
+  .ph{padding:13px 14px 13px 56px}
+  .pb{padding:14px 14px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  /* Sidebar safe area bottom */
+  .sidebar{padding-bottom:env(safe-area-inset-bottom)}
+  /* Stats: 2 colonne */
+  .stat-bar{grid-template-columns:1fr 1fr;gap:10px}
+  .sc-val{font-size:1.15rem}
+  /* Charts: 1 colonna */
+  .ov-charts{grid-template-columns:1fr}
+  /* Pie: verticale */
+  .pie-wrap{flex-direction:column;align-items:center;gap:14px}
+  /* Harvest totals: 1 colonna */
+  .harv-totals{grid-template-columns:1fr}
+  /* Cards grids: 1 colonna */
+  .cards-grid{grid-template-columns:1fr}
+  .ap-grid{grid-template-columns:1fr}
+  /* Tabelle scrollabili */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tw table{min-width:560px}
+  /* Form 2-col → 1-col */
+  .fr{grid-template-columns:1fr;gap:0}
+  /* Filtri full width */
+  .fb{flex-direction:column;align-items:stretch}
+  .fb select{max-width:100%}
+  /* Modali: bottom sheet */
+  .ov{align-items:flex-end;padding:0}
+  .modal{width:100%;max-width:100%;border-radius:18px 18px 0 0;max-height:92vh}
+  .modal::before{content:'';display:block;width:38px;height:4px;background:#ddd;border-radius:2px;margin:10px auto 0}
+  .mh{padding-top:8px}
+  /* Touch target bottoni tabella */
+  .btn-ic{padding:7px 10px;font-size:.95rem}
+  .btn{padding:9px 16px}
+  /* Voce mic button */
+  .mic-btn{padding:16px;font-size:.9rem}
+}
 </style>
 </head>
 <body>
+<button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()">☰</button>
+<div id="nav-overlay" class="nav-overlay" onclick="closeSidebar()"></div>
+
 <div class="app">
 
 <!-- SIDEBAR -->
@@ -171,7 +227,7 @@ input[readonly]{background:var(--bg)}
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v02</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v03</div>
     </div>
   </div>
   <div class="nav">
@@ -416,7 +472,7 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION = 'v02';
+const VERSION = 'v03';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
 
@@ -452,6 +508,7 @@ window.addEventListener('DOMContentLoaded', () => {
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
       ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, entrate:loadEntrate, diari:loadAppunti, raccolta:loadRacc})[el.dataset.view]?.();
+      closeSidebar();
     });
   });
   document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
@@ -1023,6 +1080,14 @@ function updateSelects() {
   });
 }
 
+function toggleSidebar() {
+  const open = document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('nav-overlay').classList.toggle('open', open);
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('nav-overlay').classList.remove('open');
+}
 function om(id) { document.getElementById(id).classList.add('open'); }
 function cm(id) { document.getElementById(id).classList.remove('open'); }
 function gv(id) { return document.getElementById(id).value; }
