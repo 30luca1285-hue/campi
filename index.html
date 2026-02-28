@@ -4,114 +4,116 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestione Oliveto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{
+  --green:#2d6a4f;--green-dark:#1a3d2b;--green-light:#d8f3dc;
+  --bg:#f4f6f4;--card:#fff;--border:#e4ebe4;
+  --text:#1a2e1a;--muted:#6b7c6b;--danger:#dc2626;
+  --shadow:0 1px 4px rgba(0,0,0,.08);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f0;color:#2d3748;min-height:100vh}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
 
-/* ---- LAYOUT ---- */
+/* LAYOUT */
 .app{display:flex;min-height:100vh}
 
-/* ---- SIDEBAR ---- */
-.sidebar{width:230px;background:#1a3d2b;color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
-.logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
-.logo h1{font-size:1rem;font-weight:700;letter-spacing:.3px}
-.logo p{font-size:.72rem;opacity:.55;margin-top:3px}
-.nav{padding:10px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:11px;padding:11px 20px;cursor:pointer;font-size:.875rem;transition:background .15s;user-select:none}
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--green-dark);color:#fff;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:50}
+.logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.logo-title{font-size:.95rem;font-weight:700;letter-spacing:.2px}
+.logo-sub{font-size:.7rem;opacity:.5;margin-top:2px}
+.nav{padding:8px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:.85rem;font-weight:500;transition:background .15s;user-select:none;border-right:3px solid transparent}
 .nav-item:hover{background:rgba(255,255,255,.07)}
-.nav-item.active{background:#2d6a4f;border-right:3px solid #74c69d;font-weight:600}
-.nav-item .ic{font-size:1.1rem;width:22px;text-align:center}
+.nav-item.active{background:rgba(255,255,255,.12);border-right-color:#74c69d}
+.nav-ic{font-size:1rem;width:20px;text-align:center}
 
-/* ---- MAIN ---- */
-.main{margin-left:230px;flex:1;display:flex;flex-direction:column}
-.view{display:none;flex-direction:column;min-height:100vh}
+/* MAIN */
+.main{margin-left:220px;flex:1}
+.view{display:none;min-height:100vh;flex-direction:column}
 .view.active{display:flex}
 
-/* ---- HEADER ---- */
-.page-hd{background:#fff;padding:18px 28px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.page-hd h2{font-size:1.15rem;font-weight:700}
-.page-body{padding:24px 28px;flex:1}
+/* PAGE HEADER */
+.ph{background:var(--card);padding:16px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:var(--shadow)}
+.ph h2{font-size:1.05rem;font-weight:700}
+.pb{padding:22px 26px;flex:1}
 
-/* ---- STAT BAR ---- */
-.stat-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
-.stat-card{background:#fff;border-radius:11px;padding:14px 18px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid #2d6a4f}
-.stat-card.blue{border-left-color:#2563eb}
-.stat-card.amber{border-left-color:#d97706}
-.stat-card.violet{border-left-color:#7c3aed}
-.stat-lbl{font-size:.7rem;color:#718096;text-transform:uppercase;letter-spacing:.5px}
-.stat-val{font-size:1.5rem;font-weight:700;margin-top:3px}
+/* STAT BAR */
+.stat-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--card);border-radius:10px;padding:13px 16px;box-shadow:var(--shadow);border-left:3px solid var(--green)}
+.sc.blue{border-left-color:#2563eb}.sc.amber{border-left-color:#d97706}.sc.violet{border-left-color:#7c3aed}
+.sc-lbl{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sc-val{font-size:1.4rem;font-weight:700;margin-top:3px}
 
-/* ---- CARDS GRID ---- */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
-.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid #e8f0ea}
-.card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-.card-name{font-size:1rem;font-weight:700}
-.card-sub{font-size:.78rem;color:#718096;margin-top:2px}
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
-.metric{background:#f7faf7;border-radius:8px;padding:9px 11px}
-.m-lbl{font-size:.68rem;color:#718096;text-transform:uppercase;letter-spacing:.4px}
-.m-val{font-size:.95rem;font-weight:700;margin-top:2px}
-.interventi{margin-top:13px;border-top:1px solid #f0f0f0;padding-top:11px}
-.irow{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;padding:4px 0;border-bottom:1px solid #f7f7f7}
-.irow:last-child{border-bottom:none}
-.ilbl{color:#718096}
-.idate{font-weight:500}
-.ok{color:#2d6a4f}.warn{color:#d97706}.old{color:#dc2626}.muted{color:#a0aec0}
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border-radius:12px;padding:17px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-name{font-size:.95rem;font-weight:700}
+.card-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.metric{background:var(--bg);border-radius:7px;padding:9px 11px}
+.ml{font-size:.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.mv{font-size:.9rem;font-weight:700;margin-top:2px}
+.interventi{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.irow{display:flex;justify-content:space-between;font-size:.78rem;padding:3px 0}
+.ilbl{color:var(--muted)}
+.idate{font-weight:600}
+.ok{color:#16a34a}.warn{color:#d97706}.old{color:var(--danger)}.na{color:#aaa}
 
-/* ---- TABLE ---- */
-.tbl-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow:hidden;border:1px solid #e8f0ea}
-.tbl-toolbar{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f4f0;flex-wrap:wrap}
+/* TABLE */
+.tw{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border)}
+.tb-bar{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-wrap:wrap}
 table{width:100%;border-collapse:collapse}
-th{background:#f7faf7;padding:10px 14px;text-align:left;font-size:.72rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e8f0ea;white-space:nowrap}
-td{padding:11px 14px;font-size:.855rem;border-bottom:1px solid #f0f4f0;vertical-align:middle}
+th{background:var(--bg);padding:9px 13px;text-align:left;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 13px;font-size:.84rem;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#f9fbf9}
-.actions{display:flex;gap:5px}
+tr:hover td{background:#fbfdfb}
+.act{display:flex;gap:4px}
 
-/* ---- BADGES ---- */
-.badge{padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:600;white-space:nowrap}
-.b-green{background:#d4edda;color:#155724}
-.b-red{background:#f8d7da;color:#721c24}
-.b-yellow{background:#fff3cd;color:#856404}
-.b-gray{background:#e2e8f0;color:#4a5568}
-.b-blue{background:#dbeafe;color:#1e40af}
+/* BADGE */
+.badge{padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.bg{background:#d1fae5;color:#065f46}.br{background:#fee2e2;color:#991b1b}
+.by{background:#fef9c3;color:#854d0e}.bb{background:#dbeafe;color:#1e40af}.bgr{background:#f1f5f9;color:#475569}
 
-/* ---- BUTTONS ---- */
-.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.855rem;font-weight:600;transition:all .15s;line-height:1}
-.btn-primary{background:#2d6a4f;color:#fff}.btn-primary:hover{background:#1a3d2b}
-.btn-secondary{background:#f0f4f0;color:#2d3748}.btn-secondary:hover{background:#e2e8f0}
-.btn-icon{padding:5px 7px;background:transparent;border:1px solid #e2e8f0;border-radius:7px;cursor:pointer;font-size:.9rem;line-height:1;transition:background .15s}
-.btn-icon:hover{background:#f0f4f0}
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:.83rem;font-weight:600;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-p{background:var(--green);color:#fff}.btn-p:hover{background:var(--green-dark)}
+.btn-s{background:var(--bg);color:var(--text);border:1px solid var(--border)}.btn-s:hover{background:var(--border)}
+.btn-ic{padding:4px 7px;background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.85rem;line-height:1;transition:background .15s}
+.btn-ic:hover{background:var(--bg)}
 
-/* ---- FORM ---- */
-.form-group{margin-bottom:14px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{display:block;font-size:.78rem;font-weight:700;color:#4a5568;margin-bottom:5px}
-input,select,textarea{border:1px solid #e2e8f0;border-radius:8px;padding:8px 11px;font-size:.855rem;font-family:inherit;width:100%;color:#2d3748;background:#fff;transition:border .15s}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#2d6a4f;box-shadow:0 0 0 3px rgba(45,106,79,.1)}
-input[readonly]{background:#f7faf7}
-.filter-bar{display:flex;gap:8px;align-items:center;flex:1;flex-wrap:wrap}
-.filter-bar select{max-width:190px}
+/* INPUTS */
+.fg{margin-bottom:13px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+input,select,textarea{border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.84rem;font-family:'Inter',sans-serif;width:100%;color:var(--text);background:#fff;transition:border .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(45,106,79,.1)}
+input[readonly]{background:var(--bg)}
+.fb{display:flex;gap:8px;align-items:center;flex:1;flex-wrap:wrap}
+.fb select{max-width:180px}
+.tot-lbl{font-weight:700;color:var(--green);margin-left:auto;font-size:.85rem}
 
-/* ---- MODAL ---- */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
-.overlay.open{display:flex}
-.modal{background:#fff;border-radius:16px;width:520px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.modal-hd{padding:18px 22px;border-bottom:1px solid #f0f4f0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
-.modal-hd h3{font-size:.95rem;font-weight:700}
-.modal-body{padding:22px}
-.modal-ft{padding:14px 22px;border-top:1px solid #f0f4f0;display:flex;justify-content:flex-end;gap:9px}
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:100}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:500px;max-width:96vw;max-height:93vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mh{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
+.mh h3{font-size:.9rem;font-weight:700}
+.mb{padding:20px}
+.mf{padding:13px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 
-/* ---- MISC ---- */
-.loading{display:flex;align-items:center;justify-content:center;padding:50px;color:#718096}
-.spinner{width:28px;height:28px;border:3px solid #e2e8f0;border-top-color:#2d6a4f;border-radius:50%;animation:spin .8s linear infinite;margin-right:10px}
+/* MISC */
+.spin-wrap{display:flex;align-items:center;justify-content:center;padding:50px;color:var(--muted)}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin-right:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:50px 20px;color:#718096}
-.empty .emoji{font-size:2.5rem}
-.empty p{margin-top:10px;font-size:.9rem}
-.toast{position:fixed;bottom:22px;right:22px;background:#1a3d2b;color:#fff;padding:11px 18px;border-radius:10px;font-size:.855rem;z-index:200;transform:translateY(100px);opacity:0;transition:all .3s;pointer-events:none}
-.toast.show{transform:translateY(0);opacity:1}
-.totale-bar{font-weight:700;color:#2d6a4f;margin-left:auto;font-size:.9rem}
+.empty{text-align:center;padding:45px 20px;color:var(--muted)}
+.empty-ic{font-size:2.2rem}
+.empty p{margin-top:8px;font-size:.88rem}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green-dark);color:#fff;padding:10px 16px;border-radius:8px;font-size:.84rem;font-weight:500;z-index:200;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -120,253 +122,171 @@ input[readonly]{background:#f7faf7}
 <!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="logo">
-    <h1>Gestione Oliveto</h1>
-    <p>Pannello di controllo</p>
+    <div class="logo-title">Gestione Oliveto</div>
+    <div class="logo-sub">Pannello di controllo</div>
   </div>
   <div class="nav">
-    <div class="nav-item active" data-view="overview"><span class="ic">📊</span><span>Overview</span></div>
-    <div class="nav-item" data-view="campi"><span class="ic">🗺️</span><span>Campi</span></div>
-    <div class="nav-item" data-view="lavorazioni"><span class="ic">🌿</span><span>Lavorazioni</span></div>
-    <div class="nav-item" data-view="costi"><span class="ic">💰</span><span>Costi</span></div>
-    <div class="nav-item" data-view="raccolta"><span class="ic">🫙</span><span>Raccolta</span></div>
+    <div class="nav-item active" data-view="overview"><span class="nav-ic">📊</span>Overview</div>
+    <div class="nav-item" data-view="campi"><span class="nav-ic">🗺️</span>Campi</div>
+    <div class="nav-item" data-view="lavorazioni"><span class="nav-ic">🌿</span>Lavorazioni</div>
+    <div class="nav-item" data-view="costi"><span class="nav-ic">💰</span>Costi</div>
+    <div class="nav-item" data-view="raccolta"><span class="nav-ic">🫙</span>Raccolta</div>
   </div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
 
-  <!-- ===== OVERVIEW ===== -->
-  <div id="view-overview" class="view active">
-    <div class="page-hd">
-      <h2>Overview</h2>
-      <button class="btn btn-secondary" onclick="loadOverview()">↺ Aggiorna</button>
-    </div>
-    <div class="page-body">
-      <div class="stat-bar" id="ov-stats"></div>
-      <div class="cards-grid" id="ov-cards"><div class="loading"><div class="spinner"></div> Caricamento...</div></div>
-    </div>
+<!-- OVERVIEW -->
+<div id="view-overview" class="view active">
+  <div class="ph"><h2>Overview</h2><button class="btn btn-s" onclick="loadOverview()">↺ Aggiorna</button></div>
+  <div class="pb">
+    <div class="stat-bar" id="ov-stats"></div>
+    <div class="cards-grid" id="ov-cards"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></div>
   </div>
+</div>
 
-  <!-- ===== CAMPI ===== -->
-  <div id="view-campi" class="view">
-    <div class="page-hd">
-      <h2>Campi</h2>
-      <button class="btn btn-primary" onclick="openCampoModal()">+ Nuovo Campo</button>
-    </div>
-    <div class="page-body">
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Varietà</th><th>Anno Impianto</th><th>Comune</th><th>Note</th><th></th></tr></thead>
-          <tbody id="campi-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-        </table>
+<!-- CAMPI -->
+<div id="view-campi" class="view">
+  <div class="ph"><h2>Campi</h2><button class="btn btn-p" onclick="openCampoModal()">+ Nuovo Campo</button></div>
+  <div class="pb"><div class="tw">
+    <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Varietà</th><th>Anno</th><th>Comune</th><th>Note</th><th></th></tr></thead>
+    <tbody id="campi-tb"><tr><td colspan="8"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
+  </div></div>
+</div>
+
+<!-- LAVORAZIONI -->
+<div id="view-lavorazioni" class="view">
+  <div class="ph"><h2>Lavorazioni</h2><button class="btn btn-p" onclick="openLavModal()">+ Nuova Lavorazione</button></div>
+  <div class="pb"><div class="tw">
+    <div class="tb-bar">
+      <div class="fb">
+        <select id="lf-campo" onchange="renderLav()"><option value="">Tutti i campi</option></select>
+        <select id="lf-tipo" onchange="renderLav()"><option value="">Tutti i tipi</option>
+          <option>Potatura</option><option>Trattamento Fitosanitario</option>
+          <option>Concimazione</option><option>Raccolta</option><option>Altra Lavorazione</option></select>
       </div>
     </div>
-  </div>
+    <table><thead><tr><th>Data</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Prodotto</th><th>Operatore</th><th>Costo</th><th></th></tr></thead>
+    <tbody id="lav-tb"></tbody></table>
+  </div></div>
+</div>
 
-  <!-- ===== LAVORAZIONI ===== -->
-  <div id="view-lavorazioni" class="view">
-    <div class="page-hd">
-      <h2>Lavorazioni</h2>
-      <button class="btn btn-primary" onclick="openLavModal()">+ Nuova Lavorazione</button>
-    </div>
-    <div class="page-body">
-      <div class="tbl-wrap">
-        <div class="tbl-toolbar">
-          <div class="filter-bar">
-            <select id="lav-f-campo" onchange="renderLav()"><option value="">Tutti i campi</option></select>
-            <select id="lav-f-tipo" onchange="renderLav()">
-              <option value="">Tutti i tipi</option>
-              <option>Potatura</option><option>Trattamento Fitosanitario</option>
-              <option>Concimazione</option><option>Raccolta</option><option>Altra Lavorazione</option>
-            </select>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Data</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Prodotto</th><th>Operatore</th><th>Costo</th><th></th></tr></thead>
-          <tbody id="lav-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-        </table>
+<!-- COSTI -->
+<div id="view-costi" class="view">
+  <div class="ph"><h2>Costi</h2><button class="btn btn-p" onclick="openCostoModal()">+ Nuovo Costo</button></div>
+  <div class="pb"><div class="tw">
+    <div class="tb-bar">
+      <div class="fb">
+        <select id="cf-campo" onchange="renderCosti()"><option value="">Tutti i campi</option></select>
+        <select id="cf-cat" onchange="renderCosti()"><option value="">Tutte le categorie</option>
+          <option>Prodotti Fitosanitari</option><option>Concimi / Fertilizzanti</option>
+          <option>Carburante</option><option>Manodopera</option>
+          <option>Affitto</option><option>Macchinari / Attrezzature</option><option>Altro</option></select>
       </div>
+      <span class="tot-lbl" id="costi-tot"></span>
     </div>
-  </div>
+    <table><thead><tr><th>Data</th><th>Campo</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th>Costo Unit.</th><th>Totale</th><th>Fornitore</th><th></th></tr></thead>
+    <tbody id="costi-tb"></tbody></table>
+  </div></div>
+</div>
 
-  <!-- ===== COSTI ===== -->
-  <div id="view-costi" class="view">
-    <div class="page-hd">
-      <h2>Costi</h2>
-      <button class="btn btn-primary" onclick="openCostoModal()">+ Nuovo Costo</button>
-    </div>
-    <div class="page-body">
-      <div class="tbl-wrap">
-        <div class="tbl-toolbar">
-          <div class="filter-bar">
-            <select id="costi-f-campo" onchange="renderCosti()"><option value="">Tutti i campi</option></select>
-            <select id="costi-f-cat" onchange="renderCosti()">
-              <option value="">Tutte le categorie</option>
-              <option>Prodotti Fitosanitari</option><option>Concimi / Fertilizzanti</option>
-              <option>Carburante</option><option>Manodopera</option>
-              <option>Affitto</option><option>Macchinari / Attrezzature</option><option>Altro</option>
-            </select>
-          </div>
-          <span class="totale-bar" id="costi-totale"></span>
-        </div>
-        <table>
-          <thead><tr><th>Data</th><th>Campo</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th>Costo Unit.</th><th>Totale</th><th>Fornitore</th><th></th></tr></thead>
-          <tbody id="costi-tbody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== RACCOLTA ===== -->
-  <div id="view-raccolta" class="view">
-    <div class="page-hd">
-      <h2>Raccolta</h2>
-      <button class="btn btn-primary" onclick="openRaccoltaModal()">+ Nuova Raccolta</button>
-    </div>
-    <div class="page-body">
-      <div class="tbl-wrap">
-        <div class="tbl-toolbar">
-          <div class="filter-bar">
-            <select id="racc-f-campo" onchange="renderRacc()"><option value="">Tutti i campi</option></select>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Anno</th><th>Campo</th><th>Inizio</th><th>Fine</th><th>KG Raccolti</th><th>KG/Ha</th><th>Destinazione</th><th>Note</th><th></th></tr></thead>
-          <tbody id="racc-tbody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+<!-- RACCOLTA -->
+<div id="view-raccolta" class="view">
+  <div class="ph"><h2>Raccolta</h2><button class="btn btn-p" onclick="openRaccModal()">+ Nuova Raccolta</button></div>
+  <div class="pb"><div class="tw">
+    <div class="tb-bar"><div class="fb">
+      <select id="rf-campo" onchange="renderRacc()"><option value="">Tutti i campi</option></select>
+    </div></div>
+    <table><thead><tr><th>Anno</th><th>Campo</th><th>Inizio</th><th>Fine</th><th>KG</th><th>KG/Ha</th><th>Destinazione</th><th>Note</th><th></th></tr></thead>
+    <tbody id="racc-tb"></tbody></table>
+  </div></div>
+</div>
 
 </main>
 </div>
 
-<!-- ===== MODAL CAMPO ===== -->
-<div id="m-campo" class="overlay">
+<!-- MODAL CAMPO -->
+<div id="m-campo" class="ov">
   <div class="modal">
-    <div class="modal-hd"><h3 id="m-campo-title">Nuovo Campo</h3><button class="btn-icon" onclick="closeModal('m-campo')">✕</button></div>
-    <div class="modal-body">
+    <div class="mh"><h3 id="mc-title">Nuovo Campo</h3><button class="btn-ic" onclick="cm('m-campo')">✕</button></div>
+    <div class="mb">
       <input type="hidden" id="c-id">
-      <div class="form-row">
-        <div class="form-group"><label>Nome Campo *</label><input id="c-nome" placeholder="es. Campo di Sopra"></div>
-        <div class="form-group"><label>Comune / Località</label><input id="c-comune" placeholder="es. Trevi"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Ettari</label><input id="c-ettari" type="number" step="0.01" placeholder="es. 1.5"></div>
-        <div class="form-group"><label>N. Piante</label><input id="c-piante" type="number" placeholder="es. 120"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Varietà Olivo</label><input id="c-varieta" placeholder="es. Frantoio, Leccino..."></div>
-        <div class="form-group"><label>Anno Impianto</label><input id="c-anno" type="number" placeholder="es. 1985"></div>
-      </div>
-      <div class="form-group"><label>Note</label><textarea id="c-note" rows="2" placeholder="Note aggiuntive..."></textarea></div>
+      <div class="fr"><div class="fg"><label>Nome Campo *</label><input id="c-nome" placeholder="es. Campo di Sopra"></div>
+      <div class="fg"><label>Comune / Località</label><input id="c-comune" placeholder="es. Trevi"></div></div>
+      <div class="fr"><div class="fg"><label>Ettari</label><input id="c-ettari" type="number" step="0.01" placeholder="es. 1.5"></div>
+      <div class="fg"><label>N. Piante</label><input id="c-piante" type="number" placeholder="es. 120"></div></div>
+      <div class="fr"><div class="fg"><label>Varietà Olivo</label><input id="c-varieta" placeholder="es. Frantoio, Leccino"></div>
+      <div class="fg"><label>Anno Impianto</label><input id="c-anno" type="number" placeholder="es. 1985"></div></div>
+      <div class="fg"><label>Note</label><textarea id="c-note" rows="2" placeholder="Note aggiuntive..."></textarea></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-secondary" onclick="closeModal('m-campo')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveCampo()">Salva</button>
-    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-campo')">Annulla</button><button class="btn btn-p" onclick="saveCampo()">Salva</button></div>
   </div>
 </div>
 
-<!-- ===== MODAL LAVORAZIONE ===== -->
-<div id="m-lav" class="overlay">
+<!-- MODAL LAVORAZIONE -->
+<div id="m-lav" class="ov">
   <div class="modal">
-    <div class="modal-hd"><h3 id="m-lav-title">Nuova Lavorazione</h3><button class="btn-icon" onclick="closeModal('m-lav')">✕</button></div>
-    <div class="modal-body">
+    <div class="mh"><h3 id="ml-title">Nuova Lavorazione</h3><button class="btn-ic" onclick="cm('m-lav')">✕</button></div>
+    <div class="mb">
       <input type="hidden" id="l-id">
-      <div class="form-row">
-        <div class="form-group"><label>Data *</label><input id="l-data" type="date"></div>
-        <div class="form-group"><label>Campo *</label><select id="l-campo"></select></div>
-      </div>
-      <div class="form-group"><label>Tipo Operazione *</label>
-        <select id="l-tipo">
-          <option value="">Seleziona...</option>
+      <div class="fr"><div class="fg"><label>Data *</label><input id="l-data" type="date"></div>
+      <div class="fg"><label>Campo *</label><select id="l-campo"></select></div></div>
+      <div class="fg"><label>Tipo Operazione *</label>
+        <select id="l-tipo"><option value="">Seleziona...</option>
           <option>Potatura</option><option>Trattamento Fitosanitario</option>
-          <option>Concimazione</option><option>Raccolta</option><option>Altra Lavorazione</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Descrizione / Note</label><textarea id="l-desc" rows="2" placeholder="Dettagli dell'operazione..."></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label>Prodotto Usato</label><input id="l-prodotto" placeholder="es. Rame, Azoto..."></div>
-        <div class="form-group"><label>Operatore</label><input id="l-operatore" placeholder="Nome operatore"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Quantità</label><input id="l-qta" type="number" step="0.01"></div>
-        <div class="form-group"><label>Unità</label><input id="l-unita" placeholder="es. L, kg, ore"></div>
-      </div>
-      <div class="form-group"><label>Costo €</label><input id="l-costo" type="number" step="0.01" placeholder="0.00"></div>
+          <option>Concimazione</option><option>Raccolta</option><option>Altra Lavorazione</option></select></div>
+      <div class="fg"><label>Descrizione / Note</label><textarea id="l-desc" rows="2" placeholder="Dettagli..."></textarea></div>
+      <div class="fr"><div class="fg"><label>Prodotto Usato</label><input id="l-prod" placeholder="es. Rame, Azoto..."></div>
+      <div class="fg"><label>Operatore</label><input id="l-oper" placeholder="Nome operatore"></div></div>
+      <div class="fr"><div class="fg"><label>Quantità</label><input id="l-qta" type="number" step="0.01"></div>
+      <div class="fg"><label>Unità</label><input id="l-un" placeholder="es. L, kg, ore"></div></div>
+      <div class="fg"><label>Costo €</label><input id="l-costo" type="number" step="0.01" placeholder="0.00"></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-secondary" onclick="closeModal('m-lav')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveLav()">Salva</button>
-    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-lav')">Annulla</button><button class="btn btn-p" onclick="saveLav()">Salva</button></div>
   </div>
 </div>
 
-<!-- ===== MODAL COSTO ===== -->
-<div id="m-costo" class="overlay">
+<!-- MODAL COSTO -->
+<div id="m-costo" class="ov">
   <div class="modal">
-    <div class="modal-hd"><h3 id="m-costo-title">Nuovo Costo</h3><button class="btn-icon" onclick="closeModal('m-costo')">✕</button></div>
-    <div class="modal-body">
+    <div class="mh"><h3 id="mco-title">Nuovo Costo</h3><button class="btn-ic" onclick="cm('m-costo')">✕</button></div>
+    <div class="mb">
       <input type="hidden" id="co-id">
-      <div class="form-row">
-        <div class="form-group"><label>Data *</label><input id="co-data" type="date"></div>
-        <div class="form-group"><label>Campo *</label><select id="co-campo"></select></div>
-      </div>
-      <div class="form-group"><label>Categoria *</label>
-        <select id="co-cat">
-          <option value="">Seleziona...</option>
+      <div class="fr"><div class="fg"><label>Data *</label><input id="co-data" type="date"></div>
+      <div class="fg"><label>Campo *</label><select id="co-campo"></select></div></div>
+      <div class="fg"><label>Categoria *</label>
+        <select id="co-cat"><option value="">Seleziona...</option>
           <option>Prodotti Fitosanitari</option><option>Concimi / Fertilizzanti</option>
           <option>Carburante</option><option>Manodopera</option>
-          <option>Affitto</option><option>Macchinari / Attrezzature</option><option>Altro</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Descrizione</label><input id="co-desc" placeholder="Descrizione spesa..."></div>
-      <div class="form-row">
-        <div class="form-group"><label>Quantità</label><input id="co-qta" type="number" step="0.01" oninput="calcTot()"></div>
-        <div class="form-group"><label>Unità</label><input id="co-unita" placeholder="es. L, kg, ore"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Costo Unitario €</label><input id="co-unit" type="number" step="0.01" oninput="calcTot()"></div>
-        <div class="form-group"><label>Totale €</label><input id="co-tot" type="number" step="0.01" readonly></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Fornitore</label><input id="co-forn" placeholder="Nome fornitore"></div>
-        <div class="form-group"><label>Note</label><input id="co-note" placeholder="Note aggiuntive..."></div>
-      </div>
+          <option>Affitto</option><option>Macchinari / Attrezzature</option><option>Altro</option></select></div>
+      <div class="fg"><label>Descrizione</label><input id="co-desc" placeholder="Descrizione spesa..."></div>
+      <div class="fr"><div class="fg"><label>Quantità</label><input id="co-qta" type="number" step="0.01" oninput="calcTot()"></div>
+      <div class="fg"><label>Unità</label><input id="co-un" placeholder="es. L, kg, ore"></div></div>
+      <div class="fr"><div class="fg"><label>Costo Unitario €</label><input id="co-unit" type="number" step="0.01" oninput="calcTot()"></div>
+      <div class="fg"><label>Totale €</label><input id="co-tot" type="number" step="0.01" readonly></div></div>
+      <div class="fr"><div class="fg"><label>Fornitore</label><input id="co-forn" placeholder="Nome fornitore"></div>
+      <div class="fg"><label>Note</label><input id="co-note" placeholder="Note..."></div></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-secondary" onclick="closeModal('m-costo')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveCosto()">Salva</button>
-    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-costo')">Annulla</button><button class="btn btn-p" onclick="saveCosto()">Salva</button></div>
   </div>
 </div>
 
-<!-- ===== MODAL RACCOLTA ===== -->
-<div id="m-racc" class="overlay">
+<!-- MODAL RACCOLTA -->
+<div id="m-racc" class="ov">
   <div class="modal">
-    <div class="modal-hd"><h3 id="m-racc-title">Nuova Raccolta</h3><button class="btn-icon" onclick="closeModal('m-racc')">✕</button></div>
-    <div class="modal-body">
+    <div class="mh"><h3 id="mr-title">Nuova Raccolta</h3><button class="btn-ic" onclick="cm('m-racc')">✕</button></div>
+    <div class="mb">
       <input type="hidden" id="r-id">
-      <div class="form-row">
-        <div class="form-group"><label>Anno *</label><input id="r-anno" type="number" placeholder="es. 2025"></div>
-        <div class="form-group"><label>Campo *</label><select id="r-campo"></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Data Inizio</label><input id="r-inizio" type="date"></div>
-        <div class="form-group"><label>Data Fine</label><input id="r-fine" type="date"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>KG Raccolti</label><input id="r-kg" type="number" step="0.1"></div>
-        <div class="form-group"><label>KG / Ha</label><input id="r-kgha" type="number" step="0.1"></div>
-      </div>
-      <div class="form-group"><label>Destinazione</label><input id="r-dest" placeholder="es. Frantoio Rossi, autoconsumo..."></div>
-      <div class="form-group"><label>Note</label><textarea id="r-note" rows="2" placeholder="Note sulla raccolta..."></textarea></div>
+      <div class="fr"><div class="fg"><label>Anno *</label><input id="r-anno" type="number" placeholder="es. 2025"></div>
+      <div class="fg"><label>Campo *</label><select id="r-campo"></select></div></div>
+      <div class="fr"><div class="fg"><label>Data Inizio</label><input id="r-ini" type="date"></div>
+      <div class="fg"><label>Data Fine</label><input id="r-fin" type="date"></div></div>
+      <div class="fr"><div class="fg"><label>KG Raccolti</label><input id="r-kg" type="number" step="0.1"></div>
+      <div class="fg"><label>KG / Ha</label><input id="r-kgha" type="number" step="0.1"></div></div>
+      <div class="fg"><label>Destinazione</label><input id="r-dest" placeholder="es. Frantoio Rossi, autoconsumo..."></div>
+      <div class="fg"><label>Note</label><textarea id="r-note" rows="2" placeholder="Note..."></textarea></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-secondary" onclick="closeModal('m-racc')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRacc()">Salva</button>
-    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-racc')">Annulla</button><button class="btn btn-p" onclick="saveRacc()">Salva</button></div>
   </div>
 </div>
 
@@ -374,372 +294,322 @@ input[readonly]{background:#f7faf7}
 
 <script>
 // ============================================================
+// CONFIG
+// ============================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
+const TOKEN   = 'oliveto_gall_2025';
+
+// ============================================================
+// API
+// ============================================================
+async function api(action, params = {}) {
+  const url = new URL(GAS_URL);
+  url.searchParams.set('action', action);
+  url.searchParams.set('token', TOKEN);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
+  try {
+    const res = await fetch(url.toString());
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch(e) { toast('Errore: ' + e.message); throw e; }
+}
+
+// ============================================================
 // STATE
 // ============================================================
-const S = { campi:[], lavorazioni:[], costi:[], raccolte:[], overview:[] };
+const S = { campi:[], lav:[], costi:[], racc:[] };
 
 // ============================================================
-// INIT & NAVIGATION
+// INIT & NAV
 // ============================================================
-window.onload = () => {
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => navigate(item.dataset.view, item));
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('view-'+el.dataset.view).classList.add('active');
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc})[el.dataset.view]?.();
+    });
   });
-  document.querySelectorAll('.overlay').forEach(o => {
-    o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
-  });
-  loadAll();
-};
-
-function navigate(view, el) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('view-'+view).classList.add('active');
-  el.classList.add('active');
-  if(view==='overview') loadOverview();
-  if(view==='campi') loadCampi();
-  if(view==='lavorazioni') loadLav();
-  if(view==='costi') loadCosti();
-  if(view==='raccolta') loadRacc();
-}
-
-function loadAll() {
+  document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
   loadCampi();
   loadOverview();
-}
+});
 
 // ============================================================
 // CAMPI
 // ============================================================
-function loadCampi() {
-  run('getCampi', data => {
-    S.campi = data;
-    renderCampi();
-    updateSelects();
-  });
+async function loadCampi() {
+  S.campi = await api('getCampi');
+  renderCampi();
+  updateSelects();
 }
 
 function renderCampi() {
-  const tb = document.getElementById('campi-tbody');
-  if(!S.campi.length) { tb.innerHTML = emptyRow(8,'🗺️','Nessun campo. Aggiungine uno!'); return; }
-  tb.innerHTML = S.campi.map(c => `
-    <tr>
-      <td><strong>${c.nome}</strong></td>
-      <td>${c.ettari||'-'}</td>
-      <td>${c.numPiante||'-'}</td>
-      <td>${c.varieta||'-'}</td>
-      <td>${c.annoImpianto||'-'}</td>
-      <td>${c.comune||'-'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'-'}</td>
-      <td><div class="actions">
-        <button class="btn-icon" onclick="editCampo(${c.id})" title="Modifica">✏️</button>
-        <button class="btn-icon" onclick="delCampo(${c.id},'${esc(c.nome)}')" title="Elimina">🗑️</button>
-      </div></td>
-    </tr>`).join('');
+  const tb = document.getElementById('campi-tb');
+  if (!S.campi.length) { tb.innerHTML = er(8,'🗺️','Nessun campo. Aggiungine uno!'); return; }
+  tb.innerHTML = S.campi.map(c=>`<tr>
+    <td><strong>${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
+    <td>${c.varieta||'—'}</td><td>${c.annoImpianto||'—'}</td><td>${c.comune||'—'}</td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'—'}</td>
+    <td><div class="act">
+      <button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
+      <button class="btn-ic" onclick="delCampo(${c.id},'${esc(c.nome)}')">🗑️</button>
+    </div></td></tr>`).join('');
 }
 
 function openCampoModal(c) {
-  setV({
-    'c-id': c?c.id:'', 'c-nome': c?c.nome:'', 'c-comune': c?c.comune:'',
-    'c-ettari': c?c.ettari:'', 'c-piante': c?c.numPiante:'',
-    'c-varieta': c?c.varieta:'', 'c-anno': c?c.annoImpianto:'', 'c-note': c?c.note:''
-  });
-  document.getElementById('m-campo-title').textContent = c ? 'Modifica Campo' : 'Nuovo Campo';
-  openModal('m-campo');
+  sv({'c-id':c?.id||'','c-nome':c?.nome||'','c-comune':c?.comune||'','c-ettari':c?.ettari||'',
+    'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-anno':c?.annoImpianto||'','c-note':c?.note||''});
+  document.getElementById('mc-title').textContent = c ? 'Modifica Campo' : 'Nuovo Campo';
+  om('m-campo');
 }
 function editCampo(id) { openCampoModal(S.campi.find(c=>c.id===id)); }
 
-function saveCampo() {
+async function saveCampo() {
   const nome = gv('c-nome').trim();
-  if(!nome) { toast('Inserisci il nome del campo'); return; }
-  const obj = { id: gv('c-id')?+gv('c-id'):null, nome, ettari:gv('c-ettari'),
+  if (!nome) { toast('Inserisci il nome del campo'); return; }
+  await api('saveCampo', { data: { id:gv('c-id')?+gv('c-id'):null, nome, ettari:gv('c-ettari'),
     numPiante:gv('c-piante'), varieta:gv('c-varieta'), annoImpianto:gv('c-anno'),
-    comune:gv('c-comune'), note:gv('c-note') };
-  run('saveCampo', ()=>{ closeModal('m-campo'); loadCampi(); toast('Campo salvato!'); }, obj);
+    comune:gv('c-comune'), note:gv('c-note') }});
+  cm('m-campo'); loadCampi(); toast('Campo salvato!');
 }
-function delCampo(id,nome) {
-  if(!confirm(`Eliminare "${nome}"?`)) return;
-  run('deleteCampo', ()=>{ loadCampi(); toast('Campo eliminato'); }, id);
+
+async function delCampo(id, nome) {
+  if (!confirm(`Eliminare "${nome}"?`)) return;
+  await api('deleteCampo', { rowId: id });
+  loadCampi(); toast('Campo eliminato');
 }
 
 // ============================================================
 // LAVORAZIONI
 // ============================================================
-function loadLav() {
-  run('getLavorazioni', data => { S.lavorazioni=data; renderLav(); });
+async function loadLav() {
+  S.lav = await api('getLavorazioni');
+  renderLav();
 }
 
 function renderLav() {
-  const tb = document.getElementById('lav-tbody');
-  const fc = gv('lav-f-campo'), ft = gv('lav-f-tipo');
-  let data = S.lavorazioni;
-  if(fc) data = data.filter(l=>l.campo===fc);
-  if(ft) data = data.filter(l=>l.tipo===ft);
-  data = data.sort((a,b)=>new Date(b.data)-new Date(a.data));
-  if(!data.length) { tb.innerHTML = emptyRow(8,'🌿','Nessuna lavorazione trovata.'); return; }
-  tb.innerHTML = data.map(l=>`
-    <tr>
-      <td>${fd(l.data)}</td>
-      <td>${l.campo}</td>
-      <td><span class="badge ${lavBadge(l.tipo)}">${l.tipo}</span></td>
-      <td style="max-width:200px">${l.descrizione||'-'}</td>
-      <td>${l.prodotto||'-'}</td>
-      <td>${l.operatore||'-'}</td>
-      <td>${l.costo?fe(l.costo):'-'}</td>
-      <td><div class="actions">
-        <button class="btn-icon" onclick="editLav(${l.id})">✏️</button>
-        <button class="btn-icon" onclick="delLav(${l.id})">🗑️</button>
-      </div></td>
-    </tr>`).join('');
+  const tb = document.getElementById('lav-tb');
+  const fc = gv('lf-campo'), ft = gv('lf-tipo');
+  let d = S.lav.filter(l=>(!fc||l.campo===fc)&&(!ft||l.tipo===ft)).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  if (!d.length) { tb.innerHTML = er(8,'🌿','Nessuna lavorazione.'); return; }
+  tb.innerHTML = d.map(l=>`<tr>
+    <td>${fd(l.data)}</td><td>${l.campo}</td>
+    <td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td>
+    <td style="max-width:180px">${l.descrizione||'—'}</td>
+    <td>${l.prodotto||'—'}</td><td>${l.operatore||'—'}</td>
+    <td>${l.costo?fe(l.costo):'—'}</td>
+    <td><div class="act"><button class="btn-ic" onclick="editLav(${l.id})">✏️</button><button class="btn-ic" onclick="delLav(${l.id})">🗑️</button></div></td></tr>`).join('');
 }
 
-function lavBadge(t) {
-  return {Potatura:'b-green','Trattamento Fitosanitario':'b-red',Concimazione:'b-yellow',
-    Raccolta:'b-blue','Altra Lavorazione':'b-gray'}[t]||'b-gray';
-}
+function lb(t){return{Potatura:'bg','Trattamento Fitosanitario':'br',Concimazione:'by',Raccolta:'bb','Altra Lavorazione':'bgr'}[t]||'bgr';}
 
 function openLavModal(l) {
-  setV({ 'l-id':l?l.id:'', 'l-data':l?l.data:today(), 'l-campo':l?l.campo:'',
-    'l-tipo':l?l.tipo:'', 'l-desc':l?l.descrizione:'', 'l-prodotto':l?l.prodotto:'',
-    'l-operatore':l?l.operatore:'', 'l-qta':l?l.quantita:'', 'l-unita':l?l.unita:'', 'l-costo':l?l.costo:'' });
-  document.getElementById('m-lav-title').textContent = l ? 'Modifica Lavorazione' : 'Nuova Lavorazione';
-  openModal('m-lav');
+  sv({'l-id':l?.id||'','l-data':l?.data||today(),'l-campo':l?.campo||'','l-tipo':l?.tipo||'',
+    'l-desc':l?.descrizione||'','l-prod':l?.prodotto||'','l-oper':l?.operatore||'',
+    'l-qta':l?.quantita||'','l-un':l?.unita||'','l-costo':l?.costo||''});
+  document.getElementById('ml-title').textContent = l ? 'Modifica Lavorazione' : 'Nuova Lavorazione';
+  om('m-lav');
 }
-function editLav(id) { openLavModal(S.lavorazioni.find(l=>l.id===id)); }
+function editLav(id) { openLavModal(S.lav.find(l=>l.id===id)); }
 
-function saveLav() {
-  if(!gv('l-data')||!gv('l-campo')||!gv('l-tipo')) { toast('Compila i campi obbligatori'); return; }
-  const obj = { id:gv('l-id')?+gv('l-id'):null, data:gv('l-data'), campo:gv('l-campo'),
-    tipo:gv('l-tipo'), descrizione:gv('l-desc'), prodotto:gv('l-prodotto'),
-    quantita:gv('l-qta'), unita:gv('l-unita'), operatore:gv('l-operatore'), costo:gv('l-costo') };
-  run('saveLavorazione', ()=>{ closeModal('m-lav'); loadLav(); toast('Lavorazione salvata!'); }, obj);
+async function saveLav() {
+  if (!gv('l-data')||!gv('l-campo')||!gv('l-tipo')) { toast('Compila i campi obbligatori'); return; }
+  await api('saveLavorazione', { data: { id:gv('l-id')?+gv('l-id'):null, data:gv('l-data'), campo:gv('l-campo'),
+    tipo:gv('l-tipo'), descrizione:gv('l-desc'), prodotto:gv('l-prod'),
+    quantita:gv('l-qta'), unita:gv('l-un'), operatore:gv('l-oper'), costo:gv('l-costo') }});
+  cm('m-lav'); loadLav(); toast('Lavorazione salvata!');
 }
-function delLav(id) {
-  if(!confirm('Eliminare questa lavorazione?')) return;
-  run('deleteLavorazione', ()=>{ loadLav(); toast('Eliminata'); }, id);
+
+async function delLav(id) {
+  if (!confirm('Eliminare questa lavorazione?')) return;
+  await api('deleteLavorazione', { rowId: id });
+  loadLav(); toast('Eliminata');
 }
 
 // ============================================================
 // COSTI
 // ============================================================
-function loadCosti() {
-  run('getCosti', data => { S.costi=data; renderCosti(); });
+async function loadCosti() {
+  S.costi = await api('getCosti');
+  renderCosti();
 }
 
 function renderCosti() {
-  const tb = document.getElementById('costi-tbody');
-  const fc = gv('costi-f-campo'), fcat = gv('costi-f-cat');
-  let data = S.costi;
-  if(fc) data = data.filter(c=>c.campo===fc);
-  if(fcat) data = data.filter(c=>c.categoria===fcat);
-  data = data.sort((a,b)=>new Date(b.data)-new Date(a.data));
-  const tot = data.reduce((s,c)=>s+(parseFloat(c.totale)||0),0);
-  document.getElementById('costi-totale').textContent = data.length ? 'Totale filtrato: '+fe(tot) : '';
-  if(!data.length) { tb.innerHTML = emptyRow(9,'💰','Nessun costo registrato.'); return; }
-  tb.innerHTML = data.map(c=>`
-    <tr>
-      <td>${fd(c.data)}</td>
-      <td>${c.campo}</td>
-      <td>${c.categoria}</td>
-      <td>${c.descrizione||'-'}</td>
-      <td>${c.quantita||'-'}${c.unita?' '+c.unita:''}</td>
-      <td>${c.costoUnitario?fe(c.costoUnitario):'-'}</td>
-      <td><strong>${c.totale?fe(c.totale):'-'}</strong></td>
-      <td>${c.fornitore||'-'}</td>
-      <td><div class="actions">
-        <button class="btn-icon" onclick="editCosto(${c.id})">✏️</button>
-        <button class="btn-icon" onclick="delCosto(${c.id})">🗑️</button>
-      </div></td>
-    </tr>`).join('');
+  const tb = document.getElementById('costi-tb');
+  const fc = gv('cf-campo'), fcat = gv('cf-cat');
+  let d = S.costi.filter(c=>(!fc||c.campo===fc)&&(!fcat||c.categoria===fcat)).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const tot = d.reduce((s,c)=>s+(parseFloat(c.totale)||0),0);
+  document.getElementById('costi-tot').textContent = d.length ? 'Totale: '+fe(tot) : '';
+  if (!d.length) { tb.innerHTML = er(9,'💰','Nessun costo registrato.'); return; }
+  tb.innerHTML = d.map(c=>`<tr>
+    <td>${fd(c.data)}</td><td>${c.campo}</td><td>${c.categoria}</td>
+    <td>${c.descrizione||'—'}</td><td>${c.quantita||'—'}${c.unita?' '+c.unita:''}</td>
+    <td>${c.costoUnitario?fe(c.costoUnitario):'—'}</td><td><strong>${c.totale?fe(c.totale):'—'}</strong></td>
+    <td>${c.fornitore||'—'}</td>
+    <td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('');
 }
 
-function calcTot() {
+function calcTot(){
   const q=parseFloat(gv('co-qta'))||0, u=parseFloat(gv('co-unit'))||0;
   document.getElementById('co-tot').value=(q*u).toFixed(2);
 }
 
 function openCostoModal(c) {
-  setV({ 'co-id':c?c.id:'', 'co-data':c?c.data:today(), 'co-campo':c?c.campo:'',
-    'co-cat':c?c.categoria:'', 'co-desc':c?c.descrizione:'', 'co-qta':c?c.quantita:'',
-    'co-unita':c?c.unita:'', 'co-unit':c?c.costoUnitario:'', 'co-tot':c?c.totale:'',
-    'co-forn':c?c.fornitore:'', 'co-note':c?c.note:'' });
-  document.getElementById('m-costo-title').textContent = c ? 'Modifica Costo' : 'Nuovo Costo';
-  openModal('m-costo');
+  sv({'co-id':c?.id||'','co-data':c?.data||today(),'co-campo':c?.campo||'','co-cat':c?.categoria||'',
+    'co-desc':c?.descrizione||'','co-qta':c?.quantita||'','co-un':c?.unita||'',
+    'co-unit':c?.costoUnitario||'','co-tot':c?.totale||'','co-forn':c?.fornitore||'','co-note':c?.note||''});
+  document.getElementById('mco-title').textContent = c ? 'Modifica Costo' : 'Nuovo Costo';
+  om('m-costo');
 }
 function editCosto(id) { openCostoModal(S.costi.find(c=>c.id===id)); }
 
-function saveCosto() {
-  if(!gv('co-data')||!gv('co-campo')||!gv('co-cat')) { toast('Compila i campi obbligatori'); return; }
-  const obj = { id:gv('co-id')?+gv('co-id'):null, data:gv('co-data'), campo:gv('co-campo'),
+async function saveCosto() {
+  if (!gv('co-data')||!gv('co-campo')||!gv('co-cat')) { toast('Compila i campi obbligatori'); return; }
+  await api('saveCosto', { data: { id:gv('co-id')?+gv('co-id'):null, data:gv('co-data'), campo:gv('co-campo'),
     categoria:gv('co-cat'), descrizione:gv('co-desc'), quantita:gv('co-qta'),
-    unita:gv('co-unita'), costoUnitario:gv('co-unit'), totale:gv('co-tot'),
-    fornitore:gv('co-forn'), note:gv('co-note') };
-  run('saveCosto', ()=>{ closeModal('m-costo'); loadCosti(); toast('Costo salvato!'); }, obj);
+    unita:gv('co-un'), costoUnitario:gv('co-unit'), totale:gv('co-tot'),
+    fornitore:gv('co-forn'), note:gv('co-note') }});
+  cm('m-costo'); loadCosti(); toast('Costo salvato!');
 }
-function delCosto(id) {
-  if(!confirm('Eliminare questo costo?')) return;
-  run('deleteCosto', ()=>{ loadCosti(); toast('Eliminato'); }, id);
+
+async function delCosto(id) {
+  if (!confirm('Eliminare questo costo?')) return;
+  await api('deleteCosto', { rowId: id });
+  loadCosti(); toast('Eliminato');
 }
 
 // ============================================================
 // RACCOLTA
 // ============================================================
-function loadRacc() {
-  run('getRaccolte', data => { S.raccolte=data; renderRacc(); });
+async function loadRacc() {
+  S.racc = await api('getRaccolte');
+  renderRacc();
 }
 
 function renderRacc() {
-  const tb = document.getElementById('racc-tbody');
-  const fc = gv('racc-f-campo');
-  let data = S.raccolte;
-  if(fc) data = data.filter(r=>r.campo===fc);
-  data = data.sort((a,b)=>b.anno-a.anno);
-  if(!data.length) { tb.innerHTML = emptyRow(9,'🫙','Nessuna raccolta registrata.'); return; }
-  tb.innerHTML = data.map(r=>`
-    <tr>
-      <td><strong>${r.anno}</strong></td>
-      <td>${r.campo}</td>
-      <td>${fd(r.dataInizio)}</td>
-      <td>${fd(r.dataFine)}</td>
-      <td>${r.kg?r.kg+' kg':'-'}</td>
-      <td>${r.kgHa?r.kgHa+' kg/ha':'-'}</td>
-      <td>${r.destinazione||'-'}</td>
-      <td style="max-width:150px">${r.note||'-'}</td>
-      <td><div class="actions">
-        <button class="btn-icon" onclick="editRacc(${r.id})">✏️</button>
-        <button class="btn-icon" onclick="delRacc(${r.id})">🗑️</button>
-      </div></td>
-    </tr>`).join('');
+  const tb = document.getElementById('racc-tb');
+  const fc = gv('rf-campo');
+  let d = S.racc.filter(r=>!fc||r.campo===fc).sort((a,b)=>b.anno-a.anno);
+  if (!d.length) { tb.innerHTML = er(9,'🫙','Nessuna raccolta registrata.'); return; }
+  tb.innerHTML = d.map(r=>`<tr>
+    <td><strong>${r.anno}</strong></td><td>${r.campo}</td>
+    <td>${fd(r.dataInizio)}</td><td>${fd(r.dataFine)}</td>
+    <td>${r.kg?r.kg+' kg':'—'}</td><td>${r.kgHa?r.kgHa+' kg/ha':'—'}</td>
+    <td>${r.destinazione||'—'}</td>
+    <td style="max-width:140px">${r.note||'—'}</td>
+    <td><div class="act"><button class="btn-ic" onclick="editRacc(${r.id})">✏️</button><button class="btn-ic" onclick="delRacc(${r.id})">🗑️</button></div></td></tr>`).join('');
 }
 
-function openRaccoltaModal(r) {
-  setV({ 'r-id':r?r.id:'', 'r-anno':r?r.anno:new Date().getFullYear(), 'r-campo':r?r.campo:'',
-    'r-inizio':r?r.dataInizio:'', 'r-fine':r?r.dataFine:'', 'r-kg':r?r.kg:'',
-    'r-kgha':r?r.kgHa:'', 'r-dest':r?r.destinazione:'', 'r-note':r?r.note:'' });
-  document.getElementById('m-racc-title').textContent = r ? 'Modifica Raccolta' : 'Nuova Raccolta';
-  openModal('m-racc');
+function openRaccModal(r) {
+  sv({'r-id':r?.id||'','r-anno':r?.anno||new Date().getFullYear(),'r-campo':r?.campo||'',
+    'r-ini':r?.dataInizio||'','r-fin':r?.dataFine||'','r-kg':r?.kg||'',
+    'r-kgha':r?.kgHa||'','r-dest':r?.destinazione||'','r-note':r?.note||''});
+  document.getElementById('mr-title').textContent = r ? 'Modifica Raccolta' : 'Nuova Raccolta';
+  om('m-racc');
 }
-function editRacc(id) { openRaccoltaModal(S.raccolte.find(r=>r.id===id)); }
+function editRacc(id) { openRaccModal(S.racc.find(r=>r.id===id)); }
 
-function saveRacc() {
-  if(!gv('r-anno')||!gv('r-campo')) { toast('Compila i campi obbligatori'); return; }
-  const obj = { id:gv('r-id')?+gv('r-id'):null, anno:gv('r-anno'), campo:gv('r-campo'),
-    dataInizio:gv('r-inizio'), dataFine:gv('r-fine'), kg:gv('r-kg'),
-    kgHa:gv('r-kgha'), destinazione:gv('r-dest'), note:gv('r-note') };
-  run('saveRaccolta', ()=>{ closeModal('m-racc'); loadRacc(); toast('Raccolta salvata!'); }, obj);
+async function saveRacc() {
+  if (!gv('r-anno')||!gv('r-campo')) { toast('Compila i campi obbligatori'); return; }
+  await api('saveRaccolta', { data: { id:gv('r-id')?+gv('r-id'):null, anno:gv('r-anno'), campo:gv('r-campo'),
+    dataInizio:gv('r-ini'), dataFine:gv('r-fin'), kg:gv('r-kg'),
+    kgHa:gv('r-kgha'), destinazione:gv('r-dest'), note:gv('r-note') }});
+  cm('m-racc'); loadRacc(); toast('Raccolta salvata!');
 }
-function delRacc(id) {
-  if(!confirm('Eliminare questa raccolta?')) return;
-  run('deleteRaccolta', ()=>{ loadRacc(); toast('Eliminata'); }, id);
+
+async function delRacc(id) {
+  if (!confirm('Eliminare questa raccolta?')) return;
+  await api('deleteRaccolta', { rowId: id });
+  loadRacc(); toast('Eliminata');
 }
 
 // ============================================================
 // OVERVIEW
 // ============================================================
-function loadOverview() {
-  document.getElementById('ov-cards').innerHTML = '<div class="loading"><div class="spinner"></div> Caricamento...</div>';
+async function loadOverview() {
+  document.getElementById('ov-cards').innerHTML = '<div class="spin-wrap"><div class="spinner"></div>Caricamento...</div>';
   document.getElementById('ov-stats').innerHTML = '';
-  run('getOverviewData', data => { S.overview=data; renderOverview(); });
+  const data = await api('getOverview');
+  renderOverview(data);
 }
 
-function renderOverview() {
-  const data = S.overview;
+function renderOverview(data) {
   const anno = new Date().getFullYear();
-  const totEttari = data.reduce((s,c)=>s+(parseFloat(c.ettari)||0),0);
-  const totPiante = data.reduce((s,c)=>s+(parseInt(c.numPiante)||0),0);
-  const totCosti  = data.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0);
+  const tEtt = data.reduce((s,c)=>s+(parseFloat(c.ettari)||0),0);
+  const tPia = data.reduce((s,c)=>s+(parseInt(c.numPiante)||0),0);
+  const tCos = data.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0);
 
   document.getElementById('ov-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-lbl">Campi</div><div class="stat-val">${data.length}</div></div>
-    <div class="stat-card blue"><div class="stat-lbl">Ettari Totali</div><div class="stat-val">${totEttari.toFixed(1)}</div></div>
-    <div class="stat-card amber"><div class="stat-lbl">N. Piante</div><div class="stat-val">${totPiante||'-'}</div></div>
-    <div class="stat-card violet"><div class="stat-lbl">Costi ${anno}</div><div class="stat-val">${fe(totCosti)}</div></div>`;
+    <div class="sc"><div class="sc-lbl">Campi</div><div class="sc-val">${data.length}</div></div>
+    <div class="sc blue"><div class="sc-lbl">Ettari Totali</div><div class="sc-val">${tEtt.toFixed(1)}</div></div>
+    <div class="sc amber"><div class="sc-lbl">N. Piante</div><div class="sc-val">${tPia||'—'}</div></div>
+    <div class="sc violet"><div class="sc-lbl">Costi ${anno}</div><div class="sc-val">${fe(tCos)}</div></div>`;
 
-  if(!data.length) {
-    document.getElementById('ov-cards').innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="emoji">🫒</div><p>Nessun campo. Vai in <strong>Campi</strong> e aggiungine uno.</p></div></div>`;
+  if (!data.length) {
+    document.getElementById('ov-cards').innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-ic">🫒</div><p>Nessun campo. Vai in <strong>Campi</strong> e aggiungine uno.</p></div></div>`;
     return;
   }
 
-  document.getElementById('ov-cards').innerHTML = data.map(c => {
-    const dsPot  = c.ultimaPotatura    ? days(c.ultimaPotatura) : null;
-    const dsTrat = c.ultimoTrattamento ? days(c.ultimoTrattamento) : null;
-    const dsConc = c.ultimaConcimazione? days(c.ultimaConcimazione) : null;
-    return `
+  document.getElementById('ov-cards').innerHTML = data.map(c=>`
     <div class="card">
-      <div class="card-hd">
-        <div>
-          <div class="card-name">🫒 ${c.nome}</div>
-          <div class="card-sub">${[c.varieta,c.comune].filter(Boolean).join(' · ')||'—'}</div>
-        </div>
-      </div>
+      <div class="card-name">🫒 ${c.nome}</div>
+      <div class="card-sub">${[c.varieta,c.comune].filter(Boolean).join(' · ')||'—'}</div>
       <div class="metrics">
-        <div class="metric"><div class="m-lbl">Ettari</div><div class="m-val">${c.ettari||'—'}</div></div>
-        <div class="metric"><div class="m-lbl">N. Piante</div><div class="m-val">${c.numPiante||'—'}</div></div>
-        <div class="metric"><div class="m-lbl">Costi ${anno}</div><div class="m-val">${c.costiAnno>0?fe(c.costiAnno):'—'}</div></div>
-        <div class="metric"><div class="m-lbl">Ultimo Raccolto</div><div class="m-val">${c.ultimaRaccolta?c.ultimaRaccolta.kg+' kg ('+c.ultimaRaccolta.anno+')':'—'}</div></div>
+        <div class="metric"><div class="ml">Ettari</div><div class="mv">${c.ettari||'—'}</div></div>
+        <div class="metric"><div class="ml">N. Piante</div><div class="mv">${c.numPiante||'—'}</div></div>
+        <div class="metric"><div class="ml">Costi ${anno}</div><div class="mv">${c.costiAnno>0?fe(c.costiAnno):'—'}</div></div>
+        <div class="metric"><div class="ml">Ultimo Raccolto</div><div class="mv">${c.ultimaRaccolta?c.ultimaRaccolta.kg+' kg ('+c.ultimaRaccolta.anno+')':'—'}</div></div>
       </div>
       <div class="interventi">
-        ${irow('Potatura', c.ultimaPotatura, dsPot, 365)}
-        ${irow('Trattamento', c.ultimoTrattamento, dsTrat, 90)}
-        ${irow('Concimazione', c.ultimaConcimazione, dsConc, 180)}
+        ${ir('Potatura', c.ultimaPotatura, 365)}
+        ${ir('Trattamento', c.ultimoTrattamento, 90)}
+        ${ir('Concimazione', c.ultimaConcimazione, 180)}
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 
-function irow(label, data, d, soglia) {
-  if(!data) return `<div class="irow"><span class="ilbl">${label}</span><span class="idate muted">Mai registrata</span></div>`;
-  const cls = d>soglia?'old':d>soglia*0.8?'warn':'ok';
-  return `<div class="irow"><span class="ilbl">${label}</span><span class="idate ${cls}">${fd(data)} · ${d}gg fa</span></div>`;
+function ir(lbl, data, soglia) {
+  if (!data) return `<div class="irow"><span class="ilbl">${lbl}</span><span class="idate na">Mai registrata</span></div>`;
+  const d = Math.floor((new Date()-new Date(data))/864e5);
+  const cls = d>soglia?'old':d>soglia*.8?'warn':'ok';
+  return `<div class="irow"><span class="ilbl">${lbl}</span><span class="idate ${cls}">${fd(data)} · ${d}gg fa</span></div>`;
 }
 
 // ============================================================
 // UTILS
 // ============================================================
-function run(fn, cb, arg) {
-  const call = google.script.run.withSuccessHandler(cb).withFailureHandler(e=>toast('Errore: '+e.message));
-  arg !== undefined ? call[fn](arg) : call[fn]();
-}
-
 function updateSelects() {
-  ['l-campo','co-campo','r-campo','lav-f-campo','costi-f-campo','racc-f-campo'].forEach(id => {
+  ['l-campo','co-campo','r-campo','lf-campo','cf-campo','rf-campo'].forEach(id => {
     const el = document.getElementById(id);
-    if(!el) return;
-    const isFilter = id.includes('f-');
-    const cur = el.value;
-    el.innerHTML = isFilter ? '<option value="">Tutti i campi</option>' : '<option value="">Seleziona campo...</option>';
-    S.campi.forEach(c => { el.innerHTML += `<option value="${esc(c.nome)}">${c.nome}</option>`; });
+    if (!el) return;
+    const isF = id.includes('f-'), cur = el.value;
+    el.innerHTML = isF ? '<option value="">Tutti i campi</option>' : '<option value="">Seleziona campo...</option>';
+    S.campi.forEach(c => el.innerHTML += `<option value="${esc(c.nome)}">${c.nome}</option>`);
     el.value = cur;
   });
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(()=>t.classList.remove('show'), 3000);
-}
-
+function om(id) { document.getElementById(id).classList.add('open'); }
+function cm(id) { document.getElementById(id).classList.remove('open'); }
 function gv(id) { return document.getElementById(id).value; }
-function setV(map) { Object.entries(map).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v||''; }); }
+function sv(m) { Object.entries(m).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v??''; }); }
 function today() { return new Date().toISOString().split('T')[0]; }
-function days(d) { return Math.floor((new Date()-new Date(d))/(864e5)); }
 function esc(s) { return String(s).replace(/"/g,'&quot;'); }
 function fd(d) {
-  if(!d) return '—';
+  if (!d) return '—';
   const dt = new Date(d);
-  if(isNaN(dt)) return d;
-  return dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return isNaN(dt) ? d : dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
 }
-function fe(n) {
-  return '€\u00a0'+parseFloat(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function emptyRow(cols, emoji, msg) {
-  return `<tr><td colspan="${cols}"><div class="empty"><div class="emoji">${emoji}</div><p>${msg}</p></div></td></tr>`;
+function fe(n) { return '€\u00a0'+parseFloat(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function er(cols, ic, msg) { return `<tr><td colspan="${cols}"><div class="empty"><div class="empty-ic">${ic}</div><p>${msg}</p></div></td></tr>`; }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 3000);
 }
 </script>
 </body>
