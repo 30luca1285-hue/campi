@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gestione Oliveto v03</title>
+<title>Gestione Oliveto v04</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -161,6 +161,12 @@ input[readonly]{background:var(--bg)}
 .mic-btn.recording{background:#fee2e2;border-color:#ef4444;color:#dc2626;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
+/* TAB BAR (dentro Campi) */
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);padding:0 20px}
+.tab{padding:11px 16px;font-size:.83rem;font-weight:600;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tab:hover:not(.active){color:var(--text)}
+
 /* HAMBURGER BUTTON (mobile only) */
 .hamburger-btn{display:none;position:fixed;top:11px;left:11px;z-index:61;background:var(--green-dark);color:#fff;border:none;border-radius:8px;width:38px;height:38px;font-size:1.15rem;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 /* NAV OVERLAY (mobile) */
@@ -227,7 +233,7 @@ input[readonly]{background:var(--bg)}
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v03</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v04</div>
     </div>
   </div>
   <div class="nav">
@@ -235,9 +241,8 @@ input[readonly]{background:var(--bg)}
     <div class="nav-item" data-view="campi"><span class="nav-ic">🗺️</span>Campi</div>
     <div class="nav-item" data-view="lavorazioni"><span class="nav-ic">🌿</span>Lavorazioni</div>
     <div class="nav-item" data-view="costi"><span class="nav-ic">💰</span>Costi</div>
-    <div class="nav-item" data-view="entrate"><span class="nav-ic">💶</span>PAC / Biologico</div>
-    <div class="nav-item" data-view="diari"><span class="nav-ic">📷</span>Diari Campo</div>
     <div class="nav-item" data-view="raccolta"><span class="nav-ic">🫙</span>Raccolta</div>
+    <div class="nav-item" data-view="entrate"><span class="nav-ic">💶</span>PAC / Biologico</div>
   </div>
 </nav>
 
@@ -253,13 +258,33 @@ input[readonly]{background:var(--bg)}
   </div>
 </div>
 
-<!-- CAMPI -->
+<!-- CAMPI + DIARI (tab) -->
 <div id="view-campi" class="view">
-  <div class="ph"><h2>Campi</h2><button class="btn btn-p" onclick="openCampoModal()">+ Nuovo Campo</button></div>
-  <div class="pb"><div class="tw">
-    <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Varietà</th><th>Anno</th><th>Comune</th><th>Note</th><th></th></tr></thead>
-    <tbody id="campi-tb"><tr><td colspan="8"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
-  </div></div>
+  <div class="ph">
+    <h2>Campi</h2>
+    <div style="display:flex;gap:8px">
+      <button id="btn-nuovo-campo" class="btn btn-p" onclick="openCampoModal()">+ Nuovo Campo</button>
+      <button id="btn-nuovo-appunto" class="btn btn-p" style="display:none" onclick="openCapture()">📷 Appunto</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active" id="tab-campi" onclick="switchCampiTab('campi')">🗺️ Lista Campi</div>
+    <div class="tab" id="tab-diari" onclick="switchCampiTab('diari')">📷 Diari</div>
+  </div>
+  <div class="pb">
+    <div id="campi-section">
+      <div class="tw">
+        <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Varietà</th><th>Anno</th><th>Comune</th><th>Note</th><th></th></tr></thead>
+        <tbody id="campi-tb"><tr><td colspan="8"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
+      </div>
+    </div>
+    <div id="diari-section" style="display:none">
+      <div style="margin-bottom:16px">
+        <select id="apf-campo" onchange="renderAppunti()" style="max-width:220px"><option value="">Tutti i campi</option></select>
+      </div>
+      <div class="ap-grid" id="ap-grid"></div>
+    </div>
+  </div>
 </div>
 
 <!-- LAVORAZIONI -->
@@ -313,17 +338,6 @@ input[readonly]{background:var(--bg)}
     <table><thead><tr><th>Anno</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Importo</th><th>Note</th><th></th></tr></thead>
     <tbody id="entrate-tb"></tbody></table>
   </div></div>
-</div>
-
-<!-- DIARI CAMPO -->
-<div id="view-diari" class="view">
-  <div class="ph"><h2>Diari Campo</h2><button class="btn btn-p" onclick="openCapture()">📷 Nuovo Appunto</button></div>
-  <div class="pb">
-    <div style="margin-bottom:16px">
-      <select id="apf-campo" onchange="renderAppunti()" style="max-width:220px"><option value="">Tutti i campi</option></select>
-    </div>
-    <div class="ap-grid" id="ap-grid"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></div>
-  </div>
 </div>
 
 <!-- RACCOLTA -->
@@ -472,7 +486,7 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION = 'v03';
+const VERSION = 'v04';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
 
@@ -507,7 +521,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
-      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, entrate:loadEntrate, diari:loadAppunti, raccolta:loadRacc})[el.dataset.view]?.();
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate})[el.dataset.view]?.();
       closeSidebar();
     });
   });
@@ -517,8 +531,22 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================
-// CAMPI
+// CAMPI + TAB DIARI
 // ============================================================
+function switchCampiTab(tab) {
+  const isDiari = tab === 'diari';
+  document.getElementById('campi-section').style.display = isDiari ? 'none' : '';
+  document.getElementById('diari-section').style.display = isDiari ? '' : 'none';
+  document.getElementById('tab-campi').classList.toggle('active', !isDiari);
+  document.getElementById('tab-diari').classList.toggle('active', isDiari);
+  document.getElementById('btn-nuovo-campo').style.display = isDiari ? 'none' : '';
+  document.getElementById('btn-nuovo-appunto').style.display = isDiari ? '' : 'none';
+  if (isDiari) {
+    if (!S.appunti.length) loadAppunti();
+    else renderAppunti();
+  }
+}
+
 async function loadCampi() {
   S.campi = await api('getCampi');
   renderCampi();
