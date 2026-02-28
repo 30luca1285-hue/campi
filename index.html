@@ -114,6 +114,30 @@ input[readonly]{background:var(--bg)}
 .empty p{margin-top:8px;font-size:.88rem}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--green-dark);color:#fff;padding:10px 16px;border-radius:8px;font-size:.84rem;font-weight:500;z-index:200;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
+
+/* OVERVIEW CHARTS */
+.ov-charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.chart-box{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.chart-box h4{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.pie-wrap{display:flex;gap:18px;align-items:center}
+.pie-wrap canvas{flex-shrink:0}
+.pie-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.pie-leg-it{display:flex;align-items:center;gap:6px;font-size:.73rem}
+.pie-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.pie-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.pie-pct{font-weight:700;width:30px;text-align:right}
+.pie-eur{color:var(--muted);width:68px;text-align:right}
+.harv-box{display:flex;flex-direction:column;gap:12px}
+.harv-totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.harv-stat{background:var(--bg);border-radius:8px;padding:10px 13px}
+.harv-lbl{font-size:.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.harv-val{font-size:1.05rem;font-weight:700;margin-top:3px}
+.harv-mini{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.harv-row{display:flex;align-items:center;gap:8px;font-size:.74rem}
+.harv-campo{width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.harv-bar-wrap{flex:1;background:var(--bg);border-radius:20px;height:6px;overflow:hidden}
+.harv-bar{height:100%;border-radius:20px;transition:width .5s ease}
+.harv-kg{width:55px;text-align:right;font-weight:600}
 </style>
 </head>
 <body>
@@ -130,6 +154,7 @@ input[readonly]{background:var(--bg)}
     <div class="nav-item" data-view="campi"><span class="nav-ic">🗺️</span>Campi</div>
     <div class="nav-item" data-view="lavorazioni"><span class="nav-ic">🌿</span>Lavorazioni</div>
     <div class="nav-item" data-view="costi"><span class="nav-ic">💰</span>Costi</div>
+    <div class="nav-item" data-view="entrate"><span class="nav-ic">💶</span>PAC / Biologico</div>
     <div class="nav-item" data-view="raccolta"><span class="nav-ic">🫙</span>Raccolta</div>
   </div>
 </nav>
@@ -141,6 +166,7 @@ input[readonly]{background:var(--bg)}
   <div class="ph"><h2>Overview</h2><button class="btn btn-s" onclick="loadOverview()">↺ Aggiorna</button></div>
   <div class="pb">
     <div class="stat-bar" id="ov-stats"></div>
+    <div id="ov-charts"></div>
     <div class="cards-grid" id="ov-cards"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></div>
   </div>
 </div>
@@ -187,6 +213,23 @@ input[readonly]{background:var(--bg)}
     </div>
     <table><thead><tr><th>Data</th><th>Campo</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th>Costo Unit.</th><th>Totale</th><th>Fornitore</th><th></th></tr></thead>
     <tbody id="costi-tb"></tbody></table>
+  </div></div>
+</div>
+
+<!-- ENTRATE PAC / BIOLOGICO -->
+<div id="view-entrate" class="view">
+  <div class="ph"><h2>PAC / Biologico</h2><button class="btn btn-p" onclick="openEntrataModal()">+ Nuova Entrata</button></div>
+  <div class="pb"><div class="tw">
+    <div class="tb-bar">
+      <div class="fb">
+        <select id="ef-anno" onchange="renderEntrate()"><option value="">Tutti gli anni</option></select>
+        <select id="ef-tipo" onchange="renderEntrate()"><option value="">Tutti i tipi</option>
+          <option>PAC</option><option>Biologico</option><option>Altro</option></select>
+      </div>
+      <span class="tot-lbl" id="entrate-tot"></span>
+    </div>
+    <table><thead><tr><th>Anno</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Importo</th><th>Note</th><th></th></tr></thead>
+    <tbody id="entrate-tb"></tbody></table>
   </div></div>
 </div>
 
@@ -290,6 +333,25 @@ input[readonly]{background:var(--bg)}
   </div>
 </div>
 
+<!-- MODAL ENTRATA -->
+<div id="m-entrata" class="ov">
+  <div class="modal">
+    <div class="mh"><h3 id="me-title">Nuova Entrata</h3><button class="btn-ic" onclick="cm('m-entrata')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="e-id">
+      <div class="fr"><div class="fg"><label>Anno *</label><input id="e-anno" type="number" placeholder="es. 2025"></div>
+      <div class="fg"><label>Campo</label><select id="e-campo"></select></div></div>
+      <div class="fg"><label>Tipo *</label>
+        <select id="e-tipo"><option value="">Seleziona...</option>
+          <option>PAC</option><option>Biologico</option><option>Altro</option></select></div>
+      <div class="fg"><label>Descrizione</label><input id="e-desc" placeholder="es. Contributo PAC 2025, Premio bio..."></div>
+      <div class="fg"><label>Importo €</label><input id="e-importo" type="number" step="0.01" placeholder="0.00"></div>
+      <div class="fg"><label>Note</label><textarea id="e-note" rows="2" placeholder="Note..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-entrata')">Annulla</button><button class="btn btn-p" onclick="saveEntrata()">Salva</button></div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
@@ -318,7 +380,7 @@ async function api(action, params = {}) {
 // ============================================================
 // STATE
 // ============================================================
-const S = { campi:[], lav:[], costi:[], racc:[] };
+const S = { campi:[], lav:[], costi:[], racc:[], entrate:[] };
 
 // ============================================================
 // INIT & NAV
@@ -330,7 +392,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
-      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc})[el.dataset.view]?.();
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, entrate:loadEntrate, raccolta:loadRacc})[el.dataset.view]?.();
     });
   });
   document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
@@ -530,31 +592,82 @@ async function delRacc(id) {
 // ============================================================
 // OVERVIEW
 // ============================================================
+const CAT_COLORS = {
+  'Prodotti Fitosanitari':'#ef4444','Concimi / Fertilizzanti':'#22c55e',
+  'Carburante':'#f97316','Manodopera':'#3b82f6',
+  'Affitto':'#8b5cf6','Macchinari / Attrezzature':'#06b6d4','Altro':'#94a3b8'
+};
+const CAMPO_COLORS = ['#2d6a4f','#52b788','#95d5b2','#40916c','#74c69d','#1b4332','#b7e4c7'];
+
 async function loadOverview() {
   document.getElementById('ov-cards').innerHTML = '<div class="spin-wrap"><div class="spinner"></div>Caricamento...</div>';
   document.getElementById('ov-stats').innerHTML = '';
+  document.getElementById('ov-charts').innerHTML = '';
   const data = await api('getOverview');
   renderOverview(data);
 }
 
 function renderOverview(data) {
   const anno = new Date().getFullYear();
-  const tEtt = data.reduce((s,c)=>s+(parseFloat(c.ettari)||0),0);
-  const tPia = data.reduce((s,c)=>s+(parseInt(c.numPiante)||0),0);
-  const tCos = data.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0);
+  const campi = data.campi || [];
+  const tEtt = campi.reduce((s,c)=>s+(parseFloat(c.ettari)||0),0);
+  const tCos = campi.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0);
+  const tEnt = data.entrateAnno || 0;
+  const rr = data.raccoltaRiepilogo;
+  const costiCat = data.costiPerCategoria || [];
 
+  // Stat bar
   document.getElementById('ov-stats').innerHTML = `
-    <div class="sc"><div class="sc-lbl">Campi</div><div class="sc-val">${data.length}</div></div>
+    <div class="sc"><div class="sc-lbl">Campi</div><div class="sc-val">${campi.length}</div></div>
     <div class="sc blue"><div class="sc-lbl">Ettari Totali</div><div class="sc-val">${tEtt.toFixed(1)}</div></div>
-    <div class="sc amber"><div class="sc-lbl">N. Piante</div><div class="sc-val">${tPia||'—'}</div></div>
-    <div class="sc violet"><div class="sc-lbl">Costi ${anno}</div><div class="sc-val">${fe(tCos)}</div></div>`;
+    <div class="sc amber"><div class="sc-lbl">Costi ${anno}</div><div class="sc-val">${fe(tCos)}</div></div>
+    <div class="sc violet"><div class="sc-lbl">PAC / Bio ${anno}</div><div class="sc-val">${fe(tEnt)}</div></div>`;
 
-  if (!data.length) {
+  // Charts section
+  const harvHtml = rr ? `
+    <div class="harv-box">
+      <div class="harv-totals">
+        <div class="harv-stat"><div class="harv-lbl">Totale KG Olive</div><div class="harv-val">${rr.totKg.toLocaleString('it-IT')} kg</div></div>
+        <div class="harv-stat"><div class="harv-lbl">Stima Olio (resa 15%)</div><div class="harv-val">~ ${rr.stimaOlio.toLocaleString('it-IT')} L</div></div>
+      </div>
+      <div class="harv-mini">
+        ${rr.perCampo.sort((a,b)=>b.kg-a.kg).map((r,i)=>`
+          <div class="harv-row">
+            <span class="harv-campo">${r.campo}</span>
+            <div class="harv-bar-wrap"><div class="harv-bar" style="width:${rr.totKg?Math.round(r.kg/rr.totKg*100):0}%;background:${CAMPO_COLORS[i%CAMPO_COLORS.length]}"></div></div>
+            <span class="harv-kg">${r.kg} kg</span>
+          </div>`).join('')}
+      </div>
+    </div>` : `<div class="empty" style="padding:24px 0"><div class="empty-ic">🫙</div><p>Nessuna raccolta registrata</p></div>`;
+
+  document.getElementById('ov-charts').innerHTML = `
+    <div class="ov-charts">
+      <div class="chart-box">
+        <h4>Costi per categoria — ${anno}</h4>
+        <div class="pie-wrap">
+          <canvas id="pie-costi" width="130" height="130"></canvas>
+          <div class="pie-legend" id="pie-costi-leg"></div>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h4>Ultima raccolta${rr?' — '+rr.anno:''}</h4>
+        ${harvHtml}
+      </div>
+    </div>`;
+
+  requestAnimationFrame(() => {
+    const pieItems = costiCat.map(c=>({ label:c.categoria, value:c.totale, color:CAT_COLORS[c.categoria]||'#94a3b8' }));
+    const totPie = pieItems.reduce((s,i)=>s+i.value,0);
+    drawPie('pie-costi', pieItems);
+    pieLegend('pie-costi-leg', pieItems, totPie);
+  });
+
+  // Campo cards
+  if (!campi.length) {
     document.getElementById('ov-cards').innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-ic">🫒</div><p>Nessun campo. Vai in <strong>Campi</strong> e aggiungine uno.</p></div></div>`;
     return;
   }
-
-  document.getElementById('ov-cards').innerHTML = data.map(c=>`
+  document.getElementById('ov-cards').innerHTML = campi.map(c=>`
     <div class="card">
       <div class="card-name">🫒 ${c.nome}</div>
       <div class="card-sub">${[c.varieta,c.comune].filter(Boolean).join(' · ')||'—'}</div>
@@ -579,11 +692,101 @@ function ir(lbl, data, soglia) {
   return `<div class="irow"><span class="ilbl">${lbl}</span><span class="idate ${cls}">${fd(data)} · ${d}gg fa</span></div>`;
 }
 
+function drawPie(canvasId, items) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2, r = Math.min(W,H)/2 - 3;
+  ctx.clearRect(0,0,W,H);
+  const total = items.reduce((s,it)=>s+it.value,0);
+  if (!total) {
+    ctx.fillStyle='#e9ede9'; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#94a3b8'; ctx.font='11px Inter,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('Nessun dato',cx,cy); return;
+  }
+  let angle = -Math.PI/2;
+  items.forEach(it => {
+    const slice = (it.value/total)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,angle,angle+slice); ctx.closePath();
+    ctx.fillStyle=it.color; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    angle += slice;
+  });
+  // Donut hole
+  ctx.beginPath(); ctx.arc(cx,cy,r*0.42,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+}
+
+function pieLegend(containerId, items, total) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = items.filter(it=>it.value>0).map(it=>`
+    <div class="pie-leg-it">
+      <span class="pie-dot" style="background:${it.color}"></span>
+      <span class="pie-name">${it.label}</span>
+      <span class="pie-pct">${Math.round(it.value/total*100)}%</span>
+      <span class="pie-eur">${fe(it.value)}</span>
+    </div>`).join('');
+}
+
+// ============================================================
+// ENTRATE PAC / BIOLOGICO
+// ============================================================
+async function loadEntrate() {
+  S.entrate = await api('getEntrate');
+  renderEntrate();
+  updateAnniSelect();
+}
+
+function renderEntrate() {
+  const tb = document.getElementById('entrate-tb');
+  const fa = gv('ef-anno'), ft = gv('ef-tipo');
+  let d = S.entrate.filter(e=>(!fa||+e.anno===+fa)&&(!ft||e.tipo===ft)).sort((a,b)=>b.anno-a.anno);
+  const tot = d.reduce((s,e)=>s+(parseFloat(e.importo)||0),0);
+  document.getElementById('entrate-tot').textContent = d.length ? 'Totale: '+fe(tot) : '';
+  if (!d.length) { tb.innerHTML = er(7,'💶','Nessuna entrata registrata.'); return; }
+  tb.innerHTML = d.map(e=>`<tr>
+    <td><strong>${e.anno}</strong></td><td>${e.campo||'—'}</td>
+    <td><span class="badge ${e.tipo==='PAC'?'bb':e.tipo==='Biologico'?'bg':'bgr'}">${e.tipo}</span></td>
+    <td>${e.descrizione||'—'}</td>
+    <td><strong>${e.importo?fe(e.importo):'—'}</strong></td>
+    <td style="max-width:140px">${e.note||'—'}</td>
+    <td><div class="act"><button class="btn-ic" onclick="editEntrata(${e.id})">✏️</button><button class="btn-ic" onclick="delEntrata(${e.id})">🗑️</button></div></td></tr>`).join('');
+}
+
+function updateAnniSelect() {
+  const el = document.getElementById('ef-anno');
+  if (!el) return;
+  const anni = [...new Set(S.entrate.map(e=>e.anno))].sort((a,b)=>b-a);
+  const cur = el.value;
+  el.innerHTML = '<option value="">Tutti gli anni</option>' + anni.map(a=>`<option value="${a}">${a}</option>`).join('');
+  el.value = cur;
+}
+
+function openEntrataModal(e) {
+  sv({'e-id':e?.id||'','e-anno':e?.anno||new Date().getFullYear(),'e-campo':e?.campo||'',
+    'e-tipo':e?.tipo||'','e-desc':e?.descrizione||'','e-importo':e?.importo||'','e-note':e?.note||''});
+  document.getElementById('me-title').textContent = e ? 'Modifica Entrata' : 'Nuova Entrata';
+  om('m-entrata');
+}
+function editEntrata(id) { openEntrataModal(S.entrate.find(e=>e.id===id)); }
+
+async function saveEntrata() {
+  if (!gv('e-anno')||!gv('e-tipo')) { toast('Compila i campi obbligatori'); return; }
+  await api('saveEntrata', { data: { id:gv('e-id')?+gv('e-id'):null, anno:gv('e-anno'), campo:gv('e-campo'),
+    tipo:gv('e-tipo'), descrizione:gv('e-desc'), importo:gv('e-importo'), note:gv('e-note') }});
+  cm('m-entrata'); loadEntrate(); toast('Entrata salvata!');
+}
+
+async function delEntrata(id) {
+  if (!confirm('Eliminare questa entrata?')) return;
+  await api('deleteEntrata', { rowId: id });
+  loadEntrate(); toast('Eliminata');
+}
+
 // ============================================================
 // UTILS
 // ============================================================
 function updateSelects() {
-  ['l-campo','co-campo','r-campo','lf-campo','cf-campo','rf-campo'].forEach(id => {
+  ['l-campo','co-campo','r-campo','e-campo','lf-campo','cf-campo','rf-campo'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const isF = id.includes('f-'), cur = el.value;

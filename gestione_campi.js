@@ -7,7 +7,8 @@ const SHEETS = {
   CAMPI: 'Campi',
   LAVORAZIONI: 'Lavorazioni',
   COSTI: 'Costi',
-  RACCOLTA: 'Raccolta'
+  RACCOLTA: 'Raccolta',
+  ENTRATE: 'PAC-Biologico'
 };
 
 const SECRET_TOKEN = 'oliveto_gall_2025';
@@ -43,6 +44,9 @@ function doGet(e) {
       case 'deleteCosto':      result = deleteCosto(+e.parameter.rowId); break;
       case 'saveRaccolta':     result = saveRaccolta(JSON.parse(e.parameter.data)); break;
       case 'deleteRaccolta':   result = deleteRaccolta(+e.parameter.rowId); break;
+      case 'getEntrate':       result = getEntrate(); break;
+      case 'saveEntrata':      result = saveEntrata(JSON.parse(e.parameter.data)); break;
+      case 'deleteEntrata':    result = deleteEntrata(+e.parameter.rowId); break;
       case 'setup':            result = setupSheets(); break;
       default: result = { error: 'Unknown action: ' + action };
     }
@@ -65,7 +69,8 @@ function setupSheets() {
     { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note'],                                                    color:'#2E7D32' },
     { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                  color:'#1565C0' },
     { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note'],                                      color:'#6A1B9A' },
-    { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                            color:'#E65100' }
+    { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                            color:'#E65100' },
+    { name: SHEETS.ENTRATE,    headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                             color:'#0D47A1' }
   ];
   config.forEach(c => {
     let s = ss.getSheetByName(c.name);
@@ -204,13 +209,39 @@ function saveRaccolta(r) {
 function deleteRaccolta(rowId) { getSheet(SHEETS.RACCOLTA).deleteRow(rowId); return { success: true }; }
 
 // ============================================================
+// ENTRATE PAC / BIOLOGICO
+// ============================================================
+
+function getEntrate() {
+  return sheetRows(SHEETS.ENTRATE, 6)
+    .filter(r => r[0] !== '')
+    .map((r, i) => ({ id: i+2, anno: r[0], campo: r[1], tipo: r[2], descrizione: r[3], importo: r[4], note: r[5] }));
+}
+
+function saveEntrata(e) {
+  const s = getSheet(SHEETS.ENTRATE);
+  const row = [e.anno || new Date().getFullYear(), e.campo || '', e.tipo || '', e.descrizione || '', parseFloat(e.importo) || 0, e.note || ''];
+  if (e.id) { s.getRange(e.id, 1, 1, row.length).setValues([row]); }
+  else {
+    const nr = s.getLastRow() + 1;
+    s.getRange(nr, 1, 1, row.length).setValues([row]);
+    s.getRange(nr, 5).setNumberFormat('€#,##0.00');
+  }
+  return { success: true };
+}
+
+function deleteEntrata(rowId) { getSheet(SHEETS.ENTRATE).deleteRow(rowId); return { success: true }; }
+
+// ============================================================
 // OVERVIEW
 // ============================================================
 
 function getOverviewData() {
-  const campi = getCampi(), lav = getLavorazioni(), costi = getCosti(), racc = getRaccolte();
+  const campi = getCampi(), lav = getLavorazioni(), costi = getCosti(), racc = getRaccolte(), entrate = getEntrate();
   const anno = new Date().getFullYear();
-  return campi.map(c => {
+
+  // Dati per campo
+  const campiData = campi.map(c => {
     const lc = lav.filter(l => l.campo === c.nome);
     const costiAnno = costi.filter(x => x.campo===c.nome && x.data && new Date(x.data).getFullYear()===anno)
                           .reduce((s,x)=>s+(parseFloat(x.totale)||0), 0);
@@ -223,6 +254,36 @@ function getOverviewData() {
       ultimaRaccolta: ur ? { anno:ur.anno, kg:ur.kg } : null
     };
   });
+
+  // Costi per categoria (anno corrente, tutti i campi)
+  const catMap = {};
+  costi.filter(x => x.data && new Date(x.data).getFullYear()===anno).forEach(x => {
+    const cat = x.categoria || 'Altro';
+    catMap[cat] = (catMap[cat] || 0) + (parseFloat(x.totale) || 0);
+  });
+  const costiPerCategoria = Object.entries(catMap)
+    .map(([categoria, totale]) => ({ categoria, totale }))
+    .sort((a,b) => b.totale - a.totale);
+
+  // Entrate anno corrente
+  const entrateAnno = entrate.filter(e => +e.anno === anno).reduce((s,e) => s+(parseFloat(e.importo)||0), 0);
+
+  // Raccolta ultima stagione (anno più recente con dati)
+  const anniRacc = racc.map(r => +r.anno).filter(Boolean);
+  let raccoltaRiepilogo = null;
+  if (anniRacc.length) {
+    const ultimoAnno = Math.max(...anniRacc);
+    const raccUltime = racc.filter(r => +r.anno === ultimoAnno);
+    const totKg = raccUltime.reduce((s,r) => s+(parseFloat(r.kg)||0), 0);
+    raccoltaRiepilogo = {
+      anno: ultimoAnno,
+      totKg,
+      stimaOlio: Math.round(totKg * 0.15),
+      perCampo: raccUltime.map(r => ({ campo: r.campo, kg: parseFloat(r.kg)||0 }))
+    };
+  }
+
+  return { campi: campiData, costiPerCategoria, entrateAnno, raccoltaRiepilogo };
 }
 
 function ultimaData(lav, tipo) {
