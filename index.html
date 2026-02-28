@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestione Oliveto</title>
+<title>Gestione Oliveto v01</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -147,7 +147,10 @@ input[readonly]{background:var(--bg)}
 <nav class="sidebar">
   <div class="logo">
     <div class="logo-title">Gestione Oliveto</div>
-    <div class="logo-sub">Pannello di controllo</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
+      <div class="logo-sub">Pannello di controllo</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v01</div>
+    </div>
   </div>
   <div class="nav">
     <div class="nav-item active" data-view="overview"><span class="nav-ic">📊</span>Overview</div>
@@ -358,6 +361,7 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
+const VERSION = 'v01';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
 
