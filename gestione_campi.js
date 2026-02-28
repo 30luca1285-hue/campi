@@ -8,7 +8,8 @@ const SHEETS = {
   LAVORAZIONI: 'Lavorazioni',
   COSTI: 'Costi',
   RACCOLTA: 'Raccolta',
-  ENTRATE: 'PAC-Biologico'
+  ENTRATE: 'PAC-Biologico',
+  APPUNTI: 'Appunti'
 };
 
 const SECRET_TOKEN = 'oliveto_gall_2025';
@@ -47,6 +48,8 @@ function doGet(e) {
       case 'getEntrate':       result = getEntrate(); break;
       case 'saveEntrata':      result = saveEntrata(JSON.parse(e.parameter.data)); break;
       case 'deleteEntrata':    result = deleteEntrata(+e.parameter.rowId); break;
+      case 'getAppunti':       result = getAppunti(); break;
+      case 'deleteAppunto':    result = deleteAppunto(+e.parameter.rowId); break;
       case 'setup':            result = setupSheets(); break;
       default: result = { error: 'Unknown action: ' + action };
     }
@@ -56,6 +59,31 @@ function doGet(e) {
     output.setContent(JSON.stringify({ error: err.message }));
   }
 
+  return output;
+}
+
+// ============================================================
+// ENTRY POINT — API JSON via POST (upload foto + save appunto)
+// ============================================================
+
+function doPost(e) {
+  const output = ContentService.createTextOutput();
+  output.setMimeType(ContentService.MimeType.JSON);
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    if (payload.token !== SECRET_TOKEN) {
+      output.setContent(JSON.stringify({ error: 'Unauthorized' }));
+      return output;
+    }
+    let result;
+    switch (payload.action) {
+      case 'saveAppunto': result = saveAppunto(payload.data); break;
+      default: result = { error: 'Unknown action: ' + payload.action };
+    }
+    output.setContent(JSON.stringify(result));
+  } catch (err) {
+    output.setContent(JSON.stringify({ error: err.message }));
+  }
   return output;
 }
 
@@ -70,7 +98,8 @@ function setupSheets() {
     { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                  color:'#1565C0' },
     { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note'],                                      color:'#6A1B9A' },
     { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                            color:'#E65100' },
-    { name: SHEETS.ENTRATE,    headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                             color:'#0D47A1' }
+    { name: SHEETS.ENTRATE,    headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                             color:'#0D47A1' },
+    { name: SHEETS.APPUNTI,    headers: ['Data / Ora','Campo','Testo / Appunto','Foto URL','Latitudine','Longitudine'],                                                                       color:'#37474F' }
   ];
   config.forEach(c => {
     let s = ss.getSheetByName(c.name);
@@ -108,6 +137,12 @@ function toDate(s) {
   if (!s) return '';
   const d = new Date(s);
   return isNaN(d) ? '' : d;
+}
+
+function fmtDateTime(v) {
+  if (!v) return '';
+  const d = v instanceof Date ? v : new Date(v);
+  return isNaN(d) ? '' : Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
 }
 
 // ============================================================
@@ -231,6 +266,44 @@ function saveEntrata(e) {
 }
 
 function deleteEntrata(rowId) { getSheet(SHEETS.ENTRATE).deleteRow(rowId); return { success: true }; }
+
+// ============================================================
+// APPUNTI CAMPO (foto + voce + GPS)
+// ============================================================
+
+function getAppunti() {
+  return sheetRows(SHEETS.APPUNTI, 6)
+    .filter(r => r[0] !== '')
+    .map((r, i) => ({ id: i+2, data: fmtDateTime(r[0]), campo: r[1], testo: r[2], fotoUrl: r[3], lat: r[4], lon: r[5] }));
+}
+
+function saveAppunto(data) {
+  const s = getSheet(SHEETS.APPUNTI);
+  let fotoUrl = '';
+  if (data.foto) {
+    const ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+    fotoUrl = uploadFotoToDrive(data.foto, 'foto_' + ts + '.jpg');
+  }
+  const row = [new Date(), data.campo || '', data.testo || '', fotoUrl, data.lat || '', data.lon || ''];
+  const nr = s.getLastRow() + 1;
+  s.getRange(nr, 1, 1, row.length).setValues([row]);
+  s.getRange(nr, 1).setNumberFormat('dd/mm/yyyy hh:mm');
+  return { success: true };
+}
+
+function uploadFotoToDrive(base64Data, filename) {
+  const base64 = base64Data.split(',')[1];
+  const bytes = Utilities.base64Decode(base64);
+  const blob = Utilities.newBlob(bytes, 'image/jpeg', filename);
+  const folderName = 'Appunti Oliveto';
+  const iter = DriveApp.getFoldersByName(folderName);
+  const folder = iter.hasNext() ? iter.next() : DriveApp.createFolder(folderName);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+}
+
+function deleteAppunto(rowId) { getSheet(SHEETS.APPUNTI).deleteRow(rowId); return { success: true }; }
 
 // ============================================================
 // OVERVIEW

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestione Oliveto v01</title>
+<title>Gestione Oliveto v02</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -138,6 +138,28 @@ input[readonly]{background:var(--bg)}
 .harv-bar-wrap{flex:1;background:var(--bg);border-radius:20px;height:6px;overflow:hidden}
 .harv-bar{height:100%;border-radius:20px;transition:width .5s ease}
 .harv-kg{width:55px;text-align:right;font-weight:600}
+
+/* APPUNTI CAMPO */
+.ap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.ap-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+.ap-photo{width:100%;height:190px;object-fit:cover;display:block;background:var(--bg)}
+.ap-photo-ph{height:100px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#ccc}
+.ap-body{padding:13px}
+.ap-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.ap-campo{font-size:.85rem;font-weight:700}
+.ap-date{font-size:.7rem;color:var(--muted)}
+.ap-text{font-size:.82rem;line-height:1.55;margin-bottom:9px;color:var(--text);white-space:pre-wrap}
+.ap-gps{display:block;font-size:.7rem;color:#3b82f6;margin-bottom:8px}
+.ap-foot{display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:8px}
+/* CAPTURE MODAL */
+.cap-photo-area{border:2px dashed var(--border);border-radius:10px;overflow:hidden;cursor:pointer;min-height:110px;display:flex;align-items:center;justify-content:center;background:var(--bg);margin-bottom:8px}
+.cap-photo-area img{width:100%;max-height:220px;object-fit:cover;display:block}
+.cap-photo-ph{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);padding:22px;pointer-events:none}
+.cap-photo-ph span{font-size:2.2rem}.cap-photo-ph p{font-size:.78rem}
+.cap-gps-row{font-size:.74rem;margin-bottom:12px;min-height:18px}
+.mic-btn{width:100%;padding:13px;border:1px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-size:.84rem;font-weight:600;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-bottom:10px}
+.mic-btn.recording{background:#fee2e2;border-color:#ef4444;color:#dc2626;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 </style>
 </head>
 <body>
@@ -149,7 +171,7 @@ input[readonly]{background:var(--bg)}
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v01</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v02</div>
     </div>
   </div>
   <div class="nav">
@@ -158,6 +180,7 @@ input[readonly]{background:var(--bg)}
     <div class="nav-item" data-view="lavorazioni"><span class="nav-ic">🌿</span>Lavorazioni</div>
     <div class="nav-item" data-view="costi"><span class="nav-ic">💰</span>Costi</div>
     <div class="nav-item" data-view="entrate"><span class="nav-ic">💶</span>PAC / Biologico</div>
+    <div class="nav-item" data-view="diari"><span class="nav-ic">📷</span>Diari Campo</div>
     <div class="nav-item" data-view="raccolta"><span class="nav-ic">🫙</span>Raccolta</div>
   </div>
 </nav>
@@ -234,6 +257,17 @@ input[readonly]{background:var(--bg)}
     <table><thead><tr><th>Anno</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Importo</th><th>Note</th><th></th></tr></thead>
     <tbody id="entrate-tb"></tbody></table>
   </div></div>
+</div>
+
+<!-- DIARI CAMPO -->
+<div id="view-diari" class="view">
+  <div class="ph"><h2>Diari Campo</h2><button class="btn btn-p" onclick="openCapture()">📷 Nuovo Appunto</button></div>
+  <div class="pb">
+    <div style="margin-bottom:16px">
+      <select id="apf-campo" onchange="renderAppunti()" style="max-width:220px"><option value="">Tutti i campi</option></select>
+    </div>
+    <div class="ap-grid" id="ap-grid"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></div>
+  </div>
 </div>
 
 <!-- RACCOLTA -->
@@ -336,6 +370,27 @@ input[readonly]{background:var(--bg)}
   </div>
 </div>
 
+<!-- MODAL APPUNTO CAMPO -->
+<div id="m-appunto" class="ov">
+  <div class="modal">
+    <div class="mh"><h3>Nuovo Appunto</h3><button class="btn-ic" onclick="closeCapture()">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label>Campo *</label><select id="ap-campo"><option value="">Seleziona campo...</option></select></div>
+      <label style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block">Foto</label>
+      <div class="cap-photo-area" onclick="document.getElementById('ap-file').click()">
+        <img id="ap-photo-preview" style="display:none" alt="anteprima">
+        <div id="ap-photo-placeholder" class="cap-photo-ph"><span>📷</span><p>Tocca per scattare / scegliere foto</p></div>
+      </div>
+      <input type="file" id="ap-file" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(this)">
+      <div class="cap-gps-row" id="ap-gps-info" style="color:var(--muted)">📍 Acquisendo posizione...</div>
+      <label style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block">Voce → Testo</label>
+      <button type="button" class="mic-btn" id="mic-btn" onclick="toggleVoice()">🎙️ Tocca per dettare</button>
+      <div class="fg"><label>Testo / Appunto</label><textarea id="ap-testo" rows="4" placeholder="Scrivi o detta l'appunto..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="closeCapture()">Annulla</button><button class="btn btn-p" id="ap-save-btn" onclick="saveAppunto()">Salva</button></div>
+  </div>
+</div>
+
 <!-- MODAL ENTRATA -->
 <div id="m-entrata" class="ov">
   <div class="modal">
@@ -361,7 +416,7 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION = 'v01';
+const VERSION = 'v02';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
 
@@ -384,7 +439,7 @@ async function api(action, params = {}) {
 // ============================================================
 // STATE
 // ============================================================
-const S = { campi:[], lav:[], costi:[], racc:[], entrate:[] };
+const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[] };
 
 // ============================================================
 // INIT & NAV
@@ -396,7 +451,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
-      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, entrate:loadEntrate, raccolta:loadRacc})[el.dataset.view]?.();
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, entrate:loadEntrate, diari:loadAppunti, raccolta:loadRacc})[el.dataset.view]?.();
     });
   });
   document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
@@ -787,10 +842,178 @@ async function delEntrata(id) {
 }
 
 // ============================================================
+// DIARI CAMPO — appunti foto + voce + GPS
+// ============================================================
+
+// POST per upload foto (GAS doPost)
+async function apiPost(payload) {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: TOKEN, ...payload }),
+      redirect: 'follow'
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch(e) { toast('Errore: ' + e.message); throw e; }
+}
+
+// Ridimensiona immagine lato browser (max 1200px, JPEG 0.75)
+async function resizeImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const max = 1200;
+        if (w > max || h > max) { const r = Math.min(max/w, max/h); w = Math.round(w*r); h = Math.round(h*r); }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', 0.75));
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// GPS
+let _gps = null;
+function getLocation() {
+  const el = document.getElementById('ap-gps-info');
+  if (!navigator.geolocation) { if(el) { el.textContent='GPS non disponibile'; el.style.color='#94a3b8'; } return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      _gps = { lat: pos.coords.latitude.toFixed(6), lon: pos.coords.longitude.toFixed(6) };
+      if (el) { el.innerHTML = `📍 <a href="https://maps.google.com/?q=${_gps.lat},${_gps.lon}" target="_blank" style="color:#16a34a">${_gps.lat}, ${_gps.lon}</a>`; }
+    },
+    () => { _gps = null; if(el) { el.textContent='📍 Posizione non disponibile'; el.style.color='#94a3b8'; } },
+    { timeout: 12000, enableHighAccuracy: true }
+  );
+}
+
+// Voce → testo (Web Speech API, iOS Safari + Chrome Android)
+let _rec = null, _isRec = false;
+function toggleVoice() { _isRec ? stopVoice() : startVoice(); }
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Trascrizione vocale non supportata su questo browser'); return; }
+  _isRec = true;
+  _rec = new SR();
+  _rec.lang = 'it-IT';
+  _rec.continuous = false;
+  _rec.interimResults = true;
+  _rec.onresult = e => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('ap-testo').value = t;
+  };
+  _rec.onend = () => { if (_isRec) { try { _rec.start(); } catch(_){} } };
+  _rec.onerror = () => { _isRec = false; updateMicBtn(false); };
+  _rec.start();
+  updateMicBtn(true);
+}
+function stopVoice() { _isRec = false; if (_rec) { _rec.stop(); _rec = null; } updateMicBtn(false); }
+function updateMicBtn(on) {
+  const btn = document.getElementById('mic-btn');
+  if (!btn) return;
+  btn.className = 'mic-btn' + (on ? ' recording' : '');
+  btn.textContent = on ? '🔴 Parla... (tocca per fermare)' : '🎙️ Tocca per dettare';
+}
+
+// Foto
+let _photoData = null;
+async function onPhotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    _photoData = await resizeImage(file);
+    const prev = document.getElementById('ap-photo-preview');
+    prev.src = _photoData;
+    prev.style.display = 'block';
+    document.getElementById('ap-photo-placeholder').style.display = 'none';
+  } catch(_) { toast('Errore caricamento foto'); }
+}
+
+// Apri / chiudi modal capture
+function openCapture() {
+  _photoData = null; _gps = null;
+  stopVoice();
+  document.getElementById('ap-photo-preview').style.display = 'none';
+  document.getElementById('ap-photo-placeholder').style.display = '';
+  document.getElementById('ap-file').value = '';
+  document.getElementById('ap-testo').value = '';
+  document.getElementById('ap-campo').value = '';
+  const gpsEl = document.getElementById('ap-gps-info');
+  gpsEl.textContent = '📍 Acquisendo posizione...'; gpsEl.style.color = 'var(--muted)';
+  updateMicBtn(false);
+  om('m-appunto');
+  getLocation();
+}
+function closeCapture() { stopVoice(); cm('m-appunto'); }
+
+// Salva appunto (POST con eventuale foto base64)
+async function saveAppunto() {
+  if (!gv('ap-campo')) { toast('Seleziona il campo'); return; }
+  const btn = document.getElementById('ap-save-btn');
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    await apiPost({ action: 'saveAppunto', data: {
+      campo: gv('ap-campo'), testo: gv('ap-testo'),
+      lat: _gps?.lat || '', lon: _gps?.lon || '',
+      foto: _photoData || null
+    }});
+    closeCapture(); loadAppunti(); toast('Appunto salvato!');
+  } catch(_) {}
+  finally { btn.disabled = false; btn.textContent = 'Salva'; }
+}
+
+// Lista appunti
+async function loadAppunti() {
+  document.getElementById('ap-grid').innerHTML = '<div class="spin-wrap"><div class="spinner"></div>Caricamento...</div>';
+  S.appunti = await api('getAppunti');
+  renderAppunti();
+}
+
+function renderAppunti() {
+  const grid = document.getElementById('ap-grid');
+  const fc = gv('apf-campo');
+  const d = S.appunti.filter(a => !fc || a.campo === fc).sort((a,b) => new Date(b.data) - new Date(a.data));
+  if (!d.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1"><div class="empty"><div class="empty-ic">📷</div><p>Nessun appunto. Dal campo, clicca <strong>Nuovo Appunto</strong>.</p></div></div>';
+    return;
+  }
+  grid.innerHTML = d.map(a => `
+    <div class="ap-card">
+      ${a.fotoUrl ? `<img class="ap-photo" src="${a.fotoUrl}" loading="lazy" alt="foto campo">` : '<div class="ap-photo-ph">📷</div>'}
+      <div class="ap-body">
+        <div class="ap-meta">
+          <span class="ap-campo">🫒 ${a.campo}</span>
+          <span class="ap-date">${fdh(a.data)}</span>
+        </div>
+        ${a.testo ? `<div class="ap-text">${a.testo}</div>` : ''}
+        ${a.lat && a.lon ? `<a class="ap-gps" href="https://maps.google.com/?q=${a.lat},${a.lon}" target="_blank">📍 Apri in Maps (${a.lat}, ${a.lon})</a>` : ''}
+        <div class="ap-foot"><button class="btn-ic" onclick="delAppunto(${a.id})">🗑️</button></div>
+      </div>
+    </div>`).join('');
+}
+
+async function delAppunto(id) {
+  if (!confirm('Eliminare questo appunto?')) return;
+  await api('deleteAppunto', { rowId: id });
+  loadAppunti(); toast('Eliminato');
+}
+
+// ============================================================
 // UTILS
 // ============================================================
 function updateSelects() {
-  ['l-campo','co-campo','r-campo','e-campo','lf-campo','cf-campo','rf-campo'].forEach(id => {
+  ['l-campo','co-campo','r-campo','e-campo','ap-campo','lf-campo','cf-campo','rf-campo','apf-campo'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const isF = id.includes('f-'), cur = el.value;
@@ -810,6 +1033,11 @@ function fd(d) {
   if (!d) return '—';
   const dt = new Date(d);
   return isNaN(dt) ? d : dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function fdh(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return isNaN(dt) ? d : dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 function fe(n) { return '€\u00a0'+parseFloat(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function er(cols, ic, msg) { return `<tr><td colspan="${cols}"><div class="empty"><div class="empty-ic">${ic}</div><p>${msg}</p></div></td></tr>`; }
