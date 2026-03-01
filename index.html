@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gestione Oliveto v06</title>
+<title>Gestione Oliveto v07</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -253,7 +253,7 @@ input[readonly]{background:var(--bg)}
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v06</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v07</div>
     </div>
   </div>
   <div class="nav">
@@ -509,23 +509,33 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v06';
+const VERSION      = 'v07';
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
 
 // ============================================================
-// AUTH
+// AUTH — usa cookie (365gg) per persistenza su Safari iOS
 // ============================================================
+function setCookie(name, value, days) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict`;
+}
+function getCookie(name) {
+  return document.cookie.split('; ').find(r => r.startsWith(name + '='))?.split('=')[1];
+}
+function deleteCookie(name) {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
+}
 function checkAuth() {
-  if (localStorage.getItem('ov_auth') !== APP_PASSWORD) {
+  if (getCookie('ov_auth') !== APP_PASSWORD) {
     document.getElementById('login-screen').style.display = 'flex';
   }
 }
 function doLogin() {
   const pwd = document.getElementById('login-pwd').value;
   if (pwd === APP_PASSWORD) {
-    localStorage.setItem('ov_auth', APP_PASSWORD);
+    setCookie('ov_auth', APP_PASSWORD, 365);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('login-pwd').value = '';
   } else {
@@ -536,7 +546,7 @@ function doLogin() {
   }
 }
 function doLogout() {
-  localStorage.removeItem('ov_auth');
+  deleteCookie('ov_auth');
   location.reload();
 }
 
