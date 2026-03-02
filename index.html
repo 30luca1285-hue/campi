@@ -1390,7 +1390,7 @@ function renderAppunti() {
           <span class="ap-date">${fdh(a.data)}</span>
         </div>
         ${a.testo ? `<div class="ap-text">${a.testo}</div>` : ''}
-        ${(()=>{ const la=parseFloat(a.lat),lo=parseFloat(a.lon); if(!la||!lo||isNaN(la)||isNaN(lo)) return ''; const ls=la.toFixed(6),ln=lo.toFixed(6); return `<a class="ap-gps" href="https://maps.google.com/?q=${ls},${ln}" target="_blank" rel="noopener">📍 ${ls}, ${ln} — Apri in Maps</a>`; })()}
+        ${gpsHtml(a.lat, a.lon)}
         <div class="ap-foot"><button class="btn-ic" onclick="delAppunto(${a.id})">🗑️</button></div>
       </div>
     </div>`).join('');
@@ -1589,7 +1589,13 @@ function fdh(d) {
   return isNaN(dt) ? d : dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 function fe(n) { return '€\u00a0'+parseFloat(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function er(cols, ic, msg) { return `<tr><td colspan="${cols}"><div class="empty"><div class="empty-ic">${ic}</div><p>${msg}</p></div></td></tr>`; }
+function er(cols, ic, msg) { return '<tr><td colspan="' + cols + '"><div class="empty"><div class="empty-ic">' + ic + '</div><p>' + msg + '</p></div></td></tr>'; }
+function gpsHtml(lat, lon) {
+  var la = parseFloat(lat), lo = parseFloat(lon);
+  if (!isFinite(la) || !isFinite(lo) || la === 0 || lo === 0) return '';
+  var ls = la.toFixed(6), ln = lo.toFixed(6);
+  return '<a class="ap-gps" href="https://maps.google.com/?q=' + ls + ',' + ln + '" target="_blank" rel="noopener">\uD83D\uDCCD ' + ls + ', ' + ln + ' \u2014 Apri in Maps</a>';
+}
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
