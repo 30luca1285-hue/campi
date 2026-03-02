@@ -1242,15 +1242,27 @@ async function resizeImage(file) {
 
 // GPS
 let _gps = null;
+let _gpsLoading = false;
 function getLocation() {
   const el = document.getElementById('ap-gps-info');
-  if (!navigator.geolocation) { if(el) { el.textContent='GPS non disponibile'; el.style.color='#94a3b8'; } return; }
+  if (!navigator.geolocation) {
+    if (el) { el.textContent = '📍 GPS non disponibile'; el.style.color = '#94a3b8'; }
+    return;
+  }
+  _gpsLoading = true;
   navigator.geolocation.getCurrentPosition(
     pos => {
+      _gpsLoading = false;
       _gps = { lat: pos.coords.latitude.toFixed(6), lon: pos.coords.longitude.toFixed(6) };
-      if (el) { el.innerHTML = `📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(_gps.lat+','+_gps.lon)}" target="_blank" rel="noopener" style="color:#16a34a">${_gps.lat}, ${_gps.lon}</a>`; }
+      if (el) {
+        el.innerHTML = '📍 <a href="https://maps.google.com/?q=' + _gps.lat + ',' + _gps.lon + '" target="_blank" rel="noopener" style="color:#16a34a;font-weight:600">' + _gps.lat + ', ' + _gps.lon + '</a>';
+      }
     },
-    () => { _gps = null; if(el) { el.textContent='📍 Posizione non disponibile'; el.style.color='#94a3b8'; } },
+    () => {
+      _gpsLoading = false;
+      _gps = null;
+      if (el) { el.textContent = '📍 Posizione non disponibile'; el.style.color = '#94a3b8'; }
+    },
     { timeout: 12000, enableHighAccuracy: true }
   );
 }
@@ -1351,6 +1363,7 @@ function closeCapture() { stopVoice(); cm('m-appunto'); }
 // Salva appunto (POST con foto watermarkata)
 async function saveAppunto() {
   if (!gv('ap-campo')) { toast('Seleziona il campo'); return; }
+  if (_gpsLoading) { toast('⏳ GPS ancora in acquisizione, attendi qualche secondo...'); return; }
   const btn = document.getElementById('ap-save-btn');
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
