@@ -1403,7 +1403,7 @@ function renderAppunti() {
           <span class="ap-date">${fdh(a.data)}</span>
         </div>
         ${a.testo ? `<div class="ap-text">${a.testo}</div>` : ''}
-        ${gpsHtml(a.lat, a.lon)}
+        ${a.lat && a.lon && String(a.lat) !== 'NaN' && String(a.lon) !== 'NaN' ? '<a class="ap-gps" href="https://maps.google.com/?q=' + a.lat + ',' + a.lon + '" target="_blank" rel="noopener">📍 ' + a.lat + ', ' + a.lon + ' — Apri in Maps</a>' : ''}
         <div class="ap-foot"><button class="btn-ic" onclick="delAppunto(${a.id})">🗑️</button></div>
       </div>
     </div>`).join('');
@@ -1603,12 +1603,6 @@ function fdh(d) {
 }
 function fe(n) { return '€\u00a0'+parseFloat(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function er(cols, ic, msg) { return '<tr><td colspan="' + cols + '"><div class="empty"><div class="empty-ic">' + ic + '</div><p>' + msg + '</p></div></td></tr>'; }
-function gpsHtml(lat, lon) {
-  var la = parseFloat(lat), lo = parseFloat(lon);
-  if (!isFinite(la) || !isFinite(lo) || la === 0 || lo === 0) return '';
-  var ls = la.toFixed(6), ln = lo.toFixed(6);
-  return '<a class="ap-gps" href="https://maps.google.com/?q=' + ls + ',' + ln + '" target="_blank" rel="noopener">\uD83D\uDCCD ' + ls + ', ' + ln + ' \u2014 Apri in Maps</a>';
-}
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
