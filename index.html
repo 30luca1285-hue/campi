@@ -1390,7 +1390,7 @@ function renderAppunti() {
           <span class="ap-date">${fdh(a.data)}</span>
         </div>
         ${a.testo ? `<div class="ap-text">${a.testo}</div>` : ''}
-        ${a.lat && a.lon && a.lat !== '' && a.lon !== '' ? (()=>{ const la=parseFloat(a.lat).toFixed(6),lo=parseFloat(a.lon).toFixed(6); return `<a class="ap-gps" href="https://maps.google.com/?q=${la},${lo}" target="_blank" rel="noopener">📍 ${la}, ${lo} — Apri in Maps</a>`; })() : ''}
+        ${(()=>{ const la=parseFloat(a.lat),lo=parseFloat(a.lon); if(!la||!lo||isNaN(la)||isNaN(lo)) return ''; const ls=la.toFixed(6),ln=lo.toFixed(6); return `<a class="ap-gps" href="https://maps.google.com/?q=${ls},${ln}" target="_blank" rel="noopener">📍 ${ls}, ${ln} — Apri in Maps</a>`; })()}
         <div class="ap-foot"><button class="btn-ic" onclick="delAppunto(${a.id})">🗑️</button></div>
       </div>
     </div>`).join('');
