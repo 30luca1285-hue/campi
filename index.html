@@ -161,6 +161,13 @@ input[readonly]{background:var(--bg)}
 .mic-btn.recording{background:#fee2e2;border-color:#ef4444;color:#dc2626;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
+/* LIGHTBOX FOTO */
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;display:none;align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox.open{display:flex}
+#lightbox img{max-width:96vw;max-height:92vh;object-fit:contain;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+#lightbox-close{position:absolute;top:14px;right:16px;color:#fff;font-size:1.6rem;cursor:pointer;background:rgba(0,0,0,.4);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;line-height:1}
+.ap-photo{cursor:zoom-in}
+
 /* LOGIN SCREEN */
 #login-screen{position:fixed;inset:0;z-index:200;background:var(--green-dark);display:flex;align-items:center;justify-content:center}
 .login-box{background:#fff;border-radius:18px;padding:38px 32px;width:320px;max-width:90vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35)}
@@ -630,6 +637,12 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-entrata')">Annulla</button><button class="btn btn-p" onclick="saveEntrata()">Salva</button></div>
   </div>
+</div>
+
+<!-- LIGHTBOX FOTO -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="foto campo">
 </div>
 
 <!-- MODAL MOSCA -->
@@ -1370,14 +1383,14 @@ function renderAppunti() {
   }
   grid.innerHTML = d.map(a => `
     <div class="ap-card">
-      ${a.fotoUrl ? `<img class="ap-photo" src="${a.fotoUrl}" loading="lazy" alt="foto campo">` : '<div class="ap-photo-ph">📷</div>'}
+      ${a.fotoUrl ? `<img class="ap-photo" src="${a.fotoUrl}" loading="lazy" alt="foto campo" onclick="openLightbox('${a.fotoUrl}')">` : '<div class="ap-photo-ph">📷</div>'}
       <div class="ap-body">
         <div class="ap-meta">
           <span class="ap-campo">🫒 ${a.campo}</span>
           <span class="ap-date">${fdh(a.data)}</span>
         </div>
         ${a.testo ? `<div class="ap-text">${a.testo}</div>` : ''}
-        ${a.lat && a.lon && a.lat !== '' && a.lon !== '' ? `<a class="ap-gps" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lat+','+a.lon)}" target="_blank" rel="noopener">📍 Apri in Maps (${a.lat}, ${a.lon})</a>` : ''}
+        ${a.lat && a.lon && a.lat !== '' && a.lon !== '' ? (()=>{ const la=parseFloat(a.lat).toFixed(6),lo=parseFloat(a.lon).toFixed(6); return `<a class="ap-gps" href="https://maps.google.com/?q=${la},${lo}" target="_blank" rel="noopener">📍 ${la}, ${lo} — Apri in Maps</a>`; })() : ''}
         <div class="ap-foot"><button class="btn-ic" onclick="delAppunto(${a.id})">🗑️</button></div>
       </div>
     </div>`).join('');
@@ -1388,6 +1401,21 @@ async function delAppunto(id) {
   await api('deleteAppunto', { rowId: id });
   loadAppunti(); toast('Eliminato');
 }
+
+// ============================================================
+// LIGHTBOX
+// ============================================================
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 // ============================================================
 // MONITORAGGIO MOSCA OLIVO
