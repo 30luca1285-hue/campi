@@ -1235,7 +1235,7 @@ function getLocation() {
   navigator.geolocation.getCurrentPosition(
     pos => {
       _gps = { lat: pos.coords.latitude.toFixed(6), lon: pos.coords.longitude.toFixed(6) };
-      if (el) { el.innerHTML = `📍 <a href="https://maps.google.com/?q=${_gps.lat},${_gps.lon}" target="_blank" style="color:#16a34a">${_gps.lat}, ${_gps.lon}</a>`; }
+      if (el) { el.innerHTML = `📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(_gps.lat+','+_gps.lon)}" target="_blank" rel="noopener" style="color:#16a34a">${_gps.lat}, ${_gps.lon}</a>`; }
     },
     () => { _gps = null; if(el) { el.textContent='📍 Posizione non disponibile'; el.style.color='#94a3b8'; } },
     { timeout: 12000, enableHighAccuracy: true }
@@ -1377,7 +1377,7 @@ function renderAppunti() {
           <span class="ap-date">${fdh(a.data)}</span>
         </div>
         ${a.testo ? `<div class="ap-text">${a.testo}</div>` : ''}
-        ${a.lat && a.lon ? `<a class="ap-gps" href="https://maps.google.com/?q=${a.lat},${a.lon}" target="_blank">📍 Apri in Maps (${a.lat}, ${a.lon})</a>` : ''}
+        ${a.lat && a.lon && a.lat !== '' && a.lon !== '' ? `<a class="ap-gps" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lat+','+a.lon)}" target="_blank" rel="noopener">📍 Apri in Maps (${a.lat}, ${a.lon})</a>` : ''}
         <div class="ap-foot"><button class="btn-ic" onclick="delAppunto(${a.id})">🗑️</button></div>
       </div>
     </div>`).join('');

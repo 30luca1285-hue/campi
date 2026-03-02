@@ -164,7 +164,7 @@ function uploadFileToDrive(base64Data, filename, folderName) {
   const folder = iter.hasNext() ? iter.next() : DriveApp.createFolder(folderName);
   const file   = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+  return 'https://lh3.googleusercontent.com/d/' + file.getId();
 }
 
 // ============================================================
@@ -301,7 +301,7 @@ function deleteEntrata(rowId) { getSheet(SHEETS.ENTRATE).deleteRow(rowId); retur
 function getAppunti() {
   return sheetRows(SHEETS.APPUNTI, 6)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id: i+2, data: fmtDateTime(r[0]), campo: r[1], testo: r[2], fotoUrl: r[3], lat: r[4], lon: r[5] }));
+    .map((r, i) => ({ id: i+2, data: fmtDateTime(r[0]), campo: r[1], testo: r[2], fotoUrl: r[3], lat: String(r[4]||''), lon: String(r[5]||'') }));
 }
 
 function saveAppunto(data) {
