@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gestione Oliveto v07</title>
+<title>Gestione Oliveto v08</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -175,6 +175,47 @@ input[readonly]{background:var(--bg)}
 .tab.active{background:var(--green);color:#fff;border-color:var(--green)}
 .tab:hover:not(.active){background:var(--border)}
 
+/* MONITORAGGIO MOSCA */
+.mosca-status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.mosca-campo-card{background:var(--card);border-radius:12px;padding:14px 12px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center}
+.mosca-campo-name{font-size:.82rem;font-weight:700;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.semaforo{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:800;margin:0 auto 6px;color:#fff}
+.semaforo.verde{background:#16a34a}.semaforo.giallo{background:#d97706}.semaforo.rosso{background:#dc2626}
+.semaforo-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.semaforo-lbl.verde{color:#16a34a}.semaforo-lbl.giallo{color:#d97706}.semaforo-lbl.rosso{color:#dc2626}
+.mosca-data{font-size:.65rem;color:var(--muted);margin-top:3px}
+.mosca-section-title{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px}
+.tratt-list{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+.tratt-row{background:var(--card);border-radius:8px;padding:9px 13px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.tratt-date{font-size:.75rem;font-weight:700;color:var(--muted);min-width:72px}
+.tratt-campo{font-size:.83rem;font-weight:600;flex:1}
+.tratt-prod{font-size:.74rem;color:var(--muted)}
+
+/* AMAP */
+.amap-header-card{background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;border-radius:14px;padding:20px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.amap-header-ic{font-size:2.4rem;flex-shrink:0}
+.amap-header-title{font-size:.95rem;font-weight:700;margin-bottom:4px}
+.amap-header-sub{font-size:.76rem;opacity:.8;line-height:1.45}
+.amap-links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:22px}
+.amap-link-card{background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+.amap-link-ic{font-size:1.5rem}
+.amap-link-title{font-size:.85rem;font-weight:700}
+.amap-link-desc{font-size:.74rem;color:var(--muted);flex:1;line-height:1.45}
+.amap-link-btn{display:inline-block;margin-top:8px;padding:6px 12px;background:var(--green);color:#fff;border-radius:7px;font-size:.78rem;font-weight:600;text-align:center;transition:background .15s}
+.amap-link-btn:hover{background:var(--green-dark)}
+.iframe-box{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+.iframe-box-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.iframe-box-hd h4{font-size:.82rem;font-weight:700}
+.iframe-box-hd a{font-size:.78rem;color:var(--green);font-weight:600}
+.iframe-box-hd a:hover{text-decoration:underline}
+iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:var(--bg)}
+
+/* FOTO FATTURA (costo) */
+.foto-area{border:2px dashed var(--border);border-radius:10px;overflow:hidden;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:center;background:var(--bg);margin-bottom:6px;transition:border-color .15s}
+.foto-area:hover{border-color:var(--green)}
+.foto-area img{width:100%;max-height:150px;object-fit:cover;display:block}
+.foto-ph{display:flex;align-items:center;gap:8px;color:var(--muted);padding:14px;pointer-events:none;font-size:.82rem}
+
 /* HAMBURGER BUTTON (mobile only) */
 .hamburger-btn{display:none;position:fixed;top:11px;left:11px;z-index:61;background:var(--green-dark);color:#fff;border:none;border-radius:8px;width:38px;height:38px;font-size:1.15rem;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 /* NAV OVERLAY (mobile) */
@@ -201,6 +242,9 @@ input[readonly]{background:var(--bg)}
   .sc-val{font-size:1.15rem}
   /* Charts: 1 colonna */
   .ov-charts{grid-template-columns:1fr}
+  .mosca-status-grid{grid-template-columns:repeat(2,1fr)}
+  .amap-links-grid{grid-template-columns:1fr}
+  iframe.amap-frame{height:380px}
   /* Pie: verticale */
   .pie-wrap{flex-direction:column;align-items:center;gap:14px}
   /* Harvest totals: 1 colonna */
@@ -253,7 +297,7 @@ input[readonly]{background:var(--bg)}
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v07</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v08</div>
     </div>
   </div>
   <div class="nav">
@@ -263,6 +307,8 @@ input[readonly]{background:var(--bg)}
     <div class="nav-item" data-view="costi"><span class="nav-ic">💰</span>Costi</div>
     <div class="nav-item" data-view="raccolta"><span class="nav-ic">🫙</span>Raccolta</div>
     <div class="nav-item" data-view="entrate"><span class="nav-ic">💶</span>PAC / Biologico</div>
+    <div class="nav-item" data-view="mosca"><span class="nav-ic">🪰</span>Mosca Olivo</div>
+    <div class="nav-item" data-view="amap"><span class="nav-ic">📡</span>AMAP Marche</div>
   </div>
   <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,.1)">
     <button onclick="doLogout()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:.72rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;display:flex;align-items:center;gap:6px">🔒 Esci</button>
@@ -341,7 +387,7 @@ input[readonly]{background:var(--bg)}
       </div>
       <span class="tot-lbl" id="costi-tot"></span>
     </div>
-    <table><thead><tr><th>Data</th><th>Campo</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th>Costo Unit.</th><th>Totale</th><th>Fornitore</th><th></th></tr></thead>
+    <table><thead><tr><th>Data</th><th>Campo</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th>Costo Unit.</th><th>Totale</th><th>Fornitore</th><th>Fattura</th><th></th></tr></thead>
     <tbody id="costi-tb"></tbody></table>
   </div></div>
 </div>
@@ -373,6 +419,77 @@ input[readonly]{background:var(--bg)}
     <table><thead><tr><th>Anno</th><th>Campo</th><th>Inizio</th><th>Fine</th><th>KG</th><th>KG/Ha</th><th>Destinazione</th><th>Note</th><th></th></tr></thead>
     <tbody id="racc-tb"></tbody></table>
   </div></div>
+</div>
+
+<!-- MOSCA OLIVO -->
+<div id="view-mosca" class="view">
+  <div class="ph"><h2>🪰 Monitoraggio Mosca</h2><button class="btn btn-p" onclick="openMoscaModal()">+ Nuova Rilevazione</button></div>
+  <div class="pb">
+    <div class="mosca-status-grid" id="mosca-status"></div>
+    <div class="mosca-section-title">Trattamenti Fitosanitari Recenti</div>
+    <div class="tratt-list" id="mosca-trattamenti"></div>
+    <div class="mosca-section-title">Tutte le Rilevazioni</div>
+    <div class="tw">
+      <div class="tb-bar"><div class="fb">
+        <select id="mf-campo" onchange="renderMosca()"><option value="">Tutti i campi</option></select>
+      </div></div>
+      <table><thead><tr><th>Data</th><th>Campo</th><th>Settimana</th><th>N. Catture</th><th>Trappola</th><th>Stato</th><th>Note Bollettino</th><th></th></tr></thead>
+      <tbody id="mosca-tb"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- AMAP MARCHE -->
+<div id="view-amap" class="view">
+  <div class="ph"><h2>📡 AMAP Marche</h2></div>
+  <div class="pb">
+    <div class="amap-header-card">
+      <div class="amap-header-ic">🌿</div>
+      <div>
+        <div class="amap-header-title">Agenzia per i Servizi nel Settore Agroalimentare delle Marche</div>
+        <div class="amap-header-sub">Bollettini fitosanitari, monitoraggio mosca olivo, dati agro-meteo per la Regione Marche</div>
+      </div>
+    </div>
+    <div class="amap-links-grid">
+      <div class="amap-link-card">
+        <div class="amap-link-ic">🏛️</div>
+        <div class="amap-link-title">Sito AMAP Marche</div>
+        <div class="amap-link-desc">Portale ufficiale con tutti i servizi e le pubblicazioni dell'agenzia</div>
+        <a class="amap-link-btn" href="https://www.amap.marche.it" target="_blank" rel="noopener">Apri ↗</a>
+      </div>
+      <div class="amap-link-card">
+        <div class="amap-link-ic">📋</div>
+        <div class="amap-link-title">Bollettini Fitosanitari</div>
+        <div class="amap-link-desc">Avvisi settimanali su patologie, parassiti e consigli di difesa per olivicoltura e altre colture</div>
+        <a class="amap-link-btn" href="https://www.amap.marche.it/content.asp?ID_Link=136&area=5" target="_blank" rel="noopener">Apri ↗</a>
+      </div>
+      <div class="amap-link-card">
+        <div class="amap-link-ic">🪰</div>
+        <div class="amap-link-title">Mosca Olivo — Rete Trappole</div>
+        <div class="amap-link-desc">Dati aggiornati sulle catture di <em>Bactrocera oleae</em> nelle stazioni di monitoraggio regionali</div>
+        <a class="amap-link-btn" href="https://www.amap.marche.it/content.asp?ID_Link=228&area=5" target="_blank" rel="noopener">Apri ↗</a>
+      </div>
+      <div class="amap-link-card">
+        <div class="amap-link-ic">🌤️</div>
+        <div class="amap-link-title">Agrometeorologia</div>
+        <div class="amap-link-desc">Dati climatici e previsioni meteo-agronomiche per la programmazione degli interventi</div>
+        <a class="amap-link-btn" href="https://www.amap.marche.it/content.asp?ID_Link=141&area=5" target="_blank" rel="noopener">Apri ↗</a>
+      </div>
+    </div>
+    <div class="mosca-section-title" style="margin-top:4px">Note / Estratto Bollettino Corrente</div>
+    <div style="background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:22px">
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:8px">Incolla qui il testo del bollettino AMAP corrente — salvato automaticamente sul dispositivo</div>
+      <textarea id="amap-note" rows="5" placeholder="Incolla il testo del bollettino settimanale AMAP..." oninput="saveAmapNote()" style="resize:vertical"></textarea>
+      <div style="font-size:.7rem;color:var(--muted);margin-top:6px" id="amap-note-ts"></div>
+    </div>
+    <div class="iframe-box">
+      <div class="iframe-box-hd">
+        <h4>🌐 AMAP Marche — accesso diretto</h4>
+        <a href="https://www.amap.marche.it" target="_blank" rel="noopener">Apri nel browser ↗</a>
+      </div>
+      <iframe class="amap-frame" src="https://www.amap.marche.it" title="AMAP Marche" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"></iframe>
+    </div>
+  </div>
 </div>
 
 </main>
@@ -439,8 +556,20 @@ input[readonly]{background:var(--bg)}
       <div class="fg"><label>Totale €</label><input id="co-tot" type="number" step="0.01" readonly></div></div>
       <div class="fr"><div class="fg"><label>Fornitore</label><input id="co-forn" placeholder="Nome fornitore"></div>
       <div class="fg"><label>Note</label><input id="co-note" placeholder="Note..."></div></div>
+      <div class="fg">
+        <label>Foto Fattura (opzionale)</label>
+        <div class="foto-area" onclick="document.getElementById('costo-foto-file').click()">
+          <img id="costo-foto-preview" style="display:none" alt="anteprima fattura">
+          <div id="costo-foto-ph" class="foto-ph">📎 Tocca per allegare foto fattura</div>
+        </div>
+        <input type="file" id="costo-foto-file" accept="image/*" capture="environment" style="display:none" onchange="onCostoFotoSelected(this)">
+        <div id="costo-foto-link" style="display:none;font-size:.74rem;margin-top:3px">
+          <a id="costo-foto-link-a" href="" target="_blank" style="color:var(--green);font-weight:600">📎 Visualizza fattura esistente ↗</a>
+          <span style="color:var(--muted)"> · seleziona nuova immagine per sostituirla</span>
+        </div>
+      </div>
     </div>
-    <div class="mf"><button class="btn btn-s" onclick="cm('m-costo')">Annulla</button><button class="btn btn-p" onclick="saveCosto()">Salva</button></div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-costo')">Annulla</button><button class="btn btn-p" id="costo-save-btn" onclick="saveCosto()">Salva</button></div>
   </div>
 </div>
 
@@ -503,13 +632,43 @@ input[readonly]{background:var(--bg)}
   </div>
 </div>
 
+<!-- MODAL MOSCA -->
+<div id="m-mosca" class="ov">
+  <div class="modal">
+    <div class="mh"><h3 id="mm-title">Nuova Rilevazione Mosca</h3><button class="btn-ic" onclick="cm('m-mosca')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="mo-id">
+      <div class="fr">
+        <div class="fg"><label>Data *</label><input id="mo-data" type="date"></div>
+        <div class="fg"><label>Campo *</label><select id="mo-campo"><option value="">Seleziona...</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>N. Catture *</label><input id="mo-catture" type="number" min="0" step="1" placeholder="es. 5"></div>
+        <div class="fg"><label>Settimana</label><input id="mo-settimana" placeholder="es. 12/2026"></div>
+      </div>
+      <div class="fg"><label>Tipo Trappola</label>
+        <select id="mo-trappola">
+          <option value="">Seleziona...</option>
+          <option>Cromotropica gialla</option>
+          <option>Alimentare (proteina idrolizzata)</option>
+          <option>McPhail</option>
+          <option>Attrattivo sintetico</option>
+          <option>Altra</option>
+        </select>
+      </div>
+      <div class="fg"><label>Note / Estratto Bollettino AMAP</label><textarea id="mo-note" rows="3" placeholder="Osservazioni, dati dal bollettino regionale..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-mosca')">Annulla</button><button class="btn btn-p" onclick="saveMoscaEntry()">Salva</button></div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v07';
+const VERSION      = 'v08';
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -569,7 +728,7 @@ async function api(action, params = {}) {
 // ============================================================
 // STATE
 // ============================================================
-const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[] };
+const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[], mosca:[] };
 
 // ============================================================
 // INIT & NAV
@@ -582,7 +741,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
-      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate})[el.dataset.view]?.();
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate, mosca:loadMosca, amap:loadAmap})[el.dataset.view]?.();
       closeSidebar();
     });
   });
@@ -717,6 +876,7 @@ function renderCosti() {
     <td>${c.descrizione||'—'}</td><td>${c.quantita||'—'}${c.unita?' '+c.unita:''}</td>
     <td>${c.costoUnitario?fe(c.costoUnitario):'—'}</td><td><strong>${c.totale?fe(c.totale):'—'}</strong></td>
     <td>${c.fornitore||'—'}</td>
+    <td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" title="Apri fattura" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td>
     <td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('');
 }
 
@@ -725,7 +885,23 @@ function calcTot(){
   document.getElementById('co-tot').value=(q*u).toFixed(2);
 }
 
+let _costoFotoData = null;
+let _costoFotoUrl  = '';
+
 function openCostoModal(c) {
+  _costoFotoData = null;
+  _costoFotoUrl  = c?.fotoUrl || '';
+  const prev = document.getElementById('costo-foto-preview');
+  const ph   = document.getElementById('costo-foto-ph');
+  const lnk  = document.getElementById('costo-foto-link');
+  const lnkA = document.getElementById('costo-foto-link-a');
+  document.getElementById('costo-foto-file').value = '';
+  if (_costoFotoUrl) {
+    prev.style.display = 'none'; ph.style.display = '';
+    lnk.style.display = ''; lnkA.href = _costoFotoUrl;
+  } else {
+    prev.style.display = 'none'; ph.style.display = ''; lnk.style.display = 'none';
+  }
   sv({'co-id':c?.id||'','co-data':c?.data||today(),'co-campo':c?.campo||'','co-cat':c?.categoria||'',
     'co-desc':c?.descrizione||'','co-qta':c?.quantita||'','co-un':c?.unita||'',
     'co-unit':c?.costoUnitario||'','co-tot':c?.totale||'','co-forn':c?.fornitore||'','co-note':c?.note||''});
@@ -734,13 +910,35 @@ function openCostoModal(c) {
 }
 function editCosto(id) { openCostoModal(S.costi.find(c=>c.id===id)); }
 
+function onCostoFotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  resizeImage(file).then(b64 => {
+    _costoFotoData = b64;
+    const prev = document.getElementById('costo-foto-preview');
+    prev.src = b64; prev.style.display = 'block';
+    document.getElementById('costo-foto-ph').style.display = 'none';
+    document.getElementById('costo-foto-link').style.display = 'none';
+  }).catch(() => toast('Errore caricamento foto'));
+}
+
 async function saveCosto() {
   if (!gv('co-data')||!gv('co-campo')||!gv('co-cat')) { toast('Compila i campi obbligatori'); return; }
-  await api('saveCosto', { data: { id:gv('co-id')?+gv('co-id'):null, data:gv('co-data'), campo:gv('co-campo'),
-    categoria:gv('co-cat'), descrizione:gv('co-desc'), quantita:gv('co-qta'),
-    unita:gv('co-un'), costoUnitario:gv('co-unit'), totale:gv('co-tot'),
-    fornitore:gv('co-forn'), note:gv('co-note') }});
-  cm('m-costo'); loadCosti(); toast('Costo salvato!');
+  const btn = document.getElementById('costo-save-btn');
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    let fotoUrl = _costoFotoUrl;
+    if (_costoFotoData) {
+      const res = await apiPost({ action: 'uploadFattura', data: { foto: _costoFotoData } });
+      fotoUrl = res.url || '';
+    }
+    await api('saveCosto', { data: { id:gv('co-id')?+gv('co-id'):null, data:gv('co-data'), campo:gv('co-campo'),
+      categoria:gv('co-cat'), descrizione:gv('co-desc'), quantita:gv('co-qta'),
+      unita:gv('co-un'), costoUnitario:gv('co-unit'), totale:gv('co-tot'),
+      fornitore:gv('co-forn'), note:gv('co-note'), fotoUrl }});
+    cm('m-costo'); loadCosti(); toast('Costo salvato!');
+  } catch(_) {}
+  finally { btn.disabled = false; btn.textContent = 'Salva'; }
 }
 
 async function delCosto(id) {
@@ -1072,6 +1270,40 @@ function updateMicBtn(on) {
   btn.textContent = on ? '🔴 Parla... (tocca per fermare)' : '🎙️ Tocca per dettare';
 }
 
+// Watermark GPS + data/ora sulla foto del Diario
+async function addWatermark(base64, lat, lon) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const c   = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const barH = Math.max(26, Math.round(img.height * 0.042));
+      ctx.fillStyle = 'rgba(26,61,43,0.78)';
+      ctx.fillRect(0, img.height - barH, img.width, barH);
+      const fs  = Math.max(10, Math.round(barH * 0.52));
+      const pad = Math.round(img.width * 0.012);
+      ctx.font = `600 ${fs}px Inter,Arial,sans-serif`;
+      ctx.textBaseline = 'middle';
+      const cy  = img.height - barH / 2;
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' })
+                    + ' ' + now.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' });
+      if (lat && lon) {
+        ctx.fillStyle = '#74c69d';
+        ctx.textAlign = 'left';
+        ctx.fillText(`📍 ${lat}, ${lon}`, pad, cy);
+      }
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'right';
+      ctx.fillText(dateStr, img.width - pad, cy);
+      resolve(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = base64;
+  });
+}
+
 // Foto
 let _photoData = null;
 async function onPhotoSelected(input) {
@@ -1103,16 +1335,18 @@ function openCapture() {
 }
 function closeCapture() { stopVoice(); cm('m-appunto'); }
 
-// Salva appunto (POST con eventuale foto base64)
+// Salva appunto (POST con foto watermarkata)
 async function saveAppunto() {
   if (!gv('ap-campo')) { toast('Seleziona il campo'); return; }
   const btn = document.getElementById('ap-save-btn');
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
+    let foto = _photoData;
+    if (foto) foto = await addWatermark(foto, _gps?.lat || null, _gps?.lon || null);
     await apiPost({ action: 'saveAppunto', data: {
       campo: gv('ap-campo'), testo: gv('ap-testo'),
       lat: _gps?.lat || '', lon: _gps?.lon || '',
-      foto: _photoData || null
+      foto: foto || null
     }});
     closeCapture(); loadAppunti(); toast('Appunto salvato!');
   } catch(_) {}
@@ -1156,10 +1390,143 @@ async function delAppunto(id) {
 }
 
 // ============================================================
+// MONITORAGGIO MOSCA OLIVO
+// ============================================================
+
+function moscaSoglia(catture) {
+  const n = parseFloat(catture) || 0;
+  if (n < 10) return { cls:'verde', lbl:'Sotto soglia' };
+  if (n < 30) return { cls:'giallo', lbl:'Attenzione' };
+  return { cls:'rosso', lbl:'Intervento' };
+}
+
+async function loadMosca() {
+  if (!S.lav.length) S.lav = await api('getLavorazioni');
+  document.getElementById('mosca-tb').innerHTML = `<tr><td colspan="8"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></td></tr>`;
+  S.mosca = await api('getMosca');
+  renderMosca();
+  renderMoscaStatus();
+  renderMoscaTrattamenti();
+}
+
+function renderMoscaStatus() {
+  const el = document.getElementById('mosca-status');
+  if (!S.campi.length) { el.innerHTML = ''; return; }
+  // Per ogni campo, prendi l'ultima rilevazione
+  el.innerHTML = S.campi.map(c => {
+    const ril = S.mosca.filter(m => m.campo === c.nome).sort((a,b) => new Date(b.data) - new Date(a.data));
+    const last = ril[0];
+    if (!last) return `
+      <div class="mosca-campo-card">
+        <div class="mosca-campo-name">${c.nome}</div>
+        <div class="semaforo" style="background:#e5e7eb;color:#6b7280">—</div>
+        <div class="semaforo-lbl" style="color:var(--muted)">Nessun dato</div>
+        <div class="mosca-data"></div>
+      </div>`;
+    const s = moscaSoglia(last.catture);
+    return `
+      <div class="mosca-campo-card">
+        <div class="mosca-campo-name">${c.nome}</div>
+        <div class="semaforo ${s.cls}">${last.catture}</div>
+        <div class="semaforo-lbl ${s.cls}">${s.lbl}</div>
+        <div class="mosca-data">${fd(last.data)}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderMoscaTrattamenti() {
+  const el = document.getElementById('mosca-trattamenti');
+  const tratt = S.lav
+    .filter(l => l.tipo === 'Trattamento Fitosanitario')
+    .sort((a,b) => new Date(b.data) - new Date(a.data))
+    .slice(0, 6);
+  if (!tratt.length) {
+    el.innerHTML = `<div class="empty" style="padding:12px 0"><p>Nessun trattamento fitosanitario registrato</p></div>`;
+    return;
+  }
+  el.innerHTML = tratt.map(t => `
+    <div class="tratt-row">
+      <span class="tratt-date">${fd(t.data)}</span>
+      <span class="tratt-campo">${t.campo}</span>
+      <span class="tratt-prod">${[t.prodotto, t.descrizione].filter(Boolean).join(' · ') || '—'}</span>
+    </div>`).join('');
+}
+
+function renderMosca() {
+  const tb = document.getElementById('mosca-tb');
+  const fc = gv('mf-campo');
+  const d  = S.mosca.filter(m => !fc || m.campo === fc).sort((a,b) => new Date(b.data) - new Date(a.data));
+  if (!d.length) { tb.innerHTML = er(8,'🪰','Nessuna rilevazione. Aggiungi la prima!'); return; }
+  tb.innerHTML = d.map(m => {
+    const s = moscaSoglia(m.catture);
+    return `<tr>
+      <td>${fd(m.data)}</td><td>${m.campo}</td><td>${m.settimana||'—'}</td>
+      <td><strong>${m.catture}</strong></td><td>${m.trappola||'—'}</td>
+      <td><span class="badge ${s.cls==='verde'?'bg':s.cls==='giallo'?'by':'br'}">${s.lbl}</span></td>
+      <td style="max-width:200px;font-size:.78rem">${m.noteBollettino||'—'}</td>
+      <td><div class="act">
+        <button class="btn-ic" onclick="editMosca(${m.id})">✏️</button>
+        <button class="btn-ic" onclick="delMosca(${m.id})">🗑️</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+function openMoscaModal(m) {
+  sv({ 'mo-id':m?.id||'', 'mo-data':m?.data||today(), 'mo-campo':m?.campo||'',
+    'mo-catture':m?.catture??'', 'mo-settimana':m?.settimana||currentWeek(),
+    'mo-trappola':m?.trappola||'', 'mo-note':m?.noteBollettino||'' });
+  document.getElementById('mm-title').textContent = m ? 'Modifica Rilevazione' : 'Nuova Rilevazione Mosca';
+  om('m-mosca');
+}
+function editMosca(id) { openMoscaModal(S.mosca.find(m => m.id === id)); }
+
+async function saveMoscaEntry() {
+  if (!gv('mo-data') || !gv('mo-campo') || gv('mo-catture') === '') { toast('Compila i campi obbligatori'); return; }
+  await api('saveMosca', { data: { id:gv('mo-id')?+gv('mo-id'):null, data:gv('mo-data'), campo:gv('mo-campo'),
+    catture:gv('mo-catture'), settimana:gv('mo-settimana'), trappola:gv('mo-trappola'), noteBollettino:gv('mo-note') }});
+  cm('m-mosca'); loadMosca(); toast('Rilevazione salvata!');
+}
+
+async function delMosca(id) {
+  if (!confirm('Eliminare questa rilevazione?')) return;
+  await api('deleteMosca', { rowId: id });
+  loadMosca(); toast('Eliminata');
+}
+
+function currentWeek() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const week  = Math.ceil(((now - start) / 864e5 + start.getDay() + 1) / 7);
+  return `${week}/${now.getFullYear()}`;
+}
+
+// ============================================================
+// AMAP MARCHE
+// ============================================================
+
+function loadAmap() {
+  const ta = document.getElementById('amap-note');
+  const ts = document.getElementById('amap-note-ts');
+  const saved = localStorage.getItem('amap_note');
+  const savedTs = localStorage.getItem('amap_note_ts');
+  if (ta) ta.value = saved || '';
+  if (ts && savedTs) ts.textContent = 'Ultimo aggiornamento: ' + savedTs;
+}
+
+function saveAmapNote() {
+  const ta = document.getElementById('amap-note');
+  const ts = document.getElementById('amap-note-ts');
+  const now = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  localStorage.setItem('amap_note', ta.value);
+  localStorage.setItem('amap_note_ts', now);
+  if (ts) ts.textContent = 'Ultimo aggiornamento: ' + now;
+}
+
+// ============================================================
 // UTILS
 // ============================================================
 function updateSelects() {
-  ['l-campo','co-campo','r-campo','e-campo','ap-campo','lf-campo','cf-campo','rf-campo','apf-campo'].forEach(id => {
+  ['l-campo','co-campo','r-campo','e-campo','ap-campo','mo-campo','lf-campo','cf-campo','rf-campo','apf-campo','mf-campo'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const isF = id.includes('f-'), cur = el.value;

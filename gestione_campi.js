@@ -1,15 +1,16 @@
 // ============================================================
 // GESTIONE CAMPI - Google Apps Script JSON API
-// Oliveto | v3.0
+// Oliveto | v4.0
 // ============================================================
 
 const SHEETS = {
-  CAMPI: 'Campi',
+  CAMPI:       'Campi',
   LAVORAZIONI: 'Lavorazioni',
-  COSTI: 'Costi',
-  RACCOLTA: 'Raccolta',
-  ENTRATE: 'PAC-Biologico',
-  APPUNTI: 'Appunti'
+  COSTI:       'Costi',
+  RACCOLTA:    'Raccolta',
+  ENTRATE:     'PAC-Biologico',
+  APPUNTI:     'Appunti',
+  MOSCA:       'Mosca'
 };
 
 const SECRET_TOKEN = 'oliveto_gall_2025';
@@ -32,25 +33,28 @@ function doGet(e) {
     let result;
 
     switch (action) {
-      case 'getCampi':         result = getCampi(); break;
-      case 'getLavorazioni':   result = getLavorazioni(); break;
-      case 'getCosti':         result = getCosti(); break;
-      case 'getRaccolte':      result = getRaccolte(); break;
-      case 'getOverview':      result = getOverviewData(); break;
-      case 'saveCampo':        result = saveCampo(JSON.parse(e.parameter.data)); break;
-      case 'deleteCampo':      result = deleteCampo(+e.parameter.rowId); break;
-      case 'saveLavorazione':  result = saveLavorazione(JSON.parse(e.parameter.data)); break;
-      case 'deleteLavorazione':result = deleteLavorazione(+e.parameter.rowId); break;
-      case 'saveCosto':        result = saveCosto(JSON.parse(e.parameter.data)); break;
-      case 'deleteCosto':      result = deleteCosto(+e.parameter.rowId); break;
-      case 'saveRaccolta':     result = saveRaccolta(JSON.parse(e.parameter.data)); break;
-      case 'deleteRaccolta':   result = deleteRaccolta(+e.parameter.rowId); break;
-      case 'getEntrate':       result = getEntrate(); break;
-      case 'saveEntrata':      result = saveEntrata(JSON.parse(e.parameter.data)); break;
-      case 'deleteEntrata':    result = deleteEntrata(+e.parameter.rowId); break;
-      case 'getAppunti':       result = getAppunti(); break;
-      case 'deleteAppunto':    result = deleteAppunto(+e.parameter.rowId); break;
-      case 'setup':            result = setupSheets(); break;
+      case 'getCampi':          result = getCampi(); break;
+      case 'getLavorazioni':    result = getLavorazioni(); break;
+      case 'getCosti':          result = getCosti(); break;
+      case 'getRaccolte':       result = getRaccolte(); break;
+      case 'getOverview':       result = getOverviewData(); break;
+      case 'saveCampo':         result = saveCampo(JSON.parse(e.parameter.data)); break;
+      case 'deleteCampo':       result = deleteCampo(+e.parameter.rowId); break;
+      case 'saveLavorazione':   result = saveLavorazione(JSON.parse(e.parameter.data)); break;
+      case 'deleteLavorazione': result = deleteLavorazione(+e.parameter.rowId); break;
+      case 'saveCosto':         result = saveCosto(JSON.parse(e.parameter.data)); break;
+      case 'deleteCosto':       result = deleteCosto(+e.parameter.rowId); break;
+      case 'saveRaccolta':      result = saveRaccolta(JSON.parse(e.parameter.data)); break;
+      case 'deleteRaccolta':    result = deleteRaccolta(+e.parameter.rowId); break;
+      case 'getEntrate':        result = getEntrate(); break;
+      case 'saveEntrata':       result = saveEntrata(JSON.parse(e.parameter.data)); break;
+      case 'deleteEntrata':     result = deleteEntrata(+e.parameter.rowId); break;
+      case 'getAppunti':        result = getAppunti(); break;
+      case 'deleteAppunto':     result = deleteAppunto(+e.parameter.rowId); break;
+      case 'getMosca':          result = getMosca(); break;
+      case 'saveMosca':         result = saveMoscaEntry(JSON.parse(e.parameter.data)); break;
+      case 'deleteMosca':       result = deleteMoscaEntry(+e.parameter.rowId); break;
+      case 'setup':             result = setupSheets(); break;
       default: result = { error: 'Unknown action: ' + action };
     }
 
@@ -63,7 +67,7 @@ function doGet(e) {
 }
 
 // ============================================================
-// ENTRY POINT — API JSON via POST (upload foto + save appunto)
+// ENTRY POINT — API JSON via POST (upload foto)
 // ============================================================
 
 function doPost(e) {
@@ -77,7 +81,8 @@ function doPost(e) {
     }
     let result;
     switch (payload.action) {
-      case 'saveAppunto': result = saveAppunto(payload.data); break;
+      case 'saveAppunto':    result = saveAppunto(payload.data); break;
+      case 'uploadFattura':  result = uploadFattura(payload.data); break;
       default: result = { error: 'Unknown action: ' + payload.action };
     }
     output.setContent(JSON.stringify(result));
@@ -94,12 +99,13 @@ function doPost(e) {
 function setupSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const config = [
-    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note'],                                                    color:'#2E7D32' },
-    { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                  color:'#1565C0' },
-    { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note'],                                      color:'#6A1B9A' },
-    { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                            color:'#E65100' },
-    { name: SHEETS.ENTRATE,    headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                             color:'#0D47A1' },
-    { name: SHEETS.APPUNTI,    headers: ['Data / Ora','Campo','Testo / Appunto','Foto URL','Latitudine','Longitudine'],                                                                       color:'#37474F' }
+    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note'],                                                                           color:'#2E7D32' },
+    { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                                         color:'#1565C0' },
+    { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note','Foto URL'],                                                 color:'#6A1B9A' },
+    { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                                                  color:'#E65100' },
+    { name: SHEETS.ENTRATE,     headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                                                  color:'#0D47A1' },
+    { name: SHEETS.APPUNTI,     headers: ['Data / Ora','Campo','Testo / Appunto','Foto URL','Latitudine','Longitudine'],                                                                                           color:'#37474F' },
+    { name: SHEETS.MOSCA,       headers: ['Data','Campo','Settimana','N. Catture','Tipo Trappola','Note Bollettino'],                                                                                              color:'#BF360C' }
   ];
   config.forEach(c => {
     let s = ss.getSheetByName(c.name);
@@ -116,9 +122,10 @@ function setupSheets() {
 // ============================================================
 
 function getSheet(name) {
-  const s = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
-  if (!s) setupSheets();
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let s = ss.getSheetByName(name);
+  if (!s) { setupSheets(); s = ss.getSheetByName(name); }
+  return s;
 }
 
 function sheetRows(name, cols) {
@@ -146,6 +153,21 @@ function fmtDateTime(v) {
 }
 
 // ============================================================
+// DRIVE — upload file generico (usato da Appunti e Fatture)
+// ============================================================
+
+function uploadFileToDrive(base64Data, filename, folderName) {
+  const base64 = base64Data.split(',')[1];
+  const bytes  = Utilities.base64Decode(base64);
+  const blob   = Utilities.newBlob(bytes, 'image/jpeg', filename);
+  const iter   = DriveApp.getFoldersByName(folderName);
+  const folder = iter.hasNext() ? iter.next() : DriveApp.createFolder(folderName);
+  const file   = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+}
+
+// ============================================================
 // CAMPI
 // ============================================================
 
@@ -156,17 +178,14 @@ function getCampi() {
 }
 
 function saveCampo(c) {
-  const s = getSheet(SHEETS.CAMPI);
+  const s   = getSheet(SHEETS.CAMPI);
   const row = [c.nome, c.ettari||'', c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||''];
   if (c.id) s.getRange(c.id, 1, 1, row.length).setValues([row]);
   else s.getRange(s.getLastRow()+1, 1, 1, row.length).setValues([row]);
   return { success: true };
 }
 
-function deleteCampo(rowId) {
-  getSheet(SHEETS.CAMPI).deleteRow(rowId);
-  return { success: true };
-}
+function deleteCampo(rowId) { getSheet(SHEETS.CAMPI).deleteRow(rowId); return { success: true }; }
 
 // ============================================================
 // LAVORAZIONI
@@ -179,7 +198,7 @@ function getLavorazioni() {
 }
 
 function saveLavorazione(l) {
-  const s = getSheet(SHEETS.LAVORAZIONI);
+  const s   = getSheet(SHEETS.LAVORAZIONI);
   const row = [toDate(l.data), l.campo, l.tipo, l.descrizione||'', l.prodotto||'', l.quantita||'', l.unita||'', l.operatore||'', l.costo||''];
   if (l.id) { s.getRange(l.id, 1, 1, row.length).setValues([row]); }
   else {
@@ -194,19 +213,19 @@ function saveLavorazione(l) {
 function deleteLavorazione(rowId) { getSheet(SHEETS.LAVORAZIONI).deleteRow(rowId); return { success: true }; }
 
 // ============================================================
-// COSTI
+// COSTI  (col 11 = Foto URL)
 // ============================================================
 
 function getCosti() {
-  return sheetRows(SHEETS.COSTI, 10)
+  return sheetRows(SHEETS.COSTI, 11)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id:i+2, data:fmtDate(r[0]), campo:r[1], categoria:r[2], descrizione:r[3], quantita:r[4], unita:r[5], costoUnitario:r[6], totale:r[7], fornitore:r[8], note:r[9] }));
+    .map((r, i) => ({ id:i+2, data:fmtDate(r[0]), campo:r[1], categoria:r[2], descrizione:r[3], quantita:r[4], unita:r[5], costoUnitario:r[6], totale:r[7], fornitore:r[8], note:r[9], fotoUrl:r[10]||'' }));
 }
 
 function saveCosto(c) {
-  const s = getSheet(SHEETS.COSTI);
-  const qty = parseFloat(c.quantita)||0, unit = parseFloat(c.costoUnitario)||0;
-  const row = [toDate(c.data), c.campo, c.categoria, c.descrizione||'', qty, c.unita||'', unit, qty*unit, c.fornitore||'', c.note||''];
+  const s    = getSheet(SHEETS.COSTI);
+  const qty  = parseFloat(c.quantita)||0, unit = parseFloat(c.costoUnitario)||0;
+  const row  = [toDate(c.data), c.campo, c.categoria, c.descrizione||'', qty, c.unita||'', unit, qty*unit, c.fornitore||'', c.note||'', c.fotoUrl||''];
   if (c.id) { s.getRange(c.id, 1, 1, row.length).setValues([row]); }
   else {
     const nr = s.getLastRow()+1;
@@ -219,6 +238,14 @@ function saveCosto(c) {
 
 function deleteCosto(rowId) { getSheet(SHEETS.COSTI).deleteRow(rowId); return { success: true }; }
 
+// Upload foto fattura su Drive, cartella "Fatture Oliveto"
+function uploadFattura(data) {
+  if (!data || !data.foto) return { error: 'Nessuna foto' };
+  const ts  = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+  const url = uploadFileToDrive(data.foto, 'fattura_' + ts + '.jpg', 'Fatture Oliveto');
+  return { success: true, url };
+}
+
 // ============================================================
 // RACCOLTA
 // ============================================================
@@ -230,7 +257,7 @@ function getRaccolte() {
 }
 
 function saveRaccolta(r) {
-  const s = getSheet(SHEETS.RACCOLTA);
+  const s   = getSheet(SHEETS.RACCOLTA);
   const row = [r.anno||new Date().getFullYear(), r.campo, toDate(r.dataInizio), toDate(r.dataFine), r.kg||'', r.kgHa||'', r.destinazione||'', r.note||''];
   if (r.id) { s.getRange(r.id, 1, 1, row.length).setValues([row]); }
   else {
@@ -254,7 +281,7 @@ function getEntrate() {
 }
 
 function saveEntrata(e) {
-  const s = getSheet(SHEETS.ENTRATE);
+  const s   = getSheet(SHEETS.ENTRATE);
   const row = [e.anno || new Date().getFullYear(), e.campo || '', e.tipo || '', e.descrizione || '', parseFloat(e.importo) || 0, e.note || ''];
   if (e.id) { s.getRange(e.id, 1, 1, row.length).setValues([row]); }
   else {
@@ -282,28 +309,40 @@ function saveAppunto(data) {
   let fotoUrl = '';
   if (data.foto) {
     const ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
-    fotoUrl = uploadFotoToDrive(data.foto, 'foto_' + ts + '.jpg');
+    fotoUrl  = uploadFileToDrive(data.foto, 'foto_' + ts + '.jpg', 'Appunti Oliveto');
   }
   const row = [new Date(), data.campo || '', data.testo || '', fotoUrl, data.lat || '', data.lon || ''];
-  const nr = s.getLastRow() + 1;
+  const nr  = s.getLastRow() + 1;
   s.getRange(nr, 1, 1, row.length).setValues([row]);
   s.getRange(nr, 1).setNumberFormat('dd/mm/yyyy hh:mm');
   return { success: true };
 }
 
-function uploadFotoToDrive(base64Data, filename) {
-  const base64 = base64Data.split(',')[1];
-  const bytes = Utilities.base64Decode(base64);
-  const blob = Utilities.newBlob(bytes, 'image/jpeg', filename);
-  const folderName = 'Appunti Oliveto';
-  const iter = DriveApp.getFoldersByName(folderName);
-  const folder = iter.hasNext() ? iter.next() : DriveApp.createFolder(folderName);
-  const file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+function deleteAppunto(rowId) { getSheet(SHEETS.APPUNTI).deleteRow(rowId); return { success: true }; }
+
+// ============================================================
+// MONITORAGGIO MOSCA OLIVO
+// ============================================================
+
+function getMosca() {
+  return sheetRows(SHEETS.MOSCA, 6)
+    .filter(r => r[0] !== '')
+    .map((r, i) => ({ id: i+2, data: fmtDate(r[0]), campo: r[1], settimana: r[2], catture: r[3], trappola: r[4], noteBollettino: r[5] }));
 }
 
-function deleteAppunto(rowId) { getSheet(SHEETS.APPUNTI).deleteRow(rowId); return { success: true }; }
+function saveMoscaEntry(m) {
+  const s   = getSheet(SHEETS.MOSCA);
+  const row = [toDate(m.data), m.campo, m.settimana||'', parseFloat(m.catture)||0, m.trappola||'', m.noteBollettino||''];
+  if (m.id) { s.getRange(m.id, 1, 1, row.length).setValues([row]); }
+  else {
+    const nr = s.getLastRow() + 1;
+    s.getRange(nr, 1, 1, row.length).setValues([row]);
+    s.getRange(nr, 1).setNumberFormat('dd/mm/yyyy');
+  }
+  return { success: true };
+}
+
+function deleteMoscaEntry(rowId) { getSheet(SHEETS.MOSCA).deleteRow(rowId); return { success: true }; }
 
 // ============================================================
 // OVERVIEW
@@ -311,13 +350,12 @@ function deleteAppunto(rowId) { getSheet(SHEETS.APPUNTI).deleteRow(rowId); retur
 
 function getOverviewData() {
   const campi = getCampi(), lav = getLavorazioni(), costi = getCosti(), racc = getRaccolte(), entrate = getEntrate();
-  const anno = new Date().getFullYear();
+  const anno  = new Date().getFullYear();
 
-  // Dati per campo
   const campiData = campi.map(c => {
-    const lc = lav.filter(l => l.campo === c.nome);
+    const lc       = lav.filter(l => l.campo === c.nome);
     const costiAnno = costi.filter(x => x.campo===c.nome && x.data && new Date(x.data).getFullYear()===anno)
-                          .reduce((s,x)=>s+(parseFloat(x.totale)||0), 0);
+                           .reduce((s,x)=>s+(parseFloat(x.totale)||0), 0);
     const ur = racc.filter(r=>r.campo===c.nome).sort((a,b)=>b.anno-a.anno)[0]||null;
     return { ...c,
       ultimaPotatura:    ultimaData(lc,'Potatura'),
@@ -328,7 +366,6 @@ function getOverviewData() {
     };
   });
 
-  // Costi per categoria (anno corrente, tutti i campi)
   const catMap = {};
   costi.filter(x => x.data && new Date(x.data).getFullYear()===anno).forEach(x => {
     const cat = x.categoria || 'Altro';
@@ -338,19 +375,16 @@ function getOverviewData() {
     .map(([categoria, totale]) => ({ categoria, totale }))
     .sort((a,b) => b.totale - a.totale);
 
-  // Entrate anno corrente
   const entrateAnno = entrate.filter(e => +e.anno === anno).reduce((s,e) => s+(parseFloat(e.importo)||0), 0);
 
-  // Raccolta ultima stagione (anno più recente con dati)
   const anniRacc = racc.map(r => +r.anno).filter(Boolean);
   let raccoltaRiepilogo = null;
   if (anniRacc.length) {
     const ultimoAnno = Math.max(...anniRacc);
     const raccUltime = racc.filter(r => +r.anno === ultimoAnno);
-    const totKg = raccUltime.reduce((s,r) => s+(parseFloat(r.kg)||0), 0);
+    const totKg      = raccUltime.reduce((s,r) => s+(parseFloat(r.kg)||0), 0);
     raccoltaRiepilogo = {
-      anno: ultimoAnno,
-      totKg,
+      anno: ultimoAnno, totKg,
       stimaOlio: Math.round(totKg * 0.15),
       perCampo: raccUltime.map(r => ({ campo: r.campo, kg: parseFloat(r.kg)||0 }))
     };
