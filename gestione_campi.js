@@ -301,7 +301,11 @@ function deleteEntrata(rowId) { getSheet(SHEETS.ENTRATE).deleteRow(rowId); retur
 function getAppunti() {
   return sheetRows(SHEETS.APPUNTI, 6)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id: i+2, data: fmtDateTime(r[0]), campo: r[1], testo: r[2], fotoUrl: r[3], lat: String(r[4]||''), lon: String(r[5]||'') }));
+    .map((r, i) => ({
+      id: i+2, data: fmtDateTime(r[0]), campo: r[1], testo: r[2], fotoUrl: r[3],
+      lat: (r[4] instanceof Date || isNaN(parseFloat(r[4]))) ? '' : String(r[4]),
+      lon: (r[5] instanceof Date || isNaN(parseFloat(r[5]))) ? '' : String(r[5])
+    }));
 }
 
 function saveAppunto(data) {
@@ -311,10 +315,13 @@ function saveAppunto(data) {
     const ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
     fotoUrl  = uploadFileToDrive(data.foto, 'foto_' + ts + '.jpg', 'Appunti Oliveto');
   }
-  const row = [new Date(), data.campo || '', data.testo || '', fotoUrl, data.lat || '', data.lon || ''];
+  const latVal = data.lat ? parseFloat(data.lat) : '';
+  const lonVal = data.lon ? parseFloat(data.lon) : '';
+  const row = [new Date(), data.campo || '', data.testo || '', fotoUrl, latVal, lonVal];
   const nr  = s.getLastRow() + 1;
   s.getRange(nr, 1, 1, row.length).setValues([row]);
   s.getRange(nr, 1).setNumberFormat('dd/mm/yyyy hh:mm');
+  if (latVal !== '') s.getRange(nr, 5, 1, 2).setNumberFormat('0.000000');
   return { success: true };
 }
 
