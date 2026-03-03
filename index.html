@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gestione Oliveto v09-fix6</title>
+<title>Gestione Oliveto v10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -281,6 +281,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 </style>
 </head>
 <body>
+<!-- OFFLINE BANNER -->
+<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:250;background:#d97706;color:#fff;text-align:center;padding:8px 16px;font-size:.78rem;font-weight:600">📶 Offline — <span id="offline-q-count"></span>operazioni in coda, sincronizzazione automatica alla prossima connessione</div>
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-box">
@@ -304,7 +306,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v09-fix6</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v10</div>
     </div>
   </div>
   <div class="nav">
@@ -681,13 +683,13 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v09-fix6';
+const VERSION      = 'v10';
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
 
 // ============================================================
-// AUTH — usa cookie (365gg) per persistenza su Safari iOS
+// AUTH — cookie (365gg) + localStorage: doppia persistenza per Safari iOS / ITP
 // ============================================================
 function setCookie(name, value, days) {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -700,14 +702,14 @@ function deleteCookie(name) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
 }
 function checkAuth() {
-  if (getCookie('ov_auth') !== APP_PASSWORD) {
-    document.getElementById('login-screen').style.display = 'flex';
-  }
+  const ok = getCookie('ov_auth') === APP_PASSWORD || localStorage.getItem('ov_auth') === APP_PASSWORD;
+  if (!ok) document.getElementById('login-screen').style.display = 'flex';
 }
 function doLogin() {
   const pwd = document.getElementById('login-pwd').value;
   if (pwd === APP_PASSWORD) {
     setCookie('ov_auth', APP_PASSWORD, 365);
+    try { localStorage.setItem('ov_auth', APP_PASSWORD); } catch(e) {}
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('login-pwd').value = '';
   } else {
@@ -719,23 +721,86 @@ function doLogin() {
 }
 function doLogout() {
   deleteCookie('ov_auth');
+  try { localStorage.removeItem('ov_auth'); } catch(e) {}
   location.reload();
+}
+
+// ============================================================
+// OFFLINE — coda locale + caching dati
+// ============================================================
+function _queueOp(op) {
+  const q = JSON.parse(localStorage.getItem('ov_queue') || '[]');
+  q.push({ ...op, ts: Date.now() });
+  localStorage.setItem('ov_queue', JSON.stringify(q));
+  _updateOfflineBanner();
+}
+function _updateOfflineBanner() {
+  const q = JSON.parse(localStorage.getItem('ov_queue') || '[]');
+  const b = document.getElementById('offline-banner');
+  if (!b) return;
+  const el = document.getElementById('offline-q-count');
+  if (!navigator.onLine || q.length) {
+    b.style.display = '';
+    if (el) el.textContent = q.length ? q.length + ' ' : '';
+  } else {
+    b.style.display = 'none';
+  }
+}
+async function _flushQueue() {
+  const q = JSON.parse(localStorage.getItem('ov_queue') || '[]');
+  if (!q.length) return;
+  toast('Sincronizzazione ' + q.length + ' operazioni...');
+  for (const op of q) {
+    try {
+      if (op.type === 'post') await apiPost(op.payload, true);
+      else await api(op.action, op.params, true);
+    } catch(e) { /* continua */ }
+  }
+  localStorage.removeItem('ov_queue');
+  _updateOfflineBanner();
+  toast('✅ Sincronizzazione completata!');
+  const v = document.querySelector('.nav-item.active')?.dataset?.view;
+  if (v) ({overview:loadOverview,campi:loadCampi,lavorazioni:loadLav,costi:loadCosti,raccolta:loadRacc,entrate:loadEntrate,mosca:loadMosca})[v]?.();
 }
 
 // ============================================================
 // API
 // ============================================================
-async function api(action, params = {}) {
+async function api(action, params = {}, _sync = false) {
   const url = new URL(GAS_URL);
   url.searchParams.set('action', action);
   url.searchParams.set('token', TOKEN);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
+  const isRead = action.startsWith('get');
+  const cacheKey = 'ov_cache_' + action;
+  // Offline: read → cache, write → queue
+  if (!navigator.onLine && !_sync) {
+    if (isRead) {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) return JSON.parse(cached);
+      throw new Error('Offline — nessun dato in cache');
+    } else {
+      _queueOp({ type: 'api', action, params });
+      return { success: true };
+    }
+  }
   try {
     const res = await fetch(url.toString());
     const data = await res.json();
     if (data.error) throw new Error(data.error);
+    if (isRead) try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
     return data;
-  } catch(e) { toast('Errore: ' + e.message); throw e; }
+  } catch(e) {
+    // Rete assente durante fetch
+    if (isRead) {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) { _updateOfflineBanner(); return JSON.parse(cached); }
+    } else if (!_sync) {
+      _queueOp({ type: 'api', action, params });
+      return { success: true };
+    }
+    toast('Errore: ' + e.message); throw e;
+  }
 }
 
 // ============================================================
@@ -748,6 +813,9 @@ const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[], mosca:[
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
+  window.addEventListener('online',  () => { _updateOfflineBanner(); _flushQueue(); });
+  window.addEventListener('offline', () => { _updateOfflineBanner(); });
+  _updateOfflineBanner();
   document.querySelectorAll('.nav-item').forEach(el => {
     el.addEventListener('click', () => {
       document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1203,7 +1271,15 @@ async function delEntrata(id) {
 // ============================================================
 
 // POST per upload foto (GAS doPost)
-async function apiPost(payload) {
+async function apiPost(payload, _sync = false) {
+  if (!navigator.onLine && !_sync) {
+    // Foto troppo grande per localStorage: salva senza foto
+    const hasFoto = !!(payload.data?.foto);
+    const qPayload = hasFoto ? { ...payload, data: { ...payload.data, foto: null } } : payload;
+    _queueOp({ type: 'post', payload: qPayload });
+    if (hasFoto) toast('💾 Appunto salvato offline (foto esclusa)');
+    return { success: true };
+  }
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
@@ -1214,7 +1290,16 @@ async function apiPost(payload) {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     return data;
-  } catch(e) { toast('Errore: ' + e.message); throw e; }
+  } catch(e) {
+    if (!_sync) {
+      const hasFoto = !!(payload.data?.foto);
+      const qPayload = hasFoto ? { ...payload, data: { ...payload.data, foto: null } } : payload;
+      _queueOp({ type: 'post', payload: qPayload });
+      if (hasFoto) toast('💾 Appunto salvato offline (foto esclusa)');
+      return { success: true };
+    }
+    toast('Errore: ' + e.message); throw e;
+  }
 }
 
 // Ridimensiona immagine lato browser (max 1200px, JPEG 0.75)
