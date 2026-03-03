@@ -99,7 +99,7 @@ function doPost(e) {
 function setupSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const config = [
-    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note'],                                                                           color:'#2E7D32' },
+    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note','Latitudine','Longitudine'],                                              color:'#2E7D32' },
     { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                                         color:'#1565C0' },
     { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note','Foto URL'],                                                 color:'#6A1B9A' },
     { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                                                  color:'#E65100' },
@@ -172,16 +172,23 @@ function uploadFileToDrive(base64Data, filename, folderName) {
 // ============================================================
 
 function getCampi() {
-  return sheetRows(SHEETS.CAMPI, 7)
+  return sheetRows(SHEETS.CAMPI, 9)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id: i+2, nome:r[0], ettari:r[1], numPiante:r[2], varieta:r[3], annoImpianto:r[4], comune:r[5], note:r[6] }));
+    .map((r, i) => ({
+      id: i+2, nome:r[0], ettari:r[1], numPiante:r[2], varieta:r[3], annoImpianto:r[4], comune:r[5], note:r[6],
+      lat: (r[7] instanceof Date || !r[7]) ? '' : String(r[7]),
+      lon: (r[8] instanceof Date || !r[8]) ? '' : String(r[8])
+    }));
 }
 
 function saveCampo(c) {
-  const s   = getSheet(SHEETS.CAMPI);
-  const row = [c.nome, c.ettari||'', c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||''];
-  if (c.id) s.getRange(c.id, 1, 1, row.length).setValues([row]);
-  else s.getRange(s.getLastRow()+1, 1, 1, row.length).setValues([row]);
+  const s      = getSheet(SHEETS.CAMPI);
+  const latVal = c.lat ? parseFloat(c.lat) : '';
+  const lonVal = c.lon ? parseFloat(c.lon) : '';
+  const row    = [c.nome, c.ettari||'', c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal];
+  const rowNum = c.id ? c.id : s.getLastRow() + 1;
+  s.getRange(rowNum, 1, 1, row.length).setValues([row]);
+  if (latVal !== '') s.getRange(rowNum, 8, 1, 2).setNumberFormat('0.000000');
   return { success: true };
 }
 

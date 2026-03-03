@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gestione Oliveto v10-fix2</title>
+<title>Gestione Oliveto v11 — GPS campi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -306,7 +306,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v10-fix2</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11</div>
     </div>
   </div>
   <div class="nav">
@@ -521,6 +521,15 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fr"><div class="fg"><label>Varietà Olivo</label><input id="c-varieta" placeholder="es. Frantoio, Leccino"></div>
       <div class="fg"><label>Anno Impianto</label><input id="c-anno" type="number" placeholder="es. 1985"></div></div>
       <div class="fg"><label>Note</label><textarea id="c-note" rows="2" placeholder="Note aggiuntive..."></textarea></div>
+      <div class="fg" style="margin-top:8px">
+        <label>Posizione campo (GPS)</label>
+        <div class="fr" style="margin-bottom:6px">
+          <input id="c-lat" type="number" step="0.000001" placeholder="Latitudine es. 43.123456">
+          <input id="c-lon" type="number" step="0.000001" placeholder="Longitudine es. 12.345678">
+        </div>
+        <button type="button" class="btn btn-s" style="width:100%;font-size:.8rem" onclick="rilEvaCampoGPS()" id="c-gps-btn">📍 Rileva posizione GPS attuale</button>
+        <p style="font-size:.68rem;color:var(--muted);margin-top:5px">💡 Oppure apri Google Maps, tieni premuto sul campo e incolla le coordinate sopra.</p>
+      </div>
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-campo')">Annulla</button><button class="btn btn-p" onclick="saveCampo()">Salva</button></div>
   </div>
@@ -687,7 +696,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v10-fix2';
+const VERSION      = 'v11';
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -881,7 +890,7 @@ function renderCampi() {
   if (!S.campi.length) { tb.innerHTML = er(8,'🗺️','Nessun campo. Aggiungine uno!'); return; }
   tb.innerHTML = S.campi.map(c=>`<tr>
     <td><strong>${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
-    <td>${c.varieta||'—'}</td><td>${c.annoImpianto||'—'}</td><td>${c.comune||'—'}</td>
+    <td>${c.varieta||'—'}</td><td>${c.annoImpianto||'—'}</td><td>${c.comune||'—'}${c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
     <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'—'}</td>
     <td><div class="act">
       <button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
@@ -891,7 +900,10 @@ function renderCampi() {
 
 function openCampoModal(c) {
   sv({'c-id':c?.id||'','c-nome':c?.nome||'','c-comune':c?.comune||'','c-ettari':c?.ettari||'',
-    'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-anno':c?.annoImpianto||'','c-note':c?.note||''});
+    'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-anno':c?.annoImpianto||'','c-note':c?.note||'',
+    'c-lat':c?.lat||'','c-lon':c?.lon||''});
+  document.getElementById('c-gps-btn').textContent = '📍 Rileva posizione GPS attuale';
+  document.getElementById('c-gps-btn').disabled = false;
   document.getElementById('mc-title').textContent = c ? 'Modifica Campo' : 'Nuovo Campo';
   om('m-campo');
 }
@@ -902,7 +914,7 @@ async function saveCampo() {
   if (!nome) { toast('Inserisci il nome del campo'); return; }
   await api('saveCampo', { data: { id:gv('c-id')?+gv('c-id'):null, nome, ettari:gv('c-ettari'),
     numPiante:gv('c-piante'), varieta:gv('c-varieta'), annoImpianto:gv('c-anno'),
-    comune:gv('c-comune'), note:gv('c-note') }});
+    comune:gv('c-comune'), note:gv('c-note'), lat:gv('c-lat'), lon:gv('c-lon') }});
   cm('m-campo'); loadCampi(); toast('Campo salvato!');
 }
 
@@ -1364,6 +1376,7 @@ function getLocation() {
       if (el) {
         el.innerHTML = '📍 <a href="https://maps.google.com/?q=' + _gps.lat + ',' + _gps.lon + '" target="_blank" rel="noopener" style="color:#16a34a;font-weight:600">' + _gps.lat + ', ' + _gps.lon + '</a>';
       }
+      autoSelectCampo(pos.coords.latitude, pos.coords.longitude);
     },
     () => {
       _gpsLoading = false;
@@ -1372,6 +1385,40 @@ function getLocation() {
     },
     { timeout: 12000, enableHighAccuracy: true }
   );
+}
+
+function rilEvaCampoGPS() {
+  const btn = document.getElementById('c-gps-btn');
+  btn.disabled = true; btn.textContent = '⏳ Acquisendo GPS...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById('c-lat').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('c-lon').value = pos.coords.longitude.toFixed(6);
+      btn.disabled = false; btn.textContent = '📍 Posizione aggiornata ✓';
+    },
+    () => { btn.disabled = false; btn.textContent = '📍 Rileva posizione GPS attuale'; toast('GPS non disponibile'); },
+    { timeout: 12000, enableHighAccuracy: true }
+  );
+}
+
+function distKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function autoSelectCampo(lat, lon) {
+  const con = S.campi.filter(c => c.lat && c.lon);
+  if (!con.length) return;
+  let best = null, minD = Infinity;
+  for (const c of con) {
+    const d = distKm(lat, lon, parseFloat(c.lat), parseFloat(c.lon));
+    if (d < minD) { minD = d; best = c; }
+  }
+  if (best && minD < 0.5) {
+    const sel = document.getElementById('ap-campo');
+    if (sel && !sel.value) { sel.value = best.nome; toast('📍 Campo rilevato: ' + best.nome); }
+  }
 }
 
 // Voce → testo (Web Speech API, iOS Safari + Chrome Android)
