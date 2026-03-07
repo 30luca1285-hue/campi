@@ -374,7 +374,7 @@ function getOverviewData() {
   const anno  = new Date().getFullYear();
 
   const campiData = campi.map(c => {
-    const lc       = lav.filter(l => l.campo === c.nome);
+    const lc       = lav.filter(l => l.campo.trim() === c.nome.trim());
     const costiAnno = costi.filter(x => x.campo===c.nome && x.data && new Date(x.data).getFullYear()===anno)
                            .reduce((s,x)=>s+(parseFloat(x.totale)||0), 0);
     const ur = racc.filter(r=>r.campo===c.nome).sort((a,b)=>b.anno-a.anno)[0]||null;
@@ -415,7 +415,7 @@ function getOverviewData() {
 }
 
 function ultimaData(lav, tipo) {
-  const f = lav.filter(l=>l.tipo===tipo&&l.data).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const f = lav.filter(l=>l.tipo.trim()===tipo&&l.data).sort((a,b)=>new Date(b.data)-new Date(a.data));
   return f.length ? f[0].data : null;
 }
 
