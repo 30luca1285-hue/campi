@@ -520,11 +520,10 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fg"><label>Comune / Località</label><input id="c-comune" placeholder="es. Trevi"></div></div>
       <div class="fr"><div class="fg"><label>Ettari</label><input id="c-ettari" type="number" step="0.01" placeholder="es. 1.5"></div>
       <div class="fg"><label>N. Piante</label><input id="c-piante" type="number" placeholder="es. 120"></div></div>
-      <div class="fr"><div class="fg"><label>Varietà Olivo</label><input id="c-varieta" placeholder="es. Frantoio, Leccino"></div>
-      <div class="fg"><label>Anno Impianto</label><input id="c-anno" type="number" placeholder="es. 1985"></div></div>
+      <div class="fg"><label>Varietà Olivo</label><input id="c-varieta" placeholder="es. Frantoio, Leccino"></div>
       <div class="fg"><label>Note</label><textarea id="c-note" rows="2" placeholder="Note aggiuntive..."></textarea></div>
       <div class="fr"><div class="fg"><label>Costo Affitto €</label><input id="c-affitto" type="number" step="0.01" placeholder="es. 1500"></div>
-      <div class="fg"><label>Note Affitto</label><input id="c-noteaffitto" placeholder="es. 1500€ + 50 lt olio"></div></div>
+      <div class="fg"><label>Scadenza Affitto</label><input id="c-scadaffitto" type="date"></div></div>
       <div class="fg" style="margin-top:8px">
         <label>Posizione campo (GPS)</label>
         <div class="fr" style="margin-bottom:6px">
@@ -904,8 +903,8 @@ function renderCampi() {
 
 function openCampoModal(c) {
   sv({'c-id':c?.id||'','c-nome':c?.nome||'','c-comune':c?.comune||'','c-ettari':c?.ettari||'',
-    'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-anno':c?.annoImpianto||'','c-note':c?.note||'',
-    'c-lat':c?.lat||'','c-lon':c?.lon||'','c-affitto':c?.affitto||'','c-noteaffitto':c?.noteAffitto||''});
+    'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-note':c?.note||'',
+    'c-lat':c?.lat||'','c-lon':c?.lon||'','c-affitto':c?.affitto||'','c-scadaffitto':c?.scadenzaAffitto||''});
   document.getElementById('c-gps-btn').textContent = '📍 Rileva posizione GPS attuale';
   document.getElementById('c-gps-btn').disabled = false;
   document.getElementById('mc-title').textContent = c ? 'Modifica Campo' : 'Nuovo Campo';
@@ -917,9 +916,9 @@ async function saveCampo() {
   const nome = gv('c-nome').trim();
   if (!nome) { toast('Inserisci il nome del campo'); return; }
   await api('saveCampo', { data: { id:gv('c-id')?+gv('c-id'):null, nome, ettari:gv('c-ettari'),
-    numPiante:gv('c-piante'), varieta:gv('c-varieta'), annoImpianto:gv('c-anno'),
+    numPiante:gv('c-piante'), varieta:gv('c-varieta'), annoImpianto:'',
     comune:gv('c-comune'), note:gv('c-note'), lat:gv('c-lat'), lon:gv('c-lon'),
-    affitto:gv('c-affitto'), noteAffitto:gv('c-noteaffitto') }});
+    affitto:gv('c-affitto'), scadenzaAffitto:gv('c-scadaffitto') }});
   cm('m-campo'); loadCampi(); toast('Campo salvato!');
 }
 

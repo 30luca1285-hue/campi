@@ -99,7 +99,7 @@ function doPost(e) {
 function setupSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const config = [
-    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note','Latitudine','Longitudine','Costo Affitto €','Note Affitto'],          color:'#2E7D32' },
+    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note','Latitudine','Longitudine','Costo Affitto €','Scadenza Affitto'],     color:'#2E7D32' },
     { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                                         color:'#1565C0' },
     { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note','Foto URL'],                                                 color:'#6A1B9A' },
     { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                                                  color:'#E65100' },
@@ -179,7 +179,7 @@ function getCampi() {
       lat: (r[7] instanceof Date || !r[7]) ? '' : String(r[7]),
       lon: (r[8] instanceof Date || !r[8]) ? '' : String(r[8]),
       affitto: (r[9] !== '' && r[9] != null) ? (parseFloat(r[9])||'') : '',
-      noteAffitto: r[10] || ''
+      scadenzaAffitto: fmtDate(r[10])
     }));
 }
 
@@ -189,12 +189,13 @@ function saveCampo(c) {
   const lonVal = c.lon ? parseFloat(c.lon) : '';
   const ettVal     = (c.ettari !== '' && c.ettari != null) ? parseFloat(c.ettari) : '';
   const affittoVal = (c.affitto !== '' && c.affitto != null) ? parseFloat(c.affitto) : '';
-  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal, affittoVal, c.noteAffitto||''];
+  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal, affittoVal, toDate(c.scadenzaAffitto)];
   const rowNum = c.id ? c.id : s.getLastRow() + 1;
   s.getRange(rowNum, 1, 1, row.length).setValues([row]);
   if (ettVal !== '') s.getRange(rowNum, 2, 1, 1).setNumberFormat('0.00');
   if (latVal !== '') s.getRange(rowNum, 8, 1, 2).setNumberFormat('0.000000');
   if (affittoVal !== '') s.getRange(rowNum, 10, 1, 1).setNumberFormat('€#,##0.00');
+  if (c.scadenzaAffitto) s.getRange(rowNum, 11, 1, 1).setNumberFormat('dd/mm/yyyy');
   return { success: true };
 }
 
