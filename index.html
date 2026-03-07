@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.4 — affitto + scadenza</title>
+<title>Gestione Oliveto v11.6 — data pagamento affitto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -361,8 +361,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   <div class="pb">
     <div id="campi-section">
       <div class="tw">
-        <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Comune</th><th>Scad. Affitto</th><th>Affitto €</th><th>Note</th><th></th></tr></thead>
-        <tbody id="campi-tb"><tr><td colspan="8"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
+        <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Comune</th><th>Scad. Affitto</th><th>Pag. Affitto</th><th>Affitto €</th><th>Note</th><th></th></tr></thead>
+        <tbody id="campi-tb"><tr><td colspan="9"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
       </div>
     </div>
     <div id="diari-section" style="display:none">
@@ -527,6 +527,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fg"><label>Note</label><textarea id="c-note" rows="2" placeholder="Note aggiuntive..."></textarea></div>
       <div class="fr"><div class="fg"><label>Costo Affitto €</label><input id="c-affitto" type="number" step="0.01" placeholder="es. 1500"></div>
       <div class="fg"><label>Scadenza Affitto</label><input id="c-scadaffitto" type="date"></div></div>
+      <div class="fg"><label>Data Pagamento Affitto</label><input id="c-pagaffitto" type="date"></div>
       <div class="fg" style="margin-top:8px">
         <label>Posizione campo (GPS)</label>
         <div class="fr" style="margin-bottom:6px">
@@ -702,8 +703,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.5';
-if (!location.search.includes('v=11.5')) { location.replace(location.pathname + '?v=11.5'); }
+const VERSION      = 'v11.6';
+if (!location.search.includes('v=11.6')) { location.replace(location.pathname + '?v=11.6'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -898,7 +899,7 @@ function renderCampi() {
   tb.innerHTML = S.campi.map(c=>`<tr>
     <td><strong>${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
     <td>${c.comune||'—'}${c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
-    <td>${c.scadenzaAffitto||'—'}</td><td>${c.affitto?'€'+c.affitto:'—'}</td>
+    <td>${c.scadenzaAffitto||'—'}</td><td>${c.pagamentoAffitto||'—'}</td><td>${c.affitto?'€'+c.affitto:'—'}</td>
     <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'—'}</td>
     <td><div class="act">
       <button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
@@ -909,7 +910,7 @@ function renderCampi() {
 function openCampoModal(c) {
   sv({'c-id':c?.id||'','c-nome':c?.nome||'','c-comune':c?.comune||'','c-ettari':c?.ettari||'',
     'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-note':c?.note||'',
-    'c-lat':c?.lat||'','c-lon':c?.lon||'','c-affitto':c?.affitto||'','c-scadaffitto':c?.scadenzaAffitto||''});
+    'c-lat':c?.lat||'','c-lon':c?.lon||'','c-affitto':c?.affitto||'','c-scadaffitto':c?.scadenzaAffitto||'','c-pagaffitto':c?.pagamentoAffitto||''});
   document.getElementById('c-gps-btn').textContent = '📍 Rileva posizione GPS attuale';
   document.getElementById('c-gps-btn').disabled = false;
   document.getElementById('mc-title').textContent = c ? 'Modifica Campo' : 'Nuovo Campo';
@@ -923,7 +924,7 @@ async function saveCampo() {
   await api('saveCampo', { data: { id:gv('c-id')?+gv('c-id'):null, nome, ettari:gv('c-ettari'),
     numPiante:gv('c-piante'), varieta:gv('c-varieta'), annoImpianto:'',
     comune:gv('c-comune'), note:gv('c-note'), lat:gv('c-lat'), lon:gv('c-lon'),
-    affitto:gv('c-affitto'), scadenzaAffitto:gv('c-scadaffitto') }});
+    affitto:gv('c-affitto'), scadenzaAffitto:gv('c-scadaffitto'), pagamentoAffitto:gv('c-pagaffitto') }});
   cm('m-campo'); loadCampi(); toast('Campo salvato!');
 }
 
