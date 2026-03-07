@@ -523,6 +523,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fr"><div class="fg"><label>Varietà Olivo</label><input id="c-varieta" placeholder="es. Frantoio, Leccino"></div>
       <div class="fg"><label>Anno Impianto</label><input id="c-anno" type="number" placeholder="es. 1985"></div></div>
       <div class="fg"><label>Note</label><textarea id="c-note" rows="2" placeholder="Note aggiuntive..."></textarea></div>
+      <div class="fr"><div class="fg"><label>Costo Affitto €</label><input id="c-affitto" type="number" step="0.01" placeholder="es. 1500"></div>
+      <div class="fg"><label>Note Affitto</label><input id="c-noteaffitto" placeholder="es. 1500€ + 50 lt olio"></div></div>
       <div class="fg" style="margin-top:8px">
         <label>Posizione campo (GPS)</label>
         <div class="fr" style="margin-bottom:6px">
@@ -903,7 +905,7 @@ function renderCampi() {
 function openCampoModal(c) {
   sv({'c-id':c?.id||'','c-nome':c?.nome||'','c-comune':c?.comune||'','c-ettari':c?.ettari||'',
     'c-piante':c?.numPiante||'','c-varieta':c?.varieta||'','c-anno':c?.annoImpianto||'','c-note':c?.note||'',
-    'c-lat':c?.lat||'','c-lon':c?.lon||''});
+    'c-lat':c?.lat||'','c-lon':c?.lon||'','c-affitto':c?.affitto||'','c-noteaffitto':c?.noteAffitto||''});
   document.getElementById('c-gps-btn').textContent = '📍 Rileva posizione GPS attuale';
   document.getElementById('c-gps-btn').disabled = false;
   document.getElementById('mc-title').textContent = c ? 'Modifica Campo' : 'Nuovo Campo';
@@ -916,7 +918,8 @@ async function saveCampo() {
   if (!nome) { toast('Inserisci il nome del campo'); return; }
   await api('saveCampo', { data: { id:gv('c-id')?+gv('c-id'):null, nome, ettari:gv('c-ettari'),
     numPiante:gv('c-piante'), varieta:gv('c-varieta'), annoImpianto:gv('c-anno'),
-    comune:gv('c-comune'), note:gv('c-note'), lat:gv('c-lat'), lon:gv('c-lon') }});
+    comune:gv('c-comune'), note:gv('c-note'), lat:gv('c-lat'), lon:gv('c-lon'),
+    affitto:gv('c-affitto'), noteAffitto:gv('c-noteaffitto') }});
   cm('m-campo'); loadCampi(); toast('Campo salvato!');
 }
 
