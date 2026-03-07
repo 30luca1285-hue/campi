@@ -179,8 +179,8 @@ function getCampi() {
       lat: (r[7] instanceof Date || !r[7]) ? '' : String(r[7]),
       lon: (r[8] instanceof Date || !r[8]) ? '' : String(r[8]),
       affitto: (r[9] !== '' && r[9] != null) ? (parseFloat(r[9])||'') : '',
-      scadenzaAffitto: (r[10] && !(r[10] instanceof Date && isNaN(r[10]))) ? fmtDate(r[10]) : '',
-      pagamentoAffitto: (r[11] && !(r[11] instanceof Date && isNaN(r[11]))) ? fmtDate(r[11]) : ''
+      scadenzaAffitto:  r[10] ? fmtDate(r[10]) : '',
+      pagamentoAffitto: r[11] ? fmtDate(r[11]) : ''
     }));
 }
 
