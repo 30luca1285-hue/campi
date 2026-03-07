@@ -358,8 +358,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   <div class="pb">
     <div id="campi-section">
       <div class="tw">
-        <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Varietà</th><th>Anno</th><th>Comune</th><th>Note</th><th></th></tr></thead>
-        <tbody id="campi-tb"><tr><td colspan="8"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
+        <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Anno</th><th>Comune</th><th>Note</th><th></th></tr></thead>
+        <tbody id="campi-tb"><tr><td colspan="7"><div class="spin-wrap"><div class="spinner"></div></div></td></tr></tbody></table>
       </div>
     </div>
     <div id="diari-section" style="display:none">
@@ -892,8 +892,8 @@ function renderCampi() {
   if (!S.campi.length) { tb.innerHTML = er(8,'🗺️','Nessun campo. Aggiungine uno!'); return; }
   tb.innerHTML = S.campi.map(c=>`<tr>
     <td><strong>${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
-    <td>${c.varieta||'—'}</td><td>${c.annoImpianto||'—'}</td><td>${c.comune||'—'}${c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
-    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'—'}</td>
+    <td>${c.annoImpianto||'—'}</td><td>${c.comune||'—'}${c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'—'}</td>
     <td><div class="act">
       <button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
       <button class="btn-ic" onclick="delCampo(${c.id},'${esc(c.nome)}')">🗑️</button>

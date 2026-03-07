@@ -175,7 +175,7 @@ function getCampi() {
   return sheetRows(SHEETS.CAMPI, 9)
     .filter(r => r[0] !== '')
     .map((r, i) => ({
-      id: i+2, nome:r[0], ettari:r[1], numPiante:r[2], varieta:r[3], annoImpianto:r[4], comune:r[5], note:r[6],
+      id: i+2, nome:r[0], ettari:(r[1] instanceof Date || r[1]==='') ? '' : (parseFloat(r[1])||''), numPiante:r[2], varieta:r[3], annoImpianto:r[4], comune:r[5], note:r[6],
       lat: (r[7] instanceof Date || !r[7]) ? '' : String(r[7]),
       lon: (r[8] instanceof Date || !r[8]) ? '' : String(r[8])
     }));
@@ -185,9 +185,11 @@ function saveCampo(c) {
   const s      = getSheet(SHEETS.CAMPI);
   const latVal = c.lat ? parseFloat(c.lat) : '';
   const lonVal = c.lon ? parseFloat(c.lon) : '';
-  const row    = [c.nome, c.ettari||'', c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal];
+  const ettVal = (c.ettari !== '' && c.ettari != null) ? parseFloat(c.ettari) : '';
+  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal];
   const rowNum = c.id ? c.id : s.getLastRow() + 1;
   s.getRange(rowNum, 1, 1, row.length).setValues([row]);
+  if (ettVal !== '') s.getRange(rowNum, 2, 1, 1).setNumberFormat('0.00');
   if (latVal !== '') s.getRange(rowNum, 8, 1, 2).setNumberFormat('0.000000');
   return { success: true };
 }
