@@ -179,7 +179,7 @@ function getCampi() {
       lat: (r[7] instanceof Date || !r[7]) ? '' : String(r[7]),
       lon: (r[8] instanceof Date || !r[8]) ? '' : String(r[8]),
       affitto: (r[9] !== '' && r[9] != null) ? (parseFloat(r[9])||'') : '',
-      scadenzaAffitto: fmtDate(r[10])
+      scadenzaAffitto: (r[10] && !(r[10] instanceof Date && isNaN(r[10]))) ? fmtDate(r[10]) : ''
     }));
 }
 
@@ -189,13 +189,19 @@ function saveCampo(c) {
   const lonVal = c.lon ? parseFloat(c.lon) : '';
   const ettVal     = (c.ettari !== '' && c.ettari != null) ? parseFloat(c.ettari) : '';
   const affittoVal = (c.affitto !== '' && c.affitto != null) ? parseFloat(c.affitto) : '';
-  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal, affittoVal, toDate(c.scadenzaAffitto)];
+  const scadVal = c.scadenzaAffitto ? toDate(c.scadenzaAffitto) : '';
+  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal, affittoVal, scadVal];
   const rowNum = c.id ? c.id : s.getLastRow() + 1;
   s.getRange(rowNum, 1, 1, row.length).setValues([row]);
   if (ettVal !== '') s.getRange(rowNum, 2, 1, 1).setNumberFormat('0.00');
   if (latVal !== '') s.getRange(rowNum, 8, 1, 2).setNumberFormat('0.000000');
   if (affittoVal !== '') s.getRange(rowNum, 10, 1, 1).setNumberFormat('€#,##0.00');
-  if (c.scadenzaAffitto) s.getRange(rowNum, 11, 1, 1).setNumberFormat('dd/mm/yyyy');
+  // scrivi scadenza esplicitamente per evitare problemi di tipo cella
+  if (scadVal) {
+    s.getRange(rowNum, 11).setValue(scadVal).setNumberFormat('dd/mm/yyyy');
+  } else {
+    s.getRange(rowNum, 11).setValue('');
+  }
   return { success: true };
 }
 
