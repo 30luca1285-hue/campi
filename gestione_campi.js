@@ -99,7 +99,7 @@ function doPost(e) {
 function setupSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const config = [
-    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','Anno Impianto','Comune / Localita','Note','Latitudine','Longitudine','Costo Affitto €','Scadenza Affitto','Data Pagamento Affitto'], color:'#2E7D32' },
+    { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','(non usato)','Comune / Localita','Note','Latitudine','Longitudine','Costo Affitto €','Scadenza Affitto','Data Pagamento Affitto'], color:'#2E7D32' },
     { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                                         color:'#1565C0' },
     { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note','Foto URL'],                                                 color:'#6A1B9A' },
     { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                                                  color:'#E65100' },
@@ -199,16 +199,13 @@ function saveCampo(c) {
   if (latVal !== '') s.getRange(rowNum, 8, 1, 2).setNumberFormat('0.000000');
   if (affittoVal !== '') s.getRange(rowNum, 10, 1, 1).setNumberFormat('€#,##0.00');
   // scrivi scadenza esplicitamente per evitare problemi di tipo cella
-  if (scadVal) {
-    s.getRange(rowNum, 11).setValue(scadVal).setNumberFormat('dd/mm/yyyy');
-  } else {
-    s.getRange(rowNum, 11).setValue('');
-  }
-  if (pagVal) {
-    s.getRange(rowNum, 12).setValue(pagVal).setNumberFormat('dd/mm/yyyy');
-  } else {
-    s.getRange(rowNum, 12).setValue('');
-  }
+  const scadCell = s.getRange(rowNum, 11);
+  scadCell.setNumberFormat('dd/mm/yyyy');
+  scadCell.setValue(scadVal || '');
+  const pagCell = s.getRange(rowNum, 12);
+  pagCell.setNumberFormat('dd/mm/yyyy');
+  pagCell.setValue(pagVal || '');
+  SpreadsheetApp.flush();
   return { success: true };
 }
 
