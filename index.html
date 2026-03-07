@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.7 — fix date formato italiano</title>
+<title>Gestione Oliveto v11.8 — ordinamento campi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.7</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.8</div>
     </div>
   </div>
   <div class="nav">
@@ -351,6 +351,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <h2>Campi</h2>
     <div style="display:flex;gap:8px">
       <button id="btn-nuovo-campo" class="btn btn-p" onclick="openCampoModal()">+ Nuovo Campo</button>
+      <button id="btn-ordina-campo" class="btn btn-s" onclick="toggleSortMode()">↕ Ordina</button>
       <button id="btn-nuovo-appunto" class="btn btn-p" style="display:none" onclick="openCapture()">📷 Appunto</button>
     </div>
   </div>
@@ -359,6 +360,13 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="tab" id="tab-diari" onclick="switchCampiTab('diari')">📷 Diari</div>
   </div>
   <div class="pb">
+    <div id="sort-bar" style="display:none;background:var(--green);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:8px">
+      <span style="font-size:.85rem;font-weight:600">Modalità ordinamento — usa ↑ ↓ sulle righe</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-s" style="background:#fff;color:var(--green);font-weight:700" onclick="saveCampiOrder()">✓ Salva ordine</button>
+        <button class="btn btn-s" style="background:rgba(255,255,255,.2);color:#fff" onclick="toggleSortMode()">✕ Annulla</button>
+      </div>
+    </div>
     <div id="campi-section">
       <div class="tw">
         <table><thead><tr><th>Nome</th><th>Ettari</th><th>N. Piante</th><th>Comune</th><th>Scad. Affitto</th><th>Pag. Affitto</th><th>Affitto €</th><th>Note</th><th></th></tr></thead>
@@ -703,8 +711,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.7';
-if (!location.search.includes('v=11.7')) { location.replace(location.pathname + '?v=11.7'); }
+const VERSION      = 'v11.8';
+if (!location.search.includes('v=11.8')) { location.replace(location.pathname + '?v=11.8'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -893,18 +901,53 @@ async function loadCampi() {
   updateSelects();
 }
 
+let _sortMode = false;
+
 function renderCampi() {
   const tb = document.getElementById('campi-tb');
-  if (!S.campi.length) { tb.innerHTML = er(8,'🗺️','Nessun campo. Aggiungine uno!'); return; }
-  tb.innerHTML = S.campi.map(c=>`<tr>
+  if (!S.campi.length) { tb.innerHTML = er(9,'🗺️','Nessun campo. Aggiungine uno!'); return; }
+  tb.innerHTML = S.campi.map((c,i)=>`<tr>
     <td><strong>${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
-    <td>${c.comune||'—'}${c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
+    <td>${c.comune||'—'}${!_sortMode&&c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
     <td>${fd(c.scadenzaAffitto)}</td><td>${fd(c.pagamentoAffitto)}</td><td>${c.affitto?'€'+c.affitto:'—'}</td>
     <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.note||'—'}</td>
     <td><div class="act">
-      <button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
-      <button class="btn-ic" onclick="delCampo(${c.id},'${esc(c.nome)}')">🗑️</button>
+      ${_sortMode
+        ? `<button class="btn-ic" ${i===0?'disabled':''} onclick="moveCampo(${i},-1)">↑</button>
+           <button class="btn-ic" ${i===S.campi.length-1?'disabled':''} onclick="moveCampo(${i},1)">↓</button>`
+        : `<button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
+           <button class="btn-ic" onclick="delCampo(${c.id},'${esc(c.nome)}')">🗑️</button>`}
     </div></td></tr>`).join('');
+}
+
+function toggleSortMode() {
+  _sortMode = !_sortMode;
+  const bar = document.getElementById('sort-bar');
+  const btnN = document.getElementById('btn-nuovo-campo');
+  const btnO = document.getElementById('btn-ordina-campo');
+  bar.style.display = _sortMode ? 'flex' : 'none';
+  btnN.style.display = _sortMode ? 'none' : '';
+  btnO.textContent = _sortMode ? '✕ Esci' : '↕ Ordina';
+  renderCampi();
+}
+
+function moveCampo(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= S.campi.length) return;
+  [S.campi[i], S.campi[j]] = [S.campi[j], S.campi[i]];
+  renderCampi();
+}
+
+async function saveCampiOrder() {
+  const ids = S.campi.map(c => c.id);
+  await api('riordinaCampi', { data: JSON.stringify(ids) });
+  _sortMode = false;
+  await loadCampi();
+  const bar = document.getElementById('sort-bar');
+  bar.style.display = 'none';
+  document.getElementById('btn-nuovo-campo').style.display = '';
+  document.getElementById('btn-ordina-campo').textContent = '↕ Ordina';
+  toast('Ordine salvato!');
 }
 
 function openCampoModal(c) {

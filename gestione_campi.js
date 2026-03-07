@@ -54,6 +54,7 @@ function doGet(e) {
       case 'getMosca':          result = getMosca(); break;
       case 'saveMosca':         result = saveMoscaEntry(JSON.parse(e.parameter.data)); break;
       case 'deleteMosca':       result = deleteMoscaEntry(+e.parameter.rowId); break;
+      case 'riordinaCampi':     result = riordinaCampi(JSON.parse(e.parameter.data)); break;
       case 'setup':             result = setupSheets(); break;
       default: result = { error: 'Unknown action: ' + action };
     }
@@ -210,6 +211,22 @@ function saveCampo(c) {
 }
 
 function deleteCampo(rowId) { getSheet(SHEETS.CAMPI).deleteRow(rowId); return { success: true }; }
+
+function riordinaCampi(ids) {
+  const s = getSheet(SHEETS.CAMPI);
+  const lastRow = s.getLastRow();
+  if (lastRow <= 1 || !ids.length) return { success: true };
+  const data = s.getRange(2, 1, lastRow - 1, 12).getValues();
+  // mappa id (numero riga sheet) → dati riga
+  const rowMap = {};
+  data.forEach((r, i) => { rowMap[i + 2] = r; });
+  const newRows = ids.filter(id => rowMap[id]).map(id => rowMap[id]);
+  if (!newRows.length) return { success: true };
+  s.getRange(2, 1, lastRow - 1, 12).clearContent();
+  s.getRange(2, 1, newRows.length, 12).setValues(newRows);
+  SpreadsheetApp.flush();
+  return { success: true };
+}
 
 // ============================================================
 // LAVORAZIONI
