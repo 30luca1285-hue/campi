@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.24</title>
+<title>Gestione Oliveto v11.25</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
@@ -358,7 +358,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.24</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.25</div>
     </div>
   </div>
   <div class="nav">
@@ -800,7 +800,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.24';
+const VERSION      = 'v11.25';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1744,15 +1744,42 @@ function drawPie(canvasId, items) {
     ctx.fillStyle='#94a3b8'; ctx.font='11px Inter,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('Nessun dato',cx,cy); return;
   }
+  const slices = [];
   let angle = -Math.PI/2;
   items.forEach(it => {
     const slice = (it.value/total)*Math.PI*2;
     ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,angle,angle+slice); ctx.closePath();
     ctx.fillStyle=it.color; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    slices.push({ start:angle, end:angle+slice, item:it });
     angle += slice;
   });
   // Donut hole
   ctx.beginPath(); ctx.arc(cx,cy,r*0.42,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+
+  // Tooltip on hover
+  let tt = document.getElementById('pie-tooltip');
+  if (!tt) {
+    tt = document.createElement('div'); tt.id='pie-tooltip';
+    tt.style.cssText='position:fixed;pointer-events:none;background:#1a2416;color:#fff;padding:7px 11px;border-radius:8px;font-size:.75rem;font-weight:600;z-index:500;opacity:0;transition:opacity .15s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+    document.body.appendChild(tt);
+  }
+  canvas.onmousemove = e => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX - cx;
+    const my = (e.clientY - rect.top)  * scaleY - cy;
+    const dist = Math.sqrt(mx*mx + my*my);
+    if (dist < r*0.42 || dist > r) { tt.style.opacity='0'; return; }
+    let a = Math.atan2(my, mx);
+    if (a < -Math.PI/2) a += Math.PI*2;
+    const hit = slices.find(s => a >= s.start && a < s.end);
+    if (hit) {
+      const pct = Math.round(hit.item.value/total*100);
+      tt.innerHTML = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${hit.item.color};margin-right:6px;vertical-align:middle"></span>${hit.item.label}<br><span style="font-size:.85rem;opacity:.85">${fe(hit.item.value)} · ${pct}%</span>`;
+      tt.style.left = (e.clientX+14)+'px'; tt.style.top = (e.clientY-10)+'px'; tt.style.opacity='1';
+    } else { tt.style.opacity='0'; }
+  };
+  canvas.onmouseleave = () => { tt.style.opacity='0'; };
 }
 
 function pieLegend(containerId, items, total) {
