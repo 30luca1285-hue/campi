@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.20</title>
+<title>Gestione Oliveto v11.21</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -283,6 +283,13 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   /* Voce mic button */
   .mic-btn{padding:16px;font-size:.9rem}
 }
+.acc-item{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.acc-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;background:var(--bg2);user-select:none;gap:12px}
+.acc-hdr:active{opacity:.8}
+.acc-hdr .acc-arrow{font-size:.7rem;color:var(--muted);transition:transform .2s}
+.acc-body{display:none;padding:12px 16px 16px}
+.acc-body.open{display:block}
+.acc-hdr.active .acc-arrow{transform:rotate(90deg)}
 </style>
 </head>
 <body>
@@ -311,7 +318,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.20</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.21</div>
     </div>
   </div>
   <div class="nav">
@@ -753,7 +760,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.20';
+const VERSION      = 'v11.21';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1121,52 +1128,37 @@ function _populateCostiAnni() {
 
 const _secHdr = t => `<div style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:16px 0 6px;text-transform:uppercase">${t}</div>`;
 
+function _accToggle(el) {
+  el.classList.toggle('active');
+  el.nextElementSibling.classList.toggle('open');
+}
+
 function _renderCostiAll(lavCosts, costi, affitti) {
-  const lavByTipo = {};
-  lavCosts.forEach(l => {
-    if (!lavByTipo[l.tipo]) lavByTipo[l.tipo] = { count:0, tot:0 };
-    lavByTipo[l.tipo].count++;
-    lavByTipo[l.tipo].tot += (parseFloat(l.costo)||0) + (parseFloat(l.costoProdotto)||0);
-  });
-  const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
   const daRipartire = costi.filter(c => !c.campo && !c.ripartita);
   const giaRipartite = costi.filter(c => !c.campo && c.ripartita);
-  const costiBycat = {};
-  costi.filter(c => c.campo).forEach(c => {
-    const cat = c.categoria||'Altro';
-    if (!costiBycat[cat]) costiBycat[cat] = { count:0, tot:0 };
-    costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
-  });
-  const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0) + daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
-  // giaRipartite escluse dal totale (già conteggiate nelle lavorazioni)
-  const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
-  const totale = totLav + totCosti + totAffitti;
-  document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
+  const costiConCampo = costi.filter(c => c.campo);
+
+  const allCampi = [...new Set([
+    ...lavCosts.map(l => l.campo),
+    ...costiConCampo.map(c => c.campo),
+    ...affitti.map(a => a.campo)
+  ])].filter(Boolean).sort();
+
+  const totaleGlobale = allCampi.reduce((tot, campo) => {
+    const myLav = lavCosts.filter(l => l.campo === campo);
+    const myCosti = costiConCampo.filter(c => c.campo === campo);
+    const myAff = affitti.filter(a => a.campo === campo);
+    return tot
+      + myLav.reduce((s,l) => s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0), 0)
+      + myCosti.reduce((s,c) => s+(parseFloat(c.totale)||0), 0)
+      + myAff.reduce((s,a) => s+a.costo, 0);
+  }, 0) + daRipartire.reduce((s,c) => s+(parseFloat(c.totale)||0), 0);
+
+  document.getElementById('costi-tot').textContent = totaleGlobale ? 'Totale: '+fe(totaleGlobale) : '';
+
   let html = '';
-  if (affitti.length) {
-    html += _secHdr('Affitti');
-    html += `<table><thead><tr><th>Campo</th><th>Anno pagamento</th><th style="text-align:right">Affitto annuo</th></tr></thead><tbody>`;
-    html += affitti.map(a=>
-      `<tr><td>${a.campo}</td><td style="color:var(--muted)">${fd(a.pagato)}</td><td style="text-align:right"><strong>${fe(a.costo)}</strong></td></tr>`
-    ).join('');
-    html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale affitti</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totAffitti)}</strong></td></tr></tbody></table>`;
-  }
-  if (Object.keys(lavByTipo).length) {
-    html += _secHdr('Lavorazioni — costo terzista');
-    html += `<table><thead><tr><th>Tipo</th><th>Interventi</th><th style="text-align:right">Totale</th></tr></thead><tbody>`;
-    html += Object.entries(lavByTipo).map(([tipo,v])=>
-      `<tr><td>${tipo}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`
-    ).join('');
-    html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale lavorazioni</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totLav)}</strong></td></tr></tbody></table>`;
-  }
-  if (Object.keys(costiBycat).length) {
-    html += _secHdr('Costi diretti — fatture e acquisti');
-    html += `<table><thead><tr><th>Categoria</th><th>Voci</th><th style="text-align:right">Totale</th></tr></thead><tbody>`;
-    html += Object.entries(costiBycat).map(([cat,v])=>
-      `<tr><td>${cat}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`
-    ).join('');
-    html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale costi diretti</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totCosti)}</strong></td></tr></tbody></table>`;
-  }
+
+  // Fatture da ripartire / già ripartite
   if (daRipartire.length) {
     html += _secHdr('⚠️ Da ripartire — fatture senza campo');
     html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th></th></tr></thead><tbody>`;
@@ -1183,8 +1175,46 @@ function _renderCostiAll(lavCosts, costi, affitti) {
     ).join('');
     html += `</tbody></table>`;
   }
+
+  // Accordion per campo
+  allCampi.forEach(campo => {
+    const myLav = lavCosts.filter(l => l.campo === campo).sort((a,b) => new Date(b.data)-new Date(a.data));
+    const myCosti = costiConCampo.filter(c => c.campo === campo).sort((a,b) => new Date(b.data)-new Date(a.data));
+    const myAff = affitti.filter(a => a.campo === campo);
+    const totLav = myLav.reduce((s,l) => s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0), 0);
+    const totCosti = myCosti.reduce((s,c) => s+(parseFloat(c.totale)||0), 0);
+    const totAff = myAff.reduce((s,a) => s+a.costo, 0);
+    const totCampo = totLav + totCosti + totAff;
+
+    let body = '';
+    if (myAff.length) {
+      body += _secHdr('Affitto');
+      body += `<table><tbody>${myAff.map(a=>`<tr><td style="color:var(--muted)">${fd(a.pagato)}</td><td style="text-align:right"><strong>${fe(a.costo)}</strong></td></tr>`).join('')}</tbody></table>`;
+    }
+    if (myLav.length) {
+      body += _secHdr('Lavorazioni');
+      body += `<table><thead><tr><th>Data</th><th>Tipo</th><th>Qtà</th><th style="text-align:right">Costo Lav.</th><th style="text-align:right">Costo Prod.</th><th></th></tr></thead><tbody>`;
+      body += myLav.map(l=>`<tr><td>${fd(l.data)}</td><td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td><td>${l.quantita?l.quantita+(l.unita?' '+l.unita:''):'—'}</td><td style="text-align:right">${l.costo?fe(l.costo):'—'}</td><td style="text-align:right">${l.costoProdotto?'<strong>'+fe(l.costoProdotto)+'</strong>':'—'}</td><td><button class="btn-ic" onclick="editLav(${l.id})">✏️</button></td></tr>`).join('');
+      body += `</tbody></table>`;
+    }
+    if (myCosti.length) {
+      body += _secHdr('Fatture e acquisti');
+      body += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th>Fattura</th><th></th></tr></thead><tbody>`;
+      body += myCosti.map(c=>`<tr><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right"><strong>${c.totale?fe(c.totale):'—'}</strong></td><td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td><td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('');
+      body += `</tbody></table>`;
+    }
+
+    html += `<div class="acc-item">
+      <div class="acc-hdr" onclick="_accToggle(this)">
+        <span><strong>${campo}</strong></span>
+        <span style="display:flex;align-items:center;gap:10px"><strong style="color:var(--green)">${fe(totCampo)}</strong><span class="acc-arrow">▶</span></span>
+      </div>
+      <div class="acc-body">${body}</div>
+    </div>`;
+  });
+
   if (!html) { document.getElementById('costi-content').innerHTML = `<div class="empty"><div class="empty-ic">💰</div><p>Nessun costo registrato.</p></div>`; return; }
-  if (totale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totale)}</span></div>`;
+  if (totaleGlobale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totaleGlobale)}</span></div>`;
   document.getElementById('costi-content').innerHTML = html;
 }
 
