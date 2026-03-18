@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.16</title>
+<title>Gestione Oliveto v11.17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.16</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.17</div>
     </div>
   </div>
   <div class="nav">
@@ -395,7 +395,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
           <option>Concimazione</option><option>Trinciatura</option><option>Raccolta</option><option>Altra Lavorazione</option></select>
       </div>
     </div>
-    <table><thead><tr><th>Data</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Prodotto</th><th>Operatore</th><th>Costo</th><th></th></tr></thead>
+    <table><thead><tr><th>Data</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Prodotto</th><th>Operatore</th><th>Costo Lav.</th><th>Costo Prod.</th><th></th></tr></thead>
     <tbody id="lav-tb"></tbody></table>
   </div></div>
 </div>
@@ -752,7 +752,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.16';
+const VERSION      = 'v11.17';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1041,6 +1041,7 @@ function renderLav() {
     <td style="max-width:180px">${l.descrizione||'—'}</td>
     <td>${l.prodotto||'—'}</td><td>${l.operatore||'—'}</td>
     <td>${l.costo?fe(l.costo):'—'}</td>
+    <td>${l.costoProdotto?fe(l.costoProdotto):'—'}</td>
     <td><div class="act"><button class="btn-ic" onclick="editLav(${l.id})">✏️</button><button class="btn-ic" onclick="delLav(${l.id})">🗑️</button></div></td></tr>`).join('');
 }
 
@@ -1097,7 +1098,7 @@ function renderCosti() {
   _populateCostiAnni();
   const fc = gv('cf-campo'), fanno = gv('cf-anno');
   const lavCosts = (S.lavorazioni || []).filter(l =>
-    parseFloat(l.costo) > 0 && (!fanno || l.data.startsWith(fanno))
+    (parseFloat(l.costo) > 0 || parseFloat(l.costoProdotto) > 0) && (!fanno || l.data.startsWith(fanno))
   );
   const costi = (S.costi || []).filter(c => !fanno || c.data.startsWith(fanno));
   const affitti = _getAffitti().filter(a => !fanno || a.annoImputazione === fanno);
@@ -1123,10 +1124,12 @@ function _renderCostiAll(lavCosts, costi, affitti) {
   const lavByTipo = {};
   lavCosts.forEach(l => {
     if (!lavByTipo[l.tipo]) lavByTipo[l.tipo] = { count:0, tot:0 };
-    lavByTipo[l.tipo].count++; lavByTipo[l.tipo].tot += parseFloat(l.costo);
+    lavByTipo[l.tipo].count++;
+    lavByTipo[l.tipo].tot += (parseFloat(l.costo)||0) + (parseFloat(l.costoProdotto)||0);
   });
   const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
-  const daRipartire = costi.filter(c => !c.campo);
+  const daRipartire = costi.filter(c => !c.campo && !c.ripartita);
+  const giàRipartite = costi.filter(c => !c.campo && c.ripartita);
   const costiBycat = {};
   costi.filter(c => c.campo).forEach(c => {
     const cat = c.categoria||'Altro';
@@ -1134,6 +1137,7 @@ function _renderCostiAll(lavCosts, costi, affitti) {
     costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
   });
   const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0) + daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
+  // giàRipartite escluse dal totale (già conteggiate nelle lavorazioni)
   const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
   const totale = totLav + totCosti + totAffitti;
   document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
@@ -1170,6 +1174,14 @@ function _renderCostiAll(lavCosts, costi, affitti) {
     ).join('');
     html += `</tbody></table>`;
   }
+  if (giàRipartite.length) {
+    html += _secHdr('✓ Già ripartite su lavorazioni');
+    html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th></th></tr></thead><tbody>`;
+    html += giàRipartite.map(c =>
+      `<tr style="opacity:.5"><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right">${c.totale?fe(c.totale):'—'}</td><td><div class="act"><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`
+    ).join('');
+    html += `</tbody></table>`;
+  }
   if (!html) { document.getElementById('costi-content').innerHTML = `<div class="empty"><div class="empty-ic">💰</div><p>Nessun costo registrato.</p></div>`; return; }
   if (totale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totale)}</span></div>`;
   document.getElementById('costi-content').innerHTML = html;
@@ -1179,7 +1191,7 @@ function _renderCostiCampo(campo, lavCosts, costi, affitti) {
   const myLav = lavCosts.filter(l=>l.campo===campo).sort((a,b)=>new Date(b.data)-new Date(a.data));
   const myCosti = costi.filter(c=>c.campo===campo).sort((a,b)=>new Date(b.data)-new Date(a.data));
   const myAffitti = affitti.filter(a=>a.campo===campo);
-  const totLav = myLav.reduce((s,l)=>s+(parseFloat(l.costo)||0), 0);
+  const totLav = myLav.reduce((s,l)=>s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0), 0);
   const totCosti = myCosti.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
   const totAffitti = myAffitti.reduce((s,a)=>s+a.costo, 0);
   const totale = totLav + totCosti + totAffitti;
@@ -1195,11 +1207,11 @@ function _renderCostiCampo(campo, lavCosts, costi, affitti) {
   }
   if (myLav.length) {
     html += _secHdr('Lavorazioni — costo terzista');
-    html += `<table><thead><tr><th>Data</th><th>Tipo</th><th>Operatore</th><th>Qtà</th><th style="text-align:right">Costo</th></tr></thead><tbody>`;
+    html += `<table><thead><tr><th>Data</th><th>Tipo</th><th>Operatore</th><th>Qtà</th><th style="text-align:right">Costo Lav.</th><th style="text-align:right">Costo Prod.</th></tr></thead><tbody>`;
     html += myLav.map(l=>
-      `<tr><td>${fd(l.data)}</td><td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td><td>${l.operatore||'—'}</td><td>${l.quantita?l.quantita+(l.unita?' '+l.unita:''):'—'}</td><td style="text-align:right"><strong>${fe(l.costo)}</strong></td></tr>`
+      `<tr><td>${fd(l.data)}</td><td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td><td>${l.operatore||'—'}</td><td>${l.quantita?l.quantita+(l.unita?' '+l.unita:''):'—'}</td><td style="text-align:right">${l.costo?fe(l.costo):'—'}</td><td style="text-align:right">${l.costoProdotto?'<strong>'+fe(l.costoProdotto)+'</strong>':'—'}</td></tr>`
     ).join('');
-    if (myLav.length>1) html += `<tr style="border-top:2px solid var(--border)"><td colspan="4"><strong>Subtotale lavorazioni</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totLav)}</strong></td></tr>`;
+    if (myLav.length>1) html += `<tr style="border-top:2px solid var(--border)"><td colspan="5"><strong>Subtotale lavorazioni</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totLav)}</strong></td></tr>`;
     html += `</tbody></table>`;
   }
   if (myCosti.length) {
@@ -1462,6 +1474,7 @@ async function saveRipartisciLav() {
   try {
     await api('ripartisciCosto', { data: { costoId: _rplCosto.id, ripartizioni } });
     cm('m-ripartisci-lav');
+    S.costi = null; S.lav = null;
     await Promise.all([loadCosti(), loadLavorazioni()]);
     toast('Costo ripartito su ' + cbs.length + ' lavorazioni!');
   } catch(e) { toast('Errore: ' + e.message); }
@@ -1559,15 +1572,15 @@ function renderOverview(data) {
   const rr = data.raccoltaRiepilogo;
   // Costi aggiuntivi: lavorazioni con costo + affitti
   const annoStr = String(anno);
-  const lavCostsAnno = (S.lavorazioni||[]).filter(l=>parseFloat(l.costo)>0 && l.data?.startsWith(annoStr));
+  const lavCostsAnno = (S.lavorazioni||[]).filter(l=>(parseFloat(l.costo)>0||parseFloat(l.costoProdotto)>0) && l.data?.startsWith(annoStr));
   const affittiAnno = _getAffitti().filter(a=>a.annoImputazione===annoStr);
-  const totLavExtra = lavCostsAnno.reduce((s,l)=>s+parseFloat(l.costo),0);
+  const totLavExtra = lavCostsAnno.reduce((s,l)=>s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0),0);
   const totAffittiExtra = affittiAnno.reduce((s,a)=>s+a.costo,0);
   const tCos = campi.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0) + totLavExtra + totAffittiExtra;
   // Pie: merge costi sheet + lavorazioni per tipo + affitti
   const catMap = {};
   (data.costiPerCategoria||[]).forEach(c=>{ catMap[c.categoria]=(catMap[c.categoria]||0)+c.totale; });
-  lavCostsAnno.forEach(l=>{ catMap[l.tipo]=(catMap[l.tipo]||0)+parseFloat(l.costo); });
+  lavCostsAnno.forEach(l=>{ catMap[l.tipo]=(catMap[l.tipo]||0)+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0); });
   if (totAffittiExtra>0) catMap['Affitto']=(catMap['Affitto']||0)+totAffittiExtra;
   const costiCat = Object.entries(catMap).map(([categoria,totale])=>({categoria,totale})).sort((a,b)=>b.totale-a.totale);
 
@@ -1629,7 +1642,7 @@ function renderOverview(data) {
       <div class="metrics">
         <div class="metric"><div class="ml">Ettari</div><div class="mv">${c.ettari||'—'}</div></div>
         <div class="metric"><div class="ml">N. Piante</div><div class="mv">${c.numPiante||'—'}</div></div>
-        <div class="metric"><div class="ml">Costi ${anno}</div><div class="mv">${(()=>{const tot=(parseFloat(c.costiAnno)||0)+lavCostsAnno.filter(l=>l.campo===c.nome).reduce((s,l)=>s+parseFloat(l.costo),0)+(affittiAnno.find(a=>a.campo===c.nome)?.costo||0);return tot>0?fe(tot):'—';})()}</div></div>
+        <div class="metric"><div class="ml">Costi ${anno}</div><div class="mv">${(()=>{const tot=(parseFloat(c.costiAnno)||0)+lavCostsAnno.filter(l=>l.campo===c.nome).reduce((s,l)=>s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0),0)+(affittiAnno.find(a=>a.campo===c.nome)?.costo||0);return tot>0?fe(tot):'—';})()}</div></div>
         <div class="metric"><div class="ml">Ultimo Raccolto</div><div class="mv">${c.ultimaRaccolta?c.ultimaRaccolta.kg+' kg ('+c.ultimaRaccolta.anno+')':'—'}</div></div>
       </div>
       <div class="interventi">

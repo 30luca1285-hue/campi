@@ -133,7 +133,10 @@ function getSheet(name) {
 function sheetRows(name, cols) {
   const s = getSheet(name);
   if (s.getLastRow() <= 1) return [];
-  return s.getRange(2, 1, s.getLastRow() - 1, cols).getValues();
+  const actualCols = Math.min(cols, s.getLastColumn());
+  const data = s.getRange(2, 1, s.getLastRow() - 1, actualCols).getValues();
+  if (actualCols < cols) data.forEach(r => { while (r.length < cols) r.push(''); });
+  return data;
 }
 
 function fmtDate(v) {
@@ -234,20 +237,20 @@ function riordinaCampi(ids) {
 // ============================================================
 
 function getLavorazioni() {
-  return sheetRows(SHEETS.LAVORAZIONI, 9)
+  return sheetRows(SHEETS.LAVORAZIONI, 10)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id:i+2, data:fmtDate(r[0]), campo:r[1], tipo:r[2], descrizione:r[3], prodotto:r[4], quantita:r[5], unita:r[6], operatore:r[7], costo:r[8] }));
+    .map((r, i) => ({ id:i+2, data:fmtDate(r[0]), campo:r[1], tipo:r[2], descrizione:r[3], prodotto:r[4], quantita:r[5], unita:r[6], operatore:r[7], costo:r[8], costoProdotto:r[9]||'' }));
 }
 
 function saveLavorazione(l) {
   const s   = getSheet(SHEETS.LAVORAZIONI);
-  const row = [toDate(l.data), l.campo, l.tipo, l.descrizione||'', l.prodotto||'', l.quantita||'', l.unita||'', l.operatore||'', l.costo||''];
+  const row = [toDate(l.data), l.campo, l.tipo, l.descrizione||'', l.prodotto||'', l.quantita||'', l.unita||'', l.operatore||'', l.costo||'', l.costoProdotto||''];
   if (l.id) { s.getRange(l.id, 1, 1, row.length).setValues([row]); }
   else {
     const nr = s.getLastRow()+1;
     s.getRange(nr, 1, 1, row.length).setValues([row]);
     s.getRange(nr, 1).setNumberFormat('dd/mm/yyyy');
-    s.getRange(nr, 9).setNumberFormat('€#,##0.00');
+    s.getRange(nr, 9, 1, 2).setNumberFormat('€#,##0.00');
   }
   return { success: true };
 }
@@ -259,15 +262,15 @@ function deleteLavorazione(rowId) { getSheet(SHEETS.LAVORAZIONI).deleteRow(rowId
 // ============================================================
 
 function getCosti() {
-  return sheetRows(SHEETS.COSTI, 11)
+  return sheetRows(SHEETS.COSTI, 12)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id:i+2, data:fmtDate(r[0]), campo:r[1], categoria:r[2], descrizione:r[3], quantita:r[4], unita:r[5], costoUnitario:r[6], totale:r[7], fornitore:r[8], note:r[9], fotoUrl:r[10]||'' }));
+    .map((r, i) => ({ id:i+2, data:fmtDate(r[0]), campo:r[1], categoria:r[2], descrizione:r[3], quantita:r[4], unita:r[5], costoUnitario:r[6], totale:r[7], fornitore:r[8], note:r[9], fotoUrl:r[10]||'', ripartita:r[11]||'' }));
 }
 
 function saveCosto(c) {
   const s    = getSheet(SHEETS.COSTI);
   const qty  = parseFloat(c.quantita)||0, unit = parseFloat(c.costoUnitario)||0;
-  const row  = [toDate(c.data), c.campo, c.categoria, c.descrizione||'', qty, c.unita||'', unit, qty*unit, c.fornitore||'', c.note||'', c.fotoUrl||''];
+  const row  = [toDate(c.data), c.campo, c.categoria, c.descrizione||'', qty, c.unita||'', unit, qty*unit, c.fornitore||'', c.note||'', c.fotoUrl||'', c.ripartita||''];
   if (c.id) { s.getRange(c.id, 1, 1, row.length).setValues([row]); }
   else {
     const nr = s.getLastRow()+1;
@@ -284,12 +287,15 @@ function ripartisciCosto(data) {
   // data: { costoId, ripartizioni: [{lavId, importo}, ...] }
   const s = getSheet(SHEETS.LAVORAZIONI);
   data.ripartizioni.forEach(r => {
-    const row = s.getRange(r.lavId, 1, 1, 9).getValues()[0];
-    row[8] = parseFloat(r.importo);
-    s.getRange(r.lavId, 1, 1, 9).setValues([row]);
-    s.getRange(r.lavId, 9).setNumberFormat('€#,##0.00');
+    const row = s.getRange(r.lavId, 1, 1, 10).getValues()[0];
+    while (row.length < 10) row.push('');
+    row[9] = parseFloat(r.importo); // col 10 = CostoProdotto€
+    s.getRange(r.lavId, 1, 1, 10).setValues([row]);
+    s.getRange(r.lavId, 10).setNumberFormat('€#,##0.00');
   });
-  deleteCosto(data.costoId);
+  // Marca il costo come ripartito (non eliminare, per storico)
+  const cs = getSheet(SHEETS.COSTI);
+  cs.getRange(data.costoId, 12).setValue('si');
   return { success: true };
 }
 
