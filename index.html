@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.17</title>
+<title>Gestione Oliveto v11.18</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.17</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.18</div>
     </div>
   </div>
   <div class="nav">
@@ -565,7 +565,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fg"><label>Operatore</label><input id="l-oper" placeholder="Nome operatore"></div></div>
       <div class="fr"><div class="fg"><label>Quantità</label><input id="l-qta" type="number" step="0.01"></div>
       <div class="fg"><label>Unità</label><input id="l-un" placeholder="es. L, kg, ore"></div></div>
-      <div class="fg"><label>Costo €</label><input id="l-costo" type="number" step="0.01" placeholder="0.00"></div>
+      <div class="fr"><div class="fg"><label>Costo Lavorazione €</label><input id="l-costo" type="number" step="0.01" placeholder="0.00"></div>
+      <div class="fg"><label>Costo Prodotto €</label><input id="l-costo-prod" type="number" step="0.01" placeholder="0.00"></div></div>
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-lav')">Annulla</button><button class="btn btn-p" onclick="saveLav()">Salva</button></div>
   </div>
@@ -752,7 +753,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.17';
+const VERSION      = 'v11.18';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1050,7 +1051,7 @@ function lb(t){return{Potatura:'bg','Trattamento Fitosanitario':'br',Concimazion
 function openLavModal(l) {
   sv({'l-id':l?.id||'','l-data':l?.data||today(),'l-campo':l?.campo||'','l-tipo':l?.tipo||'',
     'l-desc':l?.descrizione||'','l-prod':l?.prodotto||'','l-oper':l?.operatore||'',
-    'l-qta':l?.quantita||'','l-un':l?.unita||'','l-costo':l?.costo||''});
+    'l-qta':l?.quantita||'','l-un':l?.unita||'','l-costo':l?.costo||'','l-costo-prod':l?.costoProdotto||''});
   document.getElementById('ml-title').textContent = l ? 'Modifica Lavorazione' : 'Nuova Lavorazione';
   om('m-lav');
 }
@@ -1060,7 +1061,7 @@ async function saveLav() {
   if (!gv('l-data')||!gv('l-campo')||!gv('l-tipo')) { toast('Compila i campi obbligatori'); return; }
   await api('saveLavorazione', { data: { id:gv('l-id')?+gv('l-id'):null, data:gv('l-data'), campo:gv('l-campo'),
     tipo:gv('l-tipo'), descrizione:gv('l-desc'), prodotto:gv('l-prod'),
-    quantita:gv('l-qta'), unita:gv('l-un'), operatore:gv('l-oper'), costo:gv('l-costo') }});
+    quantita:gv('l-qta'), unita:gv('l-un'), operatore:gv('l-oper'), costo:gv('l-costo'), costoProdotto:gv('l-costo-prod') }});
   cm('m-lav'); loadLav(); toast('Lavorazione salvata!');
 }
 
