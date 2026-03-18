@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.10</title>
+<title>Gestione Oliveto v11.11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.10</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.11</div>
     </div>
   </div>
   <div class="nav">
@@ -734,7 +734,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.10';
+const VERSION      = 'v11.11';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1051,11 +1051,24 @@ async function delLav(id) {
 // COSTI
 // ============================================================
 async function loadCosti() {
-  [S.costi, S.lavorazioni] = await Promise.all([
+  [S.costi, S.lavorazioni, S.campi] = await Promise.all([
     api('getCosti'),
-    S.lavorazioni?.length ? Promise.resolve(S.lavorazioni) : api('getLavorazioni')
+    S.lavorazioni?.length ? Promise.resolve(S.lavorazioni) : api('getLavorazioni'),
+    S.campi?.length ? Promise.resolve(S.campi) : api('getCampi')
   ]);
   renderCosti();
+}
+
+// Ricava voci affitto da S.campi: anno imputazione = anno pagamento + 1
+function _getAffitti() {
+  return (S.campi || [])
+    .filter(c => parseFloat(c.affitto) > 0 && c.pagamentoAffitto)
+    .map(c => ({
+      campo: c.nome,
+      annoImputazione: String(new Date(c.pagamentoAffitto).getFullYear() + 1),
+      costo: parseFloat(c.affitto),
+      pagato: c.pagamentoAffitto
+    }));
 }
 
 function renderCosti() {
@@ -1065,8 +1078,9 @@ function renderCosti() {
     parseFloat(l.costo) > 0 && (!fanno || l.data.startsWith(fanno))
   );
   const costi = (S.costi || []).filter(c => !fanno || c.data.startsWith(fanno));
-  if (!fc) _renderCostiAll(lavCosts, costi);
-  else _renderCostiCampo(fc, lavCosts, costi);
+  const affitti = _getAffitti().filter(a => !fanno || a.annoImputazione === fanno);
+  if (!fc) _renderCostiAll(lavCosts, costi, affitti);
+  else _renderCostiCampo(fc, lavCosts, costi, affitti);
 }
 
 function _populateCostiAnni() {
@@ -1075,6 +1089,7 @@ function _populateCostiAnni() {
   const anni = new Set();
   (S.lavorazioni || []).forEach(l => { if (l.data) anni.add(l.data.substring(0,4)); });
   (S.costi || []).forEach(c => { if (c.data) anni.add(c.data.substring(0,4)); });
+  _getAffitti().forEach(a => anni.add(a.annoImputazione));
   const sorted = [...anni].sort().reverse();
   sel.innerHTML = '<option value="">Tutti gli anni</option>' +
     sorted.map(a => `<option value="${a}"${a===cur?' selected':''}>${a}</option>`).join('');
@@ -1082,7 +1097,7 @@ function _populateCostiAnni() {
 
 const _secHdr = t => `<div style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:16px 0 6px;text-transform:uppercase">${t}</div>`;
 
-function _renderCostiAll(lavCosts, costi) {
+function _renderCostiAll(lavCosts, costi, affitti) {
   const lavByTipo = {};
   lavCosts.forEach(l => {
     if (!lavByTipo[l.tipo]) lavByTipo[l.tipo] = { count:0, tot:0 };
@@ -1096,9 +1111,18 @@ function _renderCostiAll(lavCosts, costi) {
     costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
   });
   const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0);
-  const totale = totLav + totCosti;
+  const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
+  const totale = totLav + totCosti + totAffitti;
   document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
   let html = '';
+  if (affitti.length) {
+    html += _secHdr('Affitti');
+    html += `<table><thead><tr><th>Campo</th><th>Anno pagamento</th><th style="text-align:right">Affitto annuo</th></tr></thead><tbody>`;
+    html += affitti.map(a=>
+      `<tr><td>${a.campo}</td><td style="color:var(--muted)">${fd(a.pagato)}</td><td style="text-align:right"><strong>${fe(a.costo)}</strong></td></tr>`
+    ).join('');
+    html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale affitti</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totAffitti)}</strong></td></tr></tbody></table>`;
+  }
   if (Object.keys(lavByTipo).length) {
     html += _secHdr('Lavorazioni — costo terzista');
     html += `<table><thead><tr><th>Tipo</th><th>Interventi</th><th style="text-align:right">Totale</th></tr></thead><tbody>`;
@@ -1120,14 +1144,24 @@ function _renderCostiAll(lavCosts, costi) {
   document.getElementById('costi-content').innerHTML = html;
 }
 
-function _renderCostiCampo(campo, lavCosts, costi) {
+function _renderCostiCampo(campo, lavCosts, costi, affitti) {
   const myLav = lavCosts.filter(l=>l.campo===campo).sort((a,b)=>new Date(b.data)-new Date(a.data));
   const myCosti = costi.filter(c=>c.campo===campo).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const myAffitti = affitti.filter(a=>a.campo===campo);
   const totLav = myLav.reduce((s,l)=>s+(parseFloat(l.costo)||0), 0);
   const totCosti = myCosti.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
-  const totale = totLav + totCosti;
+  const totAffitti = myAffitti.reduce((s,a)=>s+a.costo, 0);
+  const totale = totLav + totCosti + totAffitti;
   document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
   let html = `<div style="padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between;margin-bottom:4px"><span>${campo}</span><span>${fe(totale)}</span></div>`;
+  if (myAffitti.length) {
+    html += _secHdr('Affitto');
+    html += `<table><thead><tr><th>Anno pagamento</th><th style="text-align:right">Affitto annuo</th></tr></thead><tbody>`;
+    html += myAffitti.map(a=>
+      `<tr><td style="color:var(--muted)">${fd(a.pagato)}</td><td style="text-align:right"><strong>${fe(a.costo)}</strong></td></tr>`
+    ).join('');
+    html += `</tbody></table>`;
+  }
   if (myLav.length) {
     html += _secHdr('Lavorazioni — costo terzista');
     html += `<table><thead><tr><th>Data</th><th>Tipo</th><th>Operatore</th><th>Qtà</th><th style="text-align:right">Costo</th></tr></thead><tbody>`;
