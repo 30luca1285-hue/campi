@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.22</title>
+<title>Gestione Oliveto v11.23</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -318,7 +318,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.22</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.23</div>
     </div>
   </div>
   <div class="nav">
@@ -760,7 +760,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.22';
+const VERSION      = 'v11.23';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1133,9 +1133,16 @@ function _renderCostiAll(lavCosts, costi, affitti) {
   lavCosts.forEach(l => {
     if (!lavByTipo[l.tipo]) lavByTipo[l.tipo] = { count:0, tot:0 };
     lavByTipo[l.tipo].count++;
-    lavByTipo[l.tipo].tot += (parseFloat(l.costo)||0) + (parseFloat(l.costoProdotto)||0);
+    lavByTipo[l.tipo].tot += parseFloat(l.costo)||0;
   });
   const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
+  const prodByCampo = {};
+  lavCosts.forEach(l => {
+    if (!(parseFloat(l.costoProdotto) > 0)) return;
+    if (!prodByCampo[l.campo]) prodByCampo[l.campo] = 0;
+    prodByCampo[l.campo] += parseFloat(l.costoProdotto);
+  });
+  const totProd = Object.values(prodByCampo).reduce((s,v)=>s+v, 0);
   const daRipartire = costi.filter(c => !c.campo && !c.ripartita);
   const giaRipartite = costi.filter(c => !c.campo && c.ripartita);
   const costiBycat = {};
@@ -1147,7 +1154,7 @@ function _renderCostiAll(lavCosts, costi, affitti) {
   const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0) + daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
   // giaRipartite escluse dal totale (già conteggiate nelle lavorazioni)
   const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
-  const totale = totLav + totCosti + totAffitti;
+  const totale = totLav + totProd + totCosti + totAffitti;
   document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
   const _acc = (titolo, totSezione, bodyHtml) =>
     `<div class="acc-item">
@@ -1170,6 +1177,13 @@ function _renderCostiAll(lavCosts, costi, affitti) {
       + Object.entries(lavByTipo).map(([tipo,v])=>`<tr><td>${tipo}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`).join('')
       + `</tbody></table>`;
     html += _acc('Lavorazioni — costo terzista', totLav, body);
+  }
+  if (Object.keys(prodByCampo).length) {
+    const body = `<table><thead><tr><th>Campo</th><th style="text-align:right">Costo Prodotto</th></tr></thead><tbody>`
+      + Object.entries(prodByCampo).sort((a,b)=>b[1]-a[1]).map(([campo,tot])=>`<tr><td>${campo}</td><td style="text-align:right"><strong>${fe(tot)}</strong></td></tr>`).join('')
+      + `<tr style="border-top:2px solid var(--border)"><td><strong>Totale</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totProd)}</strong></td></tr>`
+      + `</tbody></table>`;
+    html += _acc('Prodotti', totProd, body);
   }
   if (Object.keys(costiBycat).length) {
     const body = `<table><thead><tr><th>Categoria</th><th>Voci</th><th style="text-align:right">Totale</th></tr></thead><tbody>`
