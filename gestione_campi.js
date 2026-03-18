@@ -44,6 +44,7 @@ function doGet(e) {
       case 'deleteLavorazione': result = deleteLavorazione(+e.parameter.rowId); break;
       case 'saveCosto':         result = saveCosto(JSON.parse(e.parameter.data)); break;
       case 'deleteCosto':       result = deleteCosto(+e.parameter.rowId); break;
+      case 'ripartisciCosto':   result = ripartisciCosto(JSON.parse(e.parameter.data)); break;
       case 'saveRaccolta':      result = saveRaccolta(JSON.parse(e.parameter.data)); break;
       case 'deleteRaccolta':    result = deleteRaccolta(+e.parameter.rowId); break;
       case 'getEntrate':        result = getEntrate(); break;
@@ -278,6 +279,19 @@ function saveCosto(c) {
 }
 
 function deleteCosto(rowId) { getSheet(SHEETS.COSTI).deleteRow(rowId); return { success: true }; }
+
+function ripartisciCosto(data) {
+  // data: { costoId, ripartizioni: [{lavId, importo}, ...] }
+  const s = getSheet(SHEETS.LAVORAZIONI);
+  data.ripartizioni.forEach(r => {
+    const row = s.getRange(r.lavId, 1, 1, 9).getValues()[0];
+    row[8] = parseFloat(r.importo);
+    s.getRange(r.lavId, 1, 1, 9).setValues([row]);
+    s.getRange(r.lavId, 9).setNumberFormat('€#,##0.00');
+  });
+  deleteCosto(data.costoId);
+  return { success: true };
+}
 
 // Upload foto fattura su Drive, cartella "Fatture Oliveto"
 function uploadFattura(data) {

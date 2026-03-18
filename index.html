@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.14</title>
+<title>Gestione Oliveto v11.15</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.14</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.15</div>
     </div>
   </div>
   <div class="nav">
@@ -635,6 +635,22 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   </div>
 </div>
 
+<!-- MODAL RIPARTISCI SU LAVORAZIONI -->
+<div id="m-ripartisci-lav" class="ov">
+  <div class="modal">
+    <div class="mh"><h3>Ripartisci su Lavorazioni</h3><button class="btn-ic" onclick="cm('m-ripartisci-lav')">✕</button></div>
+    <div class="mb">
+      <div id="rpl-info"></div>
+      <div class="fg"><label>Filtra lavorazioni per prodotto / tipo</label>
+        <input id="rpl-search" placeholder="es. Concime, Rame, Concimazione..." oninput="renderRplList()">
+      </div>
+      <div id="rpl-list"></div>
+      <div id="rpl-totale"></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-ripartisci-lav')">Annulla</button><button class="btn btn-p" id="rpl-save-btn" onclick="saveRipartisciLav()">Conferma ripartizione</button></div>
+  </div>
+</div>
+
 <!-- MODAL RACCOLTA -->
 <div id="m-racc" class="ov">
   <div class="modal">
@@ -736,7 +752,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.14';
+const VERSION      = 'v11.15';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1110,13 +1126,14 @@ function _renderCostiAll(lavCosts, costi, affitti) {
     lavByTipo[l.tipo].count++; lavByTipo[l.tipo].tot += parseFloat(l.costo);
   });
   const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
+  const daRipartire = costi.filter(c => !c.campo);
   const costiBycat = {};
-  costi.forEach(c => {
+  costi.filter(c => c.campo).forEach(c => {
     const cat = c.categoria||'Altro';
     if (!costiBycat[cat]) costiBycat[cat] = { count:0, tot:0 };
     costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
   });
-  const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0);
+  const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0) + daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
   const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
   const totale = totLav + totCosti + totAffitti;
   document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
@@ -1144,6 +1161,14 @@ function _renderCostiAll(lavCosts, costi, affitti) {
       `<tr><td>${cat}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`
     ).join('');
     html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale costi diretti</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totCosti)}</strong></td></tr></tbody></table>`;
+  }
+  if (daRipartire.length) {
+    html += _secHdr('⚠️ Da ripartire — fatture senza campo');
+    html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th></th></tr></thead><tbody>`;
+    html += daRipartire.map(c =>
+      `<tr><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right"><strong>${c.totale?fe(c.totale):'—'}</strong></td><td><div class="act"><button class="btn btn-s" style="font-size:.75rem;padding:3px 8px" onclick="openRipartisciLav(${c.id})">⚖️ Ripartisci</button><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`
+    ).join('');
+    html += `</tbody></table>`;
   }
   if (!html) { document.getElementById('costi-content').innerHTML = `<div class="empty"><div class="empty-ic">💰</div><p>Nessun costo registrato.</p></div>`; return; }
   if (totale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totale)}</span></div>`;
@@ -1355,6 +1380,92 @@ async function saveRipart() {
     cm('m-ripart'); loadCosti(); toast('✅ Costi ripartiti su ' + entries.length + ' campi!');
   } catch(e) { toast('Errore nel salvataggio'); }
   finally { btn.disabled = false; btn.textContent = 'Salva per tutti i campi'; }
+}
+
+// ============================================================
+// RIPARTISCI SU LAVORAZIONI
+// ============================================================
+let _rplCosto = null;
+
+function openRipartisciLav(costoId) {
+  _rplCosto = S.costi.find(c => c.id === costoId);
+  if (!_rplCosto) return;
+  document.getElementById('rpl-info').innerHTML =
+    `<div style="padding:10px;background:var(--bg2);border-radius:8px;margin-bottom:12px">
+      <strong>${_rplCosto.descrizione || _rplCosto.categoria}</strong><br>
+      <span style="color:var(--muted)">Totale da ripartire: </span><strong>${fe(parseFloat(_rplCosto.totale)||0)}</strong>
+    </div>`;
+  document.getElementById('rpl-search').value = (_rplCosto.descrizione||'').split(' ')[0] || '';
+  renderRplList();
+  om('m-ripartisci-lav');
+}
+
+function renderRplList() {
+  const q = document.getElementById('rpl-search').value.toLowerCase().trim();
+  const lavs = (S.lavorazioni||[]).filter(l => {
+    if (!(parseFloat(l.quantita) > 0)) return false;
+    if (!q) return true;
+    return (l.prodotto||'').toLowerCase().includes(q) ||
+           (l.descrizione||'').toLowerCase().includes(q) ||
+           (l.tipo||'').toLowerCase().includes(q);
+  });
+  if (!lavs.length) {
+    document.getElementById('rpl-list').innerHTML = '<p style="color:var(--muted);font-size:.85rem;margin-top:8px">Nessuna lavorazione trovata con quantità. Modifica la ricerca.</p>';
+    document.getElementById('rpl-totale').innerHTML = '';
+    return;
+  }
+  let html = `<table style="width:100%;font-size:.82rem;margin-top:8px"><thead><tr>
+    <th></th><th>Campo</th><th>Tipo</th><th>Prodotto</th>
+    <th style="text-align:right">Qty</th><th style="text-align:right">Importo</th>
+  </tr></thead><tbody>`;
+  lavs.forEach(l => {
+    html += `<tr>
+      <td><input type="checkbox" class="rpl-cb" data-id="${l.id}" data-qty="${parseFloat(l.quantita)||0}" checked onchange="calcRplImporti()"></td>
+      <td>${l.campo}</td>
+      <td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td>
+      <td>${l.prodotto||'—'}</td>
+      <td style="text-align:right">${l.quantita} ${l.unita||''}</td>
+      <td style="text-align:right;font-weight:600" id="rpl-imp-${l.id}">—</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('rpl-list').innerHTML = html;
+  calcRplImporti();
+}
+
+function calcRplImporti() {
+  const totale = parseFloat(_rplCosto?.totale) || 0;
+  const cbs = document.querySelectorAll('.rpl-cb:checked');
+  const totalQty = Array.from(cbs).reduce((s,cb) => s + parseFloat(cb.dataset.qty), 0);
+  document.querySelectorAll('.rpl-cb').forEach(cb => {
+    const el = document.getElementById(`rpl-imp-${cb.dataset.id}`);
+    if (!el) return;
+    el.textContent = (cb.checked && totalQty > 0) ? fe((parseFloat(cb.dataset.qty) / totalQty) * totale) : '—';
+  });
+  document.getElementById('rpl-totale').innerHTML = cbs.length > 0 && totalQty > 0
+    ? `<div style="margin-top:10px;color:var(--green);font-weight:700">✓ ${fe(totale)} ripartiti su ${cbs.length} lavorazioni</div>`
+    : `<div style="margin-top:10px;color:var(--orange)">Seleziona almeno una lavorazione</div>`;
+}
+
+async function saveRipartisciLav() {
+  const totale = parseFloat(_rplCosto?.totale) || 0;
+  const cbs = document.querySelectorAll('.rpl-cb:checked');
+  if (!cbs.length) { toast('Seleziona almeno una lavorazione'); return; }
+  const totalQty = Array.from(cbs).reduce((s,cb) => s + parseFloat(cb.dataset.qty), 0);
+  if (totalQty === 0) { toast('Le lavorazioni selezionate non hanno quantità'); return; }
+  const ripartizioni = Array.from(cbs).map(cb => ({
+    lavId: +cb.dataset.id,
+    importo: (parseFloat(cb.dataset.qty) / totalQty) * totale
+  }));
+  const btn = document.getElementById('rpl-save-btn');
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    await api('ripartisciCosto', { data: { costoId: _rplCosto.id, ripartizioni } });
+    cm('m-ripartisci-lav');
+    await Promise.all([loadCosti(), loadLavorazioni()]);
+    toast('Costo ripartito su ' + cbs.length + ' lavorazioni!');
+  } catch(e) { toast('Errore: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Conferma ripartizione'; }
 }
 
 // ============================================================
