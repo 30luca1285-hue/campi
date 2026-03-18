@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.12</title>
+<title>Gestione Oliveto v11.13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.12</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.13</div>
     </div>
   </div>
   <div class="nav">
@@ -337,7 +337,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 
 <!-- OVERVIEW -->
 <div id="view-overview" class="view active">
-  <div class="ph"><h2>Overview</h2><div style="display:flex;gap:8px;align-items:center"><select id="ov-anno" onchange="loadOverview()" style="font-size:.82rem;padding:4px 8px;border-radius:8px;border:1px solid var(--border)"><option value="">Anno corrente</option></select><button class="btn btn-s" onclick="loadOverview()">↺ Aggiorna</button></div></div>
+  <div class="ph"><h2>Overview</h2><div style="display:flex;gap:8px;align-items:center"><select id="ov-anno" onchange="loadOverview()" style="font-size:.82rem;padding:4px 8px;border-radius:8px;border:1px solid var(--border)"><option value="">Anno corrente</option></select><button class="btn btn-s" onclick="loadOverview()">Aggiorna</button></div></div>
   <div class="pb">
     <div class="stat-bar" id="ov-stats"></div>
     <div id="ov-charts"></div>
@@ -736,7 +736,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.12';
+const VERSION      = 'v11.13';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1412,7 +1412,9 @@ async function delRacc(id) {
 const CAT_COLORS = {
   'Prodotti Fitosanitari':'#ef4444','Concimi / Fertilizzanti':'#22c55e',
   'Carburante':'#f97316','Manodopera':'#3b82f6',
-  'Affitto':'#8b5cf6','Macchinari / Attrezzature':'#06b6d4','Altro':'#94a3b8'
+  'Affitto':'#8b5cf6','Macchinari / Attrezzature':'#06b6d4','Altro':'#94a3b8',
+  'Potatura':'#84cc16','Concimazione':'#10b981','Trinciatura':'#a3e635',
+  'Trattamento Fitosanitario':'#f43f5e','Raccolta':'#0ea5e9','Altra Lavorazione':'#64748b'
 };
 const CAMPO_COLORS = ['#2d6a4f','#52b788','#95d5b2','#40916c','#74c69d','#1b4332','#b7e4c7'];
 
@@ -1422,7 +1424,12 @@ async function loadOverview() {
   document.getElementById('ov-charts').innerHTML = '';
   const annoFiltro = gv('ov-anno');
   const params = annoFiltro ? { anno: annoFiltro } : {};
-  const data = await api('getOverview', params);
+  const [data, lav, campiList] = await Promise.all([
+    api('getOverview', params),
+    S.lavorazioni?.length ? Promise.resolve(S.lavorazioni) : api('getLavorazioni'),
+    S.campi?.length ? Promise.resolve(S.campi) : api('getCampi')
+  ]);
+  S.lavorazioni = lav; S.campi = campiList;
   renderOverview(data);
 }
 
@@ -1437,10 +1444,21 @@ function renderOverview(data) {
   ovAnnoSel.innerHTML = '<option value="">Anno corrente ('+curY+')</option>' + anniOv.map(a=>`<option value="${a}"${a===+curOvAnno?' selected':''}>${a}</option>`).join('');
   const campi = data.campi || [];
   const tEtt = campi.reduce((s,c)=>s+(parseFloat(c.ettari)||0),0);
-  const tCos = campi.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0);
   const tEnt = data.entrateAnno || 0;
   const rr = data.raccoltaRiepilogo;
-  const costiCat = data.costiPerCategoria || [];
+  // Costi aggiuntivi: lavorazioni con costo + affitti
+  const annoStr = String(anno);
+  const lavCostsAnno = (S.lavorazioni||[]).filter(l=>parseFloat(l.costo)>0 && l.data?.startsWith(annoStr));
+  const affittiAnno = _getAffitti().filter(a=>a.annoImputazione===annoStr);
+  const totLavExtra = lavCostsAnno.reduce((s,l)=>s+parseFloat(l.costo),0);
+  const totAffittiExtra = affittiAnno.reduce((s,a)=>s+a.costo,0);
+  const tCos = campi.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0) + totLavExtra + totAffittiExtra;
+  // Pie: merge costi sheet + lavorazioni per tipo + affitti
+  const catMap = {};
+  (data.costiPerCategoria||[]).forEach(c=>{ catMap[c.categoria]=(catMap[c.categoria]||0)+c.totale; });
+  lavCostsAnno.forEach(l=>{ catMap[l.tipo]=(catMap[l.tipo]||0)+parseFloat(l.costo); });
+  if (totAffittiExtra>0) catMap['Affitto']=(catMap['Affitto']||0)+totAffittiExtra;
+  const costiCat = Object.entries(catMap).map(([categoria,totale])=>({categoria,totale})).sort((a,b)=>b.totale-a.totale);
 
   // Stat bar
   document.getElementById('ov-stats').innerHTML = `
@@ -1500,7 +1518,7 @@ function renderOverview(data) {
       <div class="metrics">
         <div class="metric"><div class="ml">Ettari</div><div class="mv">${c.ettari||'—'}</div></div>
         <div class="metric"><div class="ml">N. Piante</div><div class="mv">${c.numPiante||'—'}</div></div>
-        <div class="metric"><div class="ml">Costi ${anno}</div><div class="mv">${c.costiAnno>0?fe(c.costiAnno):'—'}</div></div>
+        <div class="metric"><div class="ml">Costi ${anno}</div><div class="mv">${(()=>{const tot=(parseFloat(c.costiAnno)||0)+lavCostsAnno.filter(l=>l.campo===c.nome).reduce((s,l)=>s+parseFloat(l.costo),0)+(affittiAnno.find(a=>a.campo===c.nome)?.costo||0);return tot>0?fe(tot):'—';})()}</div></div>
         <div class="metric"><div class="ml">Ultimo Raccolto</div><div class="mv">${c.ultimaRaccolta?c.ultimaRaccolta.kg+' kg ('+c.ultimaRaccolta.anno+')':'—'}</div></div>
       </div>
       <div class="interventi">
