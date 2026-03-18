@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.21</title>
+<title>Gestione Oliveto v11.22</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -286,8 +286,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 .acc-item{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
 .acc-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;background:var(--bg2);user-select:none;gap:12px}
 .acc-hdr:active{opacity:.8}
-.acc-hdr .acc-arrow{font-size:.7rem;color:var(--muted);transition:transform .2s}
-.acc-body{display:none;padding:12px 16px 16px}
+.acc-arrow{font-size:.7rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.acc-body{display:none;padding:0 16px 16px}
 .acc-body.open{display:block}
 .acc-hdr.active .acc-arrow{transform:rotate(90deg)}
 </style>
@@ -318,7 +318,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.21</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.22</div>
     </div>
   </div>
   <div class="nav">
@@ -760,7 +760,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.21';
+const VERSION      = 'v11.22';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1128,93 +1128,69 @@ function _populateCostiAnni() {
 
 const _secHdr = t => `<div style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:16px 0 6px;text-transform:uppercase">${t}</div>`;
 
-function _accToggle(el) {
-  el.classList.toggle('active');
-  el.nextElementSibling.classList.toggle('open');
-}
-
 function _renderCostiAll(lavCosts, costi, affitti) {
+  const lavByTipo = {};
+  lavCosts.forEach(l => {
+    if (!lavByTipo[l.tipo]) lavByTipo[l.tipo] = { count:0, tot:0 };
+    lavByTipo[l.tipo].count++;
+    lavByTipo[l.tipo].tot += (parseFloat(l.costo)||0) + (parseFloat(l.costoProdotto)||0);
+  });
+  const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
   const daRipartire = costi.filter(c => !c.campo && !c.ripartita);
   const giaRipartite = costi.filter(c => !c.campo && c.ripartita);
-  const costiConCampo = costi.filter(c => c.campo);
-
-  const allCampi = [...new Set([
-    ...lavCosts.map(l => l.campo),
-    ...costiConCampo.map(c => c.campo),
-    ...affitti.map(a => a.campo)
-  ])].filter(Boolean).sort();
-
-  const totaleGlobale = allCampi.reduce((tot, campo) => {
-    const myLav = lavCosts.filter(l => l.campo === campo);
-    const myCosti = costiConCampo.filter(c => c.campo === campo);
-    const myAff = affitti.filter(a => a.campo === campo);
-    return tot
-      + myLav.reduce((s,l) => s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0), 0)
-      + myCosti.reduce((s,c) => s+(parseFloat(c.totale)||0), 0)
-      + myAff.reduce((s,a) => s+a.costo, 0);
-  }, 0) + daRipartire.reduce((s,c) => s+(parseFloat(c.totale)||0), 0);
-
-  document.getElementById('costi-tot').textContent = totaleGlobale ? 'Totale: '+fe(totaleGlobale) : '';
+  const costiBycat = {};
+  costi.filter(c => c.campo).forEach(c => {
+    const cat = c.categoria||'Altro';
+    if (!costiBycat[cat]) costiBycat[cat] = { count:0, tot:0 };
+    costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
+  });
+  const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0) + daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
+  // giaRipartite escluse dal totale (già conteggiate nelle lavorazioni)
+  const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
+  const totale = totLav + totCosti + totAffitti;
+  document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
+  const _acc = (titolo, totSezione, bodyHtml) =>
+    `<div class="acc-item">
+      <div class="acc-hdr" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open')">
+        <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">${titolo}</span>
+        <span style="display:flex;align-items:center;gap:10px"><strong style="color:var(--green)">${fe(totSezione)}</strong><span class="acc-arrow">▶</span></span>
+      </div>
+      <div class="acc-body">${bodyHtml}</div>
+    </div>`;
 
   let html = '';
-
-  // Fatture da ripartire / già ripartite
+  if (affitti.length) {
+    const body = `<table><thead><tr><th>Campo</th><th>Anno pagamento</th><th style="text-align:right">Affitto annuo</th></tr></thead><tbody>`
+      + affitti.map(a=>`<tr><td>${a.campo}</td><td style="color:var(--muted)">${fd(a.pagato)}</td><td style="text-align:right"><strong>${fe(a.costo)}</strong></td></tr>`).join('')
+      + `</tbody></table>`;
+    html += _acc('Affitti', totAffitti, body);
+  }
+  if (Object.keys(lavByTipo).length) {
+    const body = `<table><thead><tr><th>Tipo</th><th>Interventi</th><th style="text-align:right">Totale</th></tr></thead><tbody>`
+      + Object.entries(lavByTipo).map(([tipo,v])=>`<tr><td>${tipo}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`).join('')
+      + `</tbody></table>`;
+    html += _acc('Lavorazioni — costo terzista', totLav, body);
+  }
+  if (Object.keys(costiBycat).length) {
+    const body = `<table><thead><tr><th>Categoria</th><th>Voci</th><th style="text-align:right">Totale</th></tr></thead><tbody>`
+      + Object.entries(costiBycat).map(([cat,v])=>`<tr><td>${cat}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`).join('')
+      + `</tbody></table>`;
+    html += _acc('Costi diretti — fatture e acquisti', totCosti - daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0),0), body);
+  }
   if (daRipartire.length) {
-    html += _secHdr('⚠️ Da ripartire — fatture senza campo');
-    html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th></th></tr></thead><tbody>`;
-    html += daRipartire.map(c =>
-      `<tr><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right"><strong>${c.totale?fe(c.totale):'—'}</strong></td><td><div class="act"><button class="btn btn-s" style="font-size:.75rem;padding:3px 8px" onclick="openRipartisciLav(${c.id})">⚖️ Ripartisci</button><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`
-    ).join('');
-    html += `</tbody></table>`;
+    const body = `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th></th></tr></thead><tbody>`
+      + daRipartire.map(c=>`<tr><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right"><strong>${c.totale?fe(c.totale):'—'}</strong></td><td><div class="act"><button class="btn btn-s" style="font-size:.75rem;padding:3px 8px" onclick="openRipartisciLav(${c.id})">⚖️ Ripartisci</button><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('')
+      + `</tbody></table>`;
+    html += _acc('⚠️ Da ripartire — senza campo', daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0),0), body);
   }
   if (giaRipartite.length) {
-    html += _secHdr('✓ Già ripartite su lavorazioni');
-    html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th>Fattura</th><th></th></tr></thead><tbody>`;
-    html += giaRipartite.map(c =>
-      `<tr style="opacity:.6"><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right">${c.totale?fe(c.totale):'—'}</td><td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td><td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`
-    ).join('');
-    html += `</tbody></table>`;
+    const body = `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th>Fattura</th><th></th></tr></thead><tbody>`
+      + giaRipartite.map(c=>`<tr style="opacity:.6"><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right">${c.totale?fe(c.totale):'—'}</td><td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td><td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('')
+      + `</tbody></table>`;
+    html += _acc('✓ Già ripartite su lavorazioni', 0, body);
   }
-
-  // Accordion per campo
-  allCampi.forEach(campo => {
-    const myLav = lavCosts.filter(l => l.campo === campo).sort((a,b) => new Date(b.data)-new Date(a.data));
-    const myCosti = costiConCampo.filter(c => c.campo === campo).sort((a,b) => new Date(b.data)-new Date(a.data));
-    const myAff = affitti.filter(a => a.campo === campo);
-    const totLav = myLav.reduce((s,l) => s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0), 0);
-    const totCosti = myCosti.reduce((s,c) => s+(parseFloat(c.totale)||0), 0);
-    const totAff = myAff.reduce((s,a) => s+a.costo, 0);
-    const totCampo = totLav + totCosti + totAff;
-
-    let body = '';
-    if (myAff.length) {
-      body += _secHdr('Affitto');
-      body += `<table><tbody>${myAff.map(a=>`<tr><td style="color:var(--muted)">${fd(a.pagato)}</td><td style="text-align:right"><strong>${fe(a.costo)}</strong></td></tr>`).join('')}</tbody></table>`;
-    }
-    if (myLav.length) {
-      body += _secHdr('Lavorazioni');
-      body += `<table><thead><tr><th>Data</th><th>Tipo</th><th>Qtà</th><th style="text-align:right">Costo Lav.</th><th style="text-align:right">Costo Prod.</th><th></th></tr></thead><tbody>`;
-      body += myLav.map(l=>`<tr><td>${fd(l.data)}</td><td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td><td>${l.quantita?l.quantita+(l.unita?' '+l.unita:''):'—'}</td><td style="text-align:right">${l.costo?fe(l.costo):'—'}</td><td style="text-align:right">${l.costoProdotto?'<strong>'+fe(l.costoProdotto)+'</strong>':'—'}</td><td><button class="btn-ic" onclick="editLav(${l.id})">✏️</button></td></tr>`).join('');
-      body += `</tbody></table>`;
-    }
-    if (myCosti.length) {
-      body += _secHdr('Fatture e acquisti');
-      body += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th>Fattura</th><th></th></tr></thead><tbody>`;
-      body += myCosti.map(c=>`<tr><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right"><strong>${c.totale?fe(c.totale):'—'}</strong></td><td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td><td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('');
-      body += `</tbody></table>`;
-    }
-
-    html += `<div class="acc-item">
-      <div class="acc-hdr" onclick="_accToggle(this)">
-        <span><strong>${campo}</strong></span>
-        <span style="display:flex;align-items:center;gap:10px"><strong style="color:var(--green)">${fe(totCampo)}</strong><span class="acc-arrow">▶</span></span>
-      </div>
-      <div class="acc-body">${body}</div>
-    </div>`;
-  });
-
   if (!html) { document.getElementById('costi-content').innerHTML = `<div class="empty"><div class="empty-ic">💰</div><p>Nessun costo registrato.</p></div>`; return; }
-  if (totaleGlobale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totaleGlobale)}</span></div>`;
+  if (totale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totale)}</span></div>`;
   document.getElementById('costi-content').innerHTML = html;
 }
 
