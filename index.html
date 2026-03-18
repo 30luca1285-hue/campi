@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.13</title>
+<title>Gestione Oliveto v11.14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.13</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.14</div>
     </div>
   </div>
   <div class="nav">
@@ -578,7 +578,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="mb">
       <input type="hidden" id="co-id">
       <div class="fr"><div class="fg"><label>Data *</label><input id="co-data" type="date"></div>
-      <div class="fg"><label>Campo *</label><select id="co-campo"></select></div></div>
+      <div class="fg"><label>Campo</label><select id="co-campo"></select></div></div>
       <div class="fg"><label>Categoria *</label>
         <select id="co-cat"><option value="">Seleziona...</option>
           <option>Prodotti Fitosanitari</option><option>Concimi / Fertilizzanti</option>
@@ -736,7 +736,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.13';
+const VERSION      = 'v11.14';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1233,7 +1233,7 @@ function onCostoFotoSelected(input) {
 }
 
 async function saveCosto() {
-  if (!gv('co-data')||!gv('co-campo')||!gv('co-cat')) { toast('Compila i campi obbligatori'); return; }
+  if (!gv('co-data')||!gv('co-cat')) { toast('Compila i campi obbligatori'); return; }
   const btn = document.getElementById('costo-save-btn');
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
@@ -2050,8 +2050,8 @@ function updateSelects() {
   ['l-campo','co-campo','r-campo','e-campo','ap-campo','mo-campo','lf-campo','cf-campo','rf-campo','apf-campo','mf-campo'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const isF = id.includes('f-'), cur = el.value;
-    el.innerHTML = isF ? '<option value="">Tutti i campi</option>' : '<option value="">Seleziona campo...</option>';
+    const isF = id.includes('f-'), isCo = id === 'co-campo', cur = el.value;
+    el.innerHTML = isF ? '<option value="">Tutti i campi</option>' : isCo ? '<option value="">— Nessun campo (da ripartire)</option>' : '<option value="">Seleziona campo...</option>';
     S.campi.forEach(c => el.innerHTML += `<option value="${esc(c.nome)}">${c.nome}</option>`);
     el.value = cur;
   });
