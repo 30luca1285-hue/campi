@@ -6,9 +6,9 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.23</title>
+<title>Gestione Oliveto v11.24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --green:#2d6a4f;--green-dark:#1a3d2b;--green-light:#d8f3dc;
@@ -250,8 +250,11 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   /* Stats: 2 colonne */
   .stat-bar{grid-template-columns:1fr 1fr;gap:10px}
   .sc-val{font-size:1.15rem}
+  .ov-stat-bar{grid-template-columns:1fr 1fr;gap:10px}
+  .ov-stat-val{font-size:1.5rem}
   /* Charts: 1 colonna */
   .ov-charts{grid-template-columns:1fr}
+  .ov-charts-wrap{grid-template-columns:1fr}
   .mosca-status-grid{grid-template-columns:repeat(2,1fr)}
   .amap-links-grid{grid-template-columns:1fr}
   iframe.amap-frame{height:380px}
@@ -283,6 +286,43 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   /* Voce mic button */
   .mic-btn{padding:16px;font-size:.9rem}
 }
+/* ── OVERVIEW REDESIGN ─────────────────────────────────── */
+@keyframes ov-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.ov-stat-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.ov-stat{border-radius:16px;padding:20px 22px;position:relative;overflow:hidden;color:#fff;animation:ov-rise .55s ease both}
+.ov-stat:nth-child(1){background:linear-gradient(140deg,#1e3d12 0%,#3a6b1e 100%);animation-delay:.04s}
+.ov-stat:nth-child(2){background:linear-gradient(140deg,#6b3018 0%,#a0522d 100%);animation-delay:.1s}
+.ov-stat:nth-child(3){background:linear-gradient(140deg,#4a3810 0%,#8b6914 100%);animation-delay:.16s}
+.ov-stat:nth-child(4){background:linear-gradient(140deg,#123a4a,#1e6b7a 100%);animation-delay:.22s}
+.ov-stat::after{content:'';position:absolute;bottom:-18px;right:-18px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08)}
+.ov-stat-lbl{font-size:.64rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;opacity:.7;margin-bottom:8px}
+.ov-stat-val{font-family:'Playfair Display',Georgia,serif;font-size:1.85rem;font-weight:700;line-height:1;letter-spacing:-.01em}
+.ov-stat-foot{font-size:.67rem;opacity:.55;margin-top:7px;font-style:italic}
+/* Charts */
+.ov-charts-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;animation:ov-rise .55s .28s ease both}
+.ov-chart-box{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 14px rgba(0,0,0,.07);border:1px solid #e8e0d0}
+.ov-chart-title{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#8a7a5a;margin-bottom:16px}
+/* Campo cards */
+.ov-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.ov-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.07);border:1px solid #e8e0d0;display:flex;flex-direction:column;animation:ov-rise .55s ease both}
+.ov-card-stripe{height:4px;background:linear-gradient(90deg,#2d5016 0%,#74c69d 100%)}
+.ov-card-body{padding:16px 18px;flex:1;display:flex;flex-direction:column}
+.ov-card-name{font-family:'Playfair Display',Georgia,serif;font-size:1.05rem;font-weight:700;color:#1a2416;line-height:1.2}
+.ov-card-sub{font-size:.7rem;color:#8a7a5a;margin-top:3px;margin-bottom:14px;font-style:italic}
+.ov-card-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ov-card-metric{background:#f5f1e8;border-radius:8px;padding:9px 11px}
+.ov-card-metric-lbl{font-size:.6rem;font-weight:700;color:#8a7a5a;text-transform:uppercase;letter-spacing:.05em}
+.ov-card-metric-val{font-size:.95rem;font-weight:700;margin-top:3px;color:#1a2416}
+.ov-card-ops{border-top:1px solid #ede8df;padding-top:10px;display:flex;flex-direction:column;gap:5px;margin-top:auto}
+.ov-card-op{display:flex;justify-content:space-between;align-items:center;font-size:.74rem}
+.ov-card-op-lbl{color:#8a7a5a;display:flex;align-items:center;gap:6px}
+.ov-card-op-lbl::before{content:'';width:7px;height:7px;border-radius:50%;background:#cbd5e1;flex-shrink:0}
+.ov-card-op.ok .ov-card-op-lbl::before{background:#22c55e}
+.ov-card-op.warn .ov-card-op-lbl::before{background:#f59e0b}
+.ov-card-op.old .ov-card-op-lbl::before{background:#ef4444}
+.ov-card-op-date{font-weight:600;color:#2c2416}
+.ov-card-op.na .ov-card-op-date{color:#aaa;font-weight:400;font-style:italic}
+/* ── OVERVIEW REDESIGN END ─────────────────────────────── */
 .acc-item{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
 .acc-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;background:var(--bg2);user-select:none;gap:12px}
 .acc-hdr:active{opacity:.8}
@@ -318,7 +358,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.23</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.24</div>
     </div>
   </div>
   <div class="nav">
@@ -346,9 +386,9 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 <div id="view-overview" class="view active">
   <div class="ph"><h2>Overview</h2><div style="display:flex;gap:8px;align-items:center"><select id="ov-anno" onchange="loadOverview()" style="font-size:.82rem;padding:4px 8px;border-radius:8px;border:1px solid var(--border)"><option value="">Anno corrente</option></select><button class="btn btn-s" onclick="loadOverview()">Aggiorna</button></div></div>
   <div class="pb">
-    <div class="stat-bar" id="ov-stats"></div>
+    <div class="ov-stat-bar" id="ov-stats"></div>
     <div id="ov-charts"></div>
-    <div class="cards-grid" id="ov-cards"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></div>
+    <div class="ov-cards-grid" id="ov-cards"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></div>
   </div>
 </div>
 
@@ -760,7 +800,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.23';
+const VERSION      = 'v11.24';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1607,10 +1647,10 @@ function renderOverview(data) {
 
   // Stat bar
   document.getElementById('ov-stats').innerHTML = `
-    <div class="sc"><div class="sc-lbl">Campi</div><div class="sc-val">${campi.length}</div></div>
-    <div class="sc blue"><div class="sc-lbl">Ettari Totali</div><div class="sc-val">${tEtt.toFixed(1)}</div></div>
-    <div class="sc amber"><div class="sc-lbl">Costi ${anno}</div><div class="sc-val">${fe(tCos)}</div></div>
-    <div class="sc violet"><div class="sc-lbl">PAC / Bio ${anno}</div><div class="sc-val">${fe(tEnt)}</div></div>`;
+    <div class="ov-stat"><div class="ov-stat-lbl">Campi</div><div class="ov-stat-val">${campi.length}</div><div class="ov-stat-foot">oliveti attivi</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">Ettari Totali</div><div class="ov-stat-val">${tEtt.toFixed(1)}</div><div class="ov-stat-foot">superficie coltivata</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">Costi ${anno}</div><div class="ov-stat-val">${tCos>0?fe(tCos):'—'}</div><div class="ov-stat-foot">spese registrate</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">PAC / Bio ${anno}</div><div class="ov-stat-val">${tEnt>0?fe(tEnt):'—'}</div><div class="ov-stat-foot">contributi ricevuti</div></div>`;
 
   // Charts section
   const harvHtml = rr ? `
@@ -1630,16 +1670,16 @@ function renderOverview(data) {
     </div>` : `<div class="empty" style="padding:24px 0"><div class="empty-ic">🫙</div><p>Nessuna raccolta registrata</p></div>`;
 
   document.getElementById('ov-charts').innerHTML = `
-    <div class="ov-charts">
-      <div class="chart-box">
-        <h4>Costi per categoria — ${anno}</h4>
+    <div class="ov-charts-wrap">
+      <div class="ov-chart-box">
+        <div class="ov-chart-title">Costi per categoria — ${anno}</div>
         <div class="pie-wrap">
           <canvas id="pie-costi" width="130" height="130"></canvas>
           <div class="pie-legend" id="pie-costi-leg"></div>
         </div>
       </div>
-      <div class="chart-box">
-        <h4>Ultima raccolta${rr?' — '+rr.anno:''}</h4>
+      <div class="ov-chart-box">
+        <div class="ov-chart-title">Ultima raccolta${rr?' — '+rr.anno:''}</div>
         ${harvHtml}
       </div>
     </div>`;
@@ -1656,22 +1696,33 @@ function renderOverview(data) {
     document.getElementById('ov-cards').innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-ic">🫒</div><p>Nessun campo. Vai in <strong>Campi</strong> e aggiungine uno.</p></div></div>`;
     return;
   }
-  document.getElementById('ov-cards').innerHTML = campi.map(c=>`
-    <div class="card">
-      <div class="card-name">🫒 ${c.nome}</div>
-      <div class="card-sub">${[c.varieta,c.comune].filter(Boolean).join(' · ')||'—'}</div>
-      <div class="metrics">
-        <div class="metric"><div class="ml">Ettari</div><div class="mv">${c.ettari||'—'}</div></div>
-        <div class="metric"><div class="ml">N. Piante</div><div class="mv">${c.numPiante||'—'}</div></div>
-        <div class="metric"><div class="ml">Costi ${anno}</div><div class="mv">${(()=>{const tot=(parseFloat(c.costiAnno)||0)+lavCostsAnno.filter(l=>l.campo===c.nome).reduce((s,l)=>s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0),0)+(affittiAnno.find(a=>a.campo===c.nome)?.costo||0);return tot>0?fe(tot):'—';})()}</div></div>
-        <div class="metric"><div class="ml">Ultimo Raccolto</div><div class="mv">${c.ultimaRaccolta?c.ultimaRaccolta.kg+' kg ('+c.ultimaRaccolta.anno+')':'—'}</div></div>
+  const ovOp = (lbl, data, soglia) => {
+    if (!data) return `<div class="ov-card-op na"><span class="ov-card-op-lbl">${lbl}</span><span class="ov-card-op-date">Mai registrata</span></div>`;
+    const d = Math.floor((new Date()-new Date(data))/864e5);
+    const cls = d>soglia?'old':d>soglia*.8?'warn':'ok';
+    return `<div class="ov-card-op ${cls}"><span class="ov-card-op-lbl">${lbl}</span><span class="ov-card-op-date">${fd(data)} · ${d}gg fa</span></div>`;
+  };
+  document.getElementById('ov-cards').innerHTML = campi.map((c,i)=>{
+    const costoTot=(parseFloat(c.costiAnno)||0)+lavCostsAnno.filter(l=>l.campo===c.nome).reduce((s,l)=>s+(parseFloat(l.costo)||0)+(parseFloat(l.costoProdotto)||0),0)+(affittiAnno.find(a=>a.campo===c.nome)?.costo||0);
+    return `<div class="ov-card" style="animation-delay:${.3+i*.07}s">
+      <div class="ov-card-stripe"></div>
+      <div class="ov-card-body">
+        <div class="ov-card-name">🫒 ${c.nome}</div>
+        <div class="ov-card-sub">${[c.varieta,c.comune].filter(Boolean).join(' · ')||'&nbsp;'}</div>
+        <div class="ov-card-metrics">
+          <div class="ov-card-metric"><div class="ov-card-metric-lbl">Ettari</div><div class="ov-card-metric-val">${c.ettari||'—'}</div></div>
+          <div class="ov-card-metric"><div class="ov-card-metric-lbl">N. Piante</div><div class="ov-card-metric-val">${c.numPiante||'—'}</div></div>
+          <div class="ov-card-metric"><div class="ov-card-metric-lbl">Costi ${anno}</div><div class="ov-card-metric-val">${costoTot>0?fe(costoTot):'—'}</div></div>
+          <div class="ov-card-metric"><div class="ov-card-metric-lbl">Ultimo Raccolto</div><div class="ov-card-metric-val">${c.ultimaRaccolta?c.ultimaRaccolta.kg+' kg ('+c.ultimaRaccolta.anno+')':'—'}</div></div>
+        </div>
+        <div class="ov-card-ops">
+          ${ovOp('Potatura',c.ultimaPotatura,365)}
+          ${ovOp('Trattamento',c.ultimoTrattamento,90)}
+          ${ovOp('Concimazione',c.ultimaConcimazione,180)}
+        </div>
       </div>
-      <div class="interventi">
-        ${ir('Potatura', c.ultimaPotatura, 365)}
-        ${ir('Trattamento', c.ultimoTrattamento, 90)}
-        ${ir('Concimazione', c.ultimaConcimazione, 180)}
-      </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function ir(lbl, data, soglia) {
