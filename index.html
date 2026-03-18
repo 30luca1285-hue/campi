@@ -391,7 +391,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
         <select id="lf-campo" onchange="renderLav()"><option value="">Tutti i campi</option></select>
         <select id="lf-tipo" onchange="renderLav()"><option value="">Tutti i tipi</option>
           <option>Potatura</option><option>Trattamento Fitosanitario</option>
-          <option>Concimazione</option><option>Raccolta</option><option>Altra Lavorazione</option></select>
+          <option>Concimazione</option><option>Trinciatura</option><option>Raccolta</option><option>Altra Lavorazione</option></select>
       </div>
     </div>
     <table><thead><tr><th>Data</th><th>Campo</th><th>Tipo</th><th>Descrizione</th><th>Prodotto</th><th>Operatore</th><th>Costo</th><th></th></tr></thead>
@@ -401,8 +401,9 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 
 <!-- COSTI -->
 <div id="view-costi" class="view">
-  <div class="ph"><h2>Costi</h2><button class="btn btn-p" onclick="openCostoModal()">+ Nuovo Costo</button></div>
+  <div class="ph"><h2>Costi</h2><div style="display:flex;gap:8px"><button class="btn btn-s" onclick="openRipartModal()">⚖️ Ripartisci Prodotto</button><button class="btn btn-p" onclick="openCostoModal()">+ Nuovo Costo</button></div></div>
   <div class="pb"><div class="tw">
+    <div id="costi-lav-summary"></div>
     <div class="tb-bar">
       <div class="fb">
         <select id="cf-campo" onchange="renderCosti()"><option value="">Tutti i campi</option></select>
@@ -561,7 +562,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fg"><label>Tipo Operazione *</label>
         <select id="l-tipo"><option value="">Seleziona...</option>
           <option>Potatura</option><option>Trattamento Fitosanitario</option>
-          <option>Concimazione</option><option>Raccolta</option><option>Altra Lavorazione</option></select></div>
+          <option>Concimazione</option><option>Trinciatura</option><option>Raccolta</option><option>Altra Lavorazione</option></select></div>
       <div class="fg"><label>Descrizione / Note</label><textarea id="l-desc" rows="2" placeholder="Dettagli..."></textarea></div>
       <div class="fr"><div class="fg"><label>Prodotto Usato</label><input id="l-prod" placeholder="es. Rame, Azoto..."></div>
       <div class="fg"><label>Operatore</label><input id="l-oper" placeholder="Nome operatore"></div></div>
@@ -607,6 +608,33 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       </div>
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-costo')">Annulla</button><button class="btn btn-p" id="costo-save-btn" onclick="saveCosto()">Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL RIPARTIZIONE PRODOTTO -->
+<div id="m-ripart" class="ov">
+  <div class="modal">
+    <div class="mh"><h3>Ripartisci Prodotto per Campo</h3><button class="btn-ic" onclick="cm('m-ripart')">✕</button></div>
+    <div class="mb">
+      <div class="fr"><div class="fg"><label>Data Fattura *</label><input id="rp-data" type="date"></div>
+      <div class="fg"><label>Fornitore</label><input id="rp-forn" placeholder="es. Agriservice"></div></div>
+      <div class="fg"><label>Nome Prodotto *</label><input id="rp-prod" placeholder="es. Concime NPK 12-12-17"></div>
+      <div class="fr"><div class="fg"><label>Categoria *</label>
+        <select id="rp-cat">
+          <option>Concimi / Fertilizzanti</option><option>Prodotti Fitosanitari</option><option>Altro</option>
+        </select></div>
+      <div class="fg"><label>Costo Totale Fattura € *</label><input id="rp-tot" type="number" step="0.01" placeholder="0.00" oninput="renderRipartPreview()"></div></div>
+      <div class="fg">
+        <label>Foto Fattura (opzionale)</label>
+        <div class="foto-area" onclick="document.getElementById('ripart-foto-file').click()">
+          <img id="ripart-foto-preview" style="display:none" alt="anteprima fattura">
+          <div id="ripart-foto-ph" class="foto-ph">📎 Tocca per allegare foto fattura</div>
+        </div>
+        <input type="file" id="ripart-foto-file" accept="image/*" capture="environment" style="display:none" onchange="onRipartFotoSelected(this)">
+      </div>
+      <div id="ripart-preview"></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-ripart')">Annulla</button><button class="btn btn-p" id="ripart-save-btn" onclick="saveRipart()">Salva per tutti i campi</button></div>
   </div>
 </div>
 
@@ -711,8 +739,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.8';
-if (!location.search.includes('v=11.8')) { location.replace(location.pathname + '?v=11.8'); }
+const VERSION      = 'v11.9';
+if (!location.search.includes('v=11.9')) { location.replace(location.pathname + '?v=11.9'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -999,7 +1027,7 @@ function renderLav() {
     <td><div class="act"><button class="btn-ic" onclick="editLav(${l.id})">✏️</button><button class="btn-ic" onclick="delLav(${l.id})">🗑️</button></div></td></tr>`).join('');
 }
 
-function lb(t){return{Potatura:'bg','Trattamento Fitosanitario':'br',Concimazione:'by',Raccolta:'bb','Altra Lavorazione':'bgr'}[t]||'bgr';}
+function lb(t){return{Potatura:'bg','Trattamento Fitosanitario':'br',Concimazione:'by',Trinciatura:'bg',Raccolta:'bb','Altra Lavorazione':'bgr'}[t]||'bgr';}
 
 function openLavModal(l) {
   sv({'l-id':l?.id||'','l-data':l?.data||today(),'l-campo':l?.campo||'','l-tipo':l?.tipo||'',
@@ -1028,11 +1056,42 @@ async function delLav(id) {
 // COSTI
 // ============================================================
 async function loadCosti() {
-  S.costi = await api('getCosti');
+  [S.costi, S.lavorazioni] = await Promise.all([
+    api('getCosti'),
+    S.lavorazioni?.length ? Promise.resolve(S.lavorazioni) : api('getLavorazioni')
+  ]);
   renderCosti();
 }
 
+function renderCostiLavSummary() {
+  const div = document.getElementById('costi-lav-summary');
+  const lavs = (S.lavorazioni || []).filter(l => parseFloat(l.costo) > 0);
+  if (!lavs.length) { div.innerHTML = ''; return; }
+  const byTipo = {};
+  lavs.forEach(l => {
+    if (!byTipo[l.tipo]) byTipo[l.tipo] = { count: 0, tot: 0 };
+    byTipo[l.tipo].count++;
+    byTipo[l.tipo].tot += parseFloat(l.costo);
+  });
+  const totLav = lavs.reduce((s, l) => s + (parseFloat(l.costo) || 0), 0);
+  div.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)">
+    <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:8px">DA LAVORAZIONI (calcolato automaticamente)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${Object.entries(byTipo).map(([tipo, v]) =>
+        `<div style="background:var(--bg);border-radius:8px;padding:6px 12px;font-size:.82rem">
+          <span style="font-weight:600">${tipo}</span>
+          <span style="color:var(--muted);margin:0 4px">·</span>
+          <span>${v.count} interv.</span>
+          <span style="color:var(--muted);margin:0 4px">·</span>
+          <span style="font-weight:700;color:var(--green)">${fe(v.tot)}</span>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:8px;font-size:.84rem;font-weight:700;color:var(--green)">Totale lavorazioni: ${fe(totLav)}</div>
+  </div>`;
+}
+
 function renderCosti() {
+  renderCostiLavSummary();
   const tb = document.getElementById('costi-tb');
   const fc = gv('cf-campo'), fcat = gv('cf-cat');
   let d = S.costi.filter(c=>(!fc||c.campo===fc)&&(!fcat||c.categoria===fcat)).sort((a,b)=>new Date(b.data)-new Date(a.data));
@@ -1113,6 +1172,106 @@ async function delCosto(id) {
   if (!confirm('Eliminare questo costo?')) return;
   await api('deleteCosto', { rowId: id });
   loadCosti(); toast('Eliminato');
+}
+
+// ============================================================
+// RIPARTIZIONE PRODOTTO
+// ============================================================
+let _ripartFotoData = null;
+
+function openRipartModal() {
+  _ripartFotoData = null;
+  document.getElementById('ripart-foto-preview').style.display = 'none';
+  document.getElementById('ripart-foto-ph').style.display = '';
+  document.getElementById('ripart-foto-file').value = '';
+  document.getElementById('ripart-preview').innerHTML = '';
+  sv({'rp-data': today(), 'rp-prod': '', 'rp-forn': '', 'rp-tot': '', 'rp-cat': 'Concimi / Fertilizzanti'});
+  renderRipartPreview();
+  om('m-ripart');
+}
+
+function onRipartFotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  resizeImage(file).then(b64 => {
+    _ripartFotoData = b64;
+    const prev = document.getElementById('ripart-foto-preview');
+    prev.src = b64; prev.style.display = 'block';
+    document.getElementById('ripart-foto-ph').style.display = 'none';
+  }).catch(() => toast('Errore caricamento foto'));
+}
+
+function _getRipartQuintali() {
+  const per = {};
+  (S.lavorazioni || [])
+    .filter(l => l.tipo === 'Concimazione' && parseFloat(l.quantita) > 0)
+    .forEach(l => { per[l.campo] = (per[l.campo] || 0) + parseFloat(l.quantita); });
+  return per;
+}
+
+function renderRipartPreview() {
+  const div = document.getElementById('ripart-preview');
+  const tot = parseFloat(gv('rp-tot')) || 0;
+  const per = _getRipartQuintali();
+  const entries = Object.entries(per);
+  if (!entries.length) {
+    div.innerHTML = '<p style="color:var(--muted);font-size:.8rem;margin-top:10px">Nessuna concimazione con quintali registrata nelle lavorazioni.</p>';
+    return;
+  }
+  const totalQ = entries.reduce((s, [, q]) => s + q, 0);
+  div.innerHTML = `
+    <div style="margin-top:14px;font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.04em">RIPARTIZIONE — ${totalQ}q totali da lavorazioni</div>
+    <table style="width:100%;font-size:.82rem;margin-top:6px;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:4px 0;border-bottom:1px solid var(--border)">Campo</th>
+        <th style="text-align:right;padding:4px 0;border-bottom:1px solid var(--border)">Q</th>
+        <th style="text-align:right;padding:4px 0;border-bottom:1px solid var(--border)">%</th>
+        <th style="text-align:right;padding:4px 0;border-bottom:1px solid var(--border)">Costo</th>
+      </tr></thead>
+      <tbody>${entries.map(([campo, q]) => {
+        const pct = (q / totalQ * 100).toFixed(1);
+        const cost = tot ? fe((q / totalQ * tot).toFixed(2)) : '—';
+        return `<tr>
+          <td style="padding:4px 0">${campo}</td>
+          <td style="text-align:right;padding:4px 0">${q}q</td>
+          <td style="text-align:right;padding:4px 0;color:var(--muted)">${pct}%</td>
+          <td style="text-align:right;padding:4px 0;font-weight:600">${cost}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+async function saveRipart() {
+  if (!gv('rp-data') || !gv('rp-prod') || !parseFloat(gv('rp-tot'))) {
+    toast('Compila data, prodotto e costo totale'); return;
+  }
+  const per = _getRipartQuintali();
+  const entries = Object.entries(per);
+  if (!entries.length) { toast('Nessuna concimazione con quintali trovata'); return; }
+  const btn = document.getElementById('ripart-save-btn');
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    let fotoUrl = '';
+    if (_ripartFotoData) {
+      const res = await apiPost({ action: 'uploadFattura', data: { foto: _ripartFotoData } });
+      fotoUrl = res.url || '';
+    }
+    const totalQ = entries.reduce((s, [, q]) => s + q, 0);
+    const totEur = parseFloat(gv('rp-tot'));
+    const costoUnitario = (totEur / totalQ).toFixed(4);
+    for (const [campo, q] of entries) {
+      const totCampo = (q / totalQ * totEur).toFixed(2);
+      await api('saveCosto', { data: {
+        id: null, data: gv('rp-data'), campo,
+        categoria: gv('rp-cat'),
+        descrizione: gv('rp-prod') + ' — ' + q + 'q su ' + totalQ + 'q tot',
+        quantita: q, unita: 'q', costoUnitario, totale: totCampo,
+        fornitore: gv('rp-forn'), note: 'Ripartizione automatica', fotoUrl
+      }});
+    }
+    cm('m-ripart'); loadCosti(); toast('✅ Costi ripartiti su ' + entries.length + ' campi!');
+  } catch(e) { toast('Errore nel salvataggio'); }
+  finally { btn.disabled = false; btn.textContent = 'Salva per tutti i campi'; }
 }
 
 // ============================================================
