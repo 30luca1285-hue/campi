@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.19</title>
+<title>Gestione Oliveto v11.20</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.19</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.20</div>
     </div>
   </div>
   <div class="nav">
@@ -753,7 +753,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.19';
+const VERSION      = 'v11.20';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1130,7 +1130,7 @@ function _renderCostiAll(lavCosts, costi, affitti) {
   });
   const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
   const daRipartire = costi.filter(c => !c.campo && !c.ripartita);
-  const giàRipartite = costi.filter(c => !c.campo && c.ripartita);
+  const giaRipartite = costi.filter(c => !c.campo && c.ripartita);
   const costiBycat = {};
   costi.filter(c => c.campo).forEach(c => {
     const cat = c.categoria||'Altro';
@@ -1138,7 +1138,7 @@ function _renderCostiAll(lavCosts, costi, affitti) {
     costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
   });
   const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0) + daRipartire.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
-  // giàRipartite escluse dal totale (già conteggiate nelle lavorazioni)
+  // giaRipartite escluse dal totale (già conteggiate nelle lavorazioni)
   const totAffitti = affitti.reduce((s,a)=>s+a.costo, 0);
   const totale = totLav + totCosti + totAffitti;
   document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
@@ -1175,10 +1175,10 @@ function _renderCostiAll(lavCosts, costi, affitti) {
     ).join('');
     html += `</tbody></table>`;
   }
-  if (giàRipartite.length) {
+  if (giaRipartite.length) {
     html += _secHdr('✓ Già ripartite su lavorazioni');
     html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th style="text-align:right">Totale</th><th>Fattura</th><th></th></tr></thead><tbody>`;
-    html += giàRipartite.map(c =>
+    html += giaRipartite.map(c =>
       `<tr style="opacity:.6"><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td style="text-align:right">${c.totale?fe(c.totale):'—'}</td><td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td><td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`
     ).join('');
     html += `</tbody></table>`;
