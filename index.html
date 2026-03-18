@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.9</title>
+<title>Gestione Oliveto v11.10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.9</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.10</div>
     </div>
   </div>
   <div class="nav">
@@ -403,19 +403,14 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 <div id="view-costi" class="view">
   <div class="ph"><h2>Costi</h2><div style="display:flex;gap:8px"><button class="btn btn-s" onclick="openRipartModal()">⚖️ Ripartisci Prodotto</button><button class="btn btn-p" onclick="openCostoModal()">+ Nuovo Costo</button></div></div>
   <div class="pb"><div class="tw">
-    <div id="costi-lav-summary"></div>
     <div class="tb-bar">
       <div class="fb">
+        <select id="cf-anno" onchange="renderCosti()"><option value="">Tutti gli anni</option></select>
         <select id="cf-campo" onchange="renderCosti()"><option value="">Tutti i campi</option></select>
-        <select id="cf-cat" onchange="renderCosti()"><option value="">Tutte le categorie</option>
-          <option>Prodotti Fitosanitari</option><option>Concimi / Fertilizzanti</option>
-          <option>Carburante</option><option>Manodopera</option>
-          <option>Affitto</option><option>Macchinari / Attrezzature</option><option>Altro</option></select>
       </div>
       <span class="tot-lbl" id="costi-tot"></span>
     </div>
-    <table><thead><tr><th>Data</th><th>Campo</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th>Costo Unit.</th><th>Totale</th><th>Fornitore</th><th>Fattura</th><th></th></tr></thead>
-    <tbody id="costi-tb"></tbody></table>
+    <div id="costi-content"></div>
   </div></div>
 </div>
 
@@ -739,8 +734,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.9';
-if (!location.search.includes('v=11.9')) { location.replace(location.pathname + '?v=11.9'); }
+const VERSION      = 'v11.10';
+if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -1063,48 +1058,96 @@ async function loadCosti() {
   renderCosti();
 }
 
-function renderCostiLavSummary() {
-  const div = document.getElementById('costi-lav-summary');
-  const lavs = (S.lavorazioni || []).filter(l => parseFloat(l.costo) > 0);
-  if (!lavs.length) { div.innerHTML = ''; return; }
-  const byTipo = {};
-  lavs.forEach(l => {
-    if (!byTipo[l.tipo]) byTipo[l.tipo] = { count: 0, tot: 0 };
-    byTipo[l.tipo].count++;
-    byTipo[l.tipo].tot += parseFloat(l.costo);
-  });
-  const totLav = lavs.reduce((s, l) => s + (parseFloat(l.costo) || 0), 0);
-  div.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)">
-    <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:8px">DA LAVORAZIONI (calcolato automaticamente)</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${Object.entries(byTipo).map(([tipo, v]) =>
-        `<div style="background:var(--bg);border-radius:8px;padding:6px 12px;font-size:.82rem">
-          <span style="font-weight:600">${tipo}</span>
-          <span style="color:var(--muted);margin:0 4px">·</span>
-          <span>${v.count} interv.</span>
-          <span style="color:var(--muted);margin:0 4px">·</span>
-          <span style="font-weight:700;color:var(--green)">${fe(v.tot)}</span>
-        </div>`).join('')}
-    </div>
-    <div style="margin-top:8px;font-size:.84rem;font-weight:700;color:var(--green)">Totale lavorazioni: ${fe(totLav)}</div>
-  </div>`;
+function renderCosti() {
+  _populateCostiAnni();
+  const fc = gv('cf-campo'), fanno = gv('cf-anno');
+  const lavCosts = (S.lavorazioni || []).filter(l =>
+    parseFloat(l.costo) > 0 && (!fanno || l.data.startsWith(fanno))
+  );
+  const costi = (S.costi || []).filter(c => !fanno || c.data.startsWith(fanno));
+  if (!fc) _renderCostiAll(lavCosts, costi);
+  else _renderCostiCampo(fc, lavCosts, costi);
 }
 
-function renderCosti() {
-  renderCostiLavSummary();
-  const tb = document.getElementById('costi-tb');
-  const fc = gv('cf-campo'), fcat = gv('cf-cat');
-  let d = S.costi.filter(c=>(!fc||c.campo===fc)&&(!fcat||c.categoria===fcat)).sort((a,b)=>new Date(b.data)-new Date(a.data));
-  const tot = d.reduce((s,c)=>s+(parseFloat(c.totale)||0),0);
-  document.getElementById('costi-tot').textContent = d.length ? 'Totale: '+fe(tot) : '';
-  if (!d.length) { tb.innerHTML = er(9,'💰','Nessun costo registrato.'); return; }
-  tb.innerHTML = d.map(c=>`<tr>
-    <td>${fd(c.data)}</td><td>${c.campo}</td><td>${c.categoria}</td>
-    <td>${c.descrizione||'—'}</td><td>${c.quantita||'—'}${c.unita?' '+c.unita:''}</td>
-    <td>${c.costoUnitario?fe(c.costoUnitario):'—'}</td><td><strong>${c.totale?fe(c.totale):'—'}</strong></td>
-    <td>${c.fornitore||'—'}</td>
-    <td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" title="Apri fattura" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td>
-    <td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`).join('');
+function _populateCostiAnni() {
+  const sel = document.getElementById('cf-anno');
+  const cur = sel.value;
+  const anni = new Set();
+  (S.lavorazioni || []).forEach(l => { if (l.data) anni.add(l.data.substring(0,4)); });
+  (S.costi || []).forEach(c => { if (c.data) anni.add(c.data.substring(0,4)); });
+  const sorted = [...anni].sort().reverse();
+  sel.innerHTML = '<option value="">Tutti gli anni</option>' +
+    sorted.map(a => `<option value="${a}"${a===cur?' selected':''}>${a}</option>`).join('');
+}
+
+const _secHdr = t => `<div style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:16px 0 6px;text-transform:uppercase">${t}</div>`;
+
+function _renderCostiAll(lavCosts, costi) {
+  const lavByTipo = {};
+  lavCosts.forEach(l => {
+    if (!lavByTipo[l.tipo]) lavByTipo[l.tipo] = { count:0, tot:0 };
+    lavByTipo[l.tipo].count++; lavByTipo[l.tipo].tot += parseFloat(l.costo);
+  });
+  const totLav = Object.values(lavByTipo).reduce((s,v)=>s+v.tot, 0);
+  const costiBycat = {};
+  costi.forEach(c => {
+    const cat = c.categoria||'Altro';
+    if (!costiBycat[cat]) costiBycat[cat] = { count:0, tot:0 };
+    costiBycat[cat].count++; costiBycat[cat].tot += parseFloat(c.totale)||0;
+  });
+  const totCosti = Object.values(costiBycat).reduce((s,v)=>s+v.tot, 0);
+  const totale = totLav + totCosti;
+  document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
+  let html = '';
+  if (Object.keys(lavByTipo).length) {
+    html += _secHdr('Lavorazioni — costo terzista');
+    html += `<table><thead><tr><th>Tipo</th><th>Interventi</th><th style="text-align:right">Totale</th></tr></thead><tbody>`;
+    html += Object.entries(lavByTipo).map(([tipo,v])=>
+      `<tr><td>${tipo}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`
+    ).join('');
+    html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale lavorazioni</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totLav)}</strong></td></tr></tbody></table>`;
+  }
+  if (Object.keys(costiBycat).length) {
+    html += _secHdr('Costi diretti — fatture e acquisti');
+    html += `<table><thead><tr><th>Categoria</th><th>Voci</th><th style="text-align:right">Totale</th></tr></thead><tbody>`;
+    html += Object.entries(costiBycat).map(([cat,v])=>
+      `<tr><td>${cat}</td><td style="color:var(--muted)">${v.count}</td><td style="text-align:right"><strong>${fe(v.tot)}</strong></td></tr>`
+    ).join('');
+    html += `<tr style="border-top:2px solid var(--border)"><td colspan="2"><strong>Totale costi diretti</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totCosti)}</strong></td></tr></tbody></table>`;
+  }
+  if (!html) { document.getElementById('costi-content').innerHTML = `<div class="empty"><div class="empty-ic">💰</div><p>Nessun costo registrato.</p></div>`; return; }
+  if (totale > 0) html += `<div style="margin-top:16px;padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between"><span>TOTALE GENERALE</span><span>${fe(totale)}</span></div>`;
+  document.getElementById('costi-content').innerHTML = html;
+}
+
+function _renderCostiCampo(campo, lavCosts, costi) {
+  const myLav = lavCosts.filter(l=>l.campo===campo).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const myCosti = costi.filter(c=>c.campo===campo).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const totLav = myLav.reduce((s,l)=>s+(parseFloat(l.costo)||0), 0);
+  const totCosti = myCosti.reduce((s,c)=>s+(parseFloat(c.totale)||0), 0);
+  const totale = totLav + totCosti;
+  document.getElementById('costi-tot').textContent = totale ? 'Totale: '+fe(totale) : '';
+  let html = `<div style="padding:12px 16px;background:var(--green);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;display:flex;justify-content:space-between;margin-bottom:4px"><span>${campo}</span><span>${fe(totale)}</span></div>`;
+  if (myLav.length) {
+    html += _secHdr('Lavorazioni — costo terzista');
+    html += `<table><thead><tr><th>Data</th><th>Tipo</th><th>Operatore</th><th>Qtà</th><th style="text-align:right">Costo</th></tr></thead><tbody>`;
+    html += myLav.map(l=>
+      `<tr><td>${fd(l.data)}</td><td><span class="badge ${lb(l.tipo)}">${l.tipo}</span></td><td>${l.operatore||'—'}</td><td>${l.quantita?l.quantita+(l.unita?' '+l.unita:''):'—'}</td><td style="text-align:right"><strong>${fe(l.costo)}</strong></td></tr>`
+    ).join('');
+    if (myLav.length>1) html += `<tr style="border-top:2px solid var(--border)"><td colspan="4"><strong>Subtotale lavorazioni</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totLav)}</strong></td></tr>`;
+    html += `</tbody></table>`;
+  }
+  if (myCosti.length) {
+    html += _secHdr('Costi diretti — fatture e acquisti');
+    html += `<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th>Qtà</th><th style="text-align:right">Totale</th><th>Fattura</th><th></th></tr></thead><tbody>`;
+    html += myCosti.map(c=>
+      `<tr><td>${fd(c.data)}</td><td>${c.categoria}</td><td>${c.descrizione||'—'}</td><td>${c.quantita?c.quantita+(c.unita?' '+c.unita:''):'—'}</td><td style="text-align:right"><strong>${c.totale?fe(c.totale):'—'}</strong></td><td>${c.fotoUrl?`<a href="${c.fotoUrl}" target="_blank" style="font-size:1.1rem;text-decoration:none">📎</a>`:'—'}</td><td><div class="act"><button class="btn-ic" onclick="editCosto(${c.id})">✏️</button><button class="btn-ic" onclick="delCosto(${c.id})">🗑️</button></div></td></tr>`
+    ).join('');
+    if (myCosti.length>1) html += `<tr style="border-top:2px solid var(--border)"><td colspan="4"><strong>Subtotale costi diretti</strong></td><td style="text-align:right;color:var(--green)"><strong>${fe(totCosti)}</strong></td><td colspan="2"></td></tr>`;
+    html += `</tbody></table>`;
+  }
+  if (!myLav.length && !myCosti.length) html += `<div class="empty"><div class="empty-ic">💰</div><p>Nessun costo per ${campo}.</p></div>`;
+  document.getElementById('costi-content').innerHTML = html;
 }
 
 function calcTot(){
