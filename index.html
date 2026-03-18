@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.11</title>
+<title>Gestione Oliveto v11.12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -311,7 +311,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.11</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.12</div>
     </div>
   </div>
   <div class="nav">
@@ -337,7 +337,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 
 <!-- OVERVIEW -->
 <div id="view-overview" class="view active">
-  <div class="ph"><h2>Overview</h2><button class="btn btn-s" onclick="loadOverview()">↺ Aggiorna</button></div>
+  <div class="ph"><h2>Overview</h2><div style="display:flex;gap:8px;align-items:center"><select id="ov-anno" onchange="loadOverview()" style="font-size:.82rem;padding:4px 8px;border-radius:8px;border:1px solid var(--border)"><option value="">Anno corrente</option></select><button class="btn btn-s" onclick="loadOverview()">↺ Aggiorna</button></div></div>
   <div class="pb">
     <div class="stat-bar" id="ov-stats"></div>
     <div id="ov-charts"></div>
@@ -388,6 +388,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   <div class="pb"><div class="tw">
     <div class="tb-bar">
       <div class="fb">
+        <select id="lf-anno" onchange="renderLav()"><option value="">Tutti gli anni</option></select>
         <select id="lf-campo" onchange="renderLav()"><option value="">Tutti i campi</option></select>
         <select id="lf-tipo" onchange="renderLav()"><option value="">Tutti i tipi</option>
           <option>Potatura</option><option>Trattamento Fitosanitario</option>
@@ -436,6 +437,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   <div class="ph"><h2>Raccolta</h2><button class="btn btn-p" onclick="openRaccModal()">+ Nuova Raccolta</button></div>
   <div class="pb"><div class="tw">
     <div class="tb-bar"><div class="fb">
+      <select id="rf-anno" onchange="renderRacc()"><option value="">Tutti gli anni</option></select>
       <select id="rf-campo" onchange="renderRacc()"><option value="">Tutti i campi</option></select>
     </div></div>
     <table><thead><tr><th>Anno</th><th>Campo</th><th>Inizio</th><th>Fine</th><th>KG</th><th>KG/Ha</th><th>Destinazione</th><th>Note</th><th></th></tr></thead>
@@ -734,7 +736,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.11';
+const VERSION      = 'v11.12';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1009,9 +1011,13 @@ async function loadLav() {
 }
 
 function renderLav() {
+  const annoSel = document.getElementById('lf-anno');
+  const curAnno = annoSel.value;
+  const anniLav = [...new Set((S.lav||[]).map(l=>l.data?.substring(0,4)).filter(Boolean))].sort().reverse();
+  annoSel.innerHTML = '<option value="">Tutti gli anni</option>' + anniLav.map(a=>`<option value="${a}"${a===curAnno?' selected':''}>${a}</option>`).join('');
   const tb = document.getElementById('lav-tb');
-  const fc = gv('lf-campo'), ft = gv('lf-tipo');
-  let d = S.lav.filter(l=>(!fc||l.campo===fc)&&(!ft||l.tipo===ft)).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const fc = gv('lf-campo'), ft = gv('lf-tipo'), fa = annoSel.value;
+  let d = S.lav.filter(l=>(!fc||l.campo===fc)&&(!ft||l.tipo===ft)&&(!fa||l.data?.startsWith(fa))).sort((a,b)=>new Date(b.data)-new Date(a.data));
   if (!d.length) { tb.innerHTML = er(8,'🌿','Nessuna lavorazione.'); return; }
   tb.innerHTML = d.map(l=>`<tr>
     <td>${fd(l.data)}</td><td>${l.campo}</td>
@@ -1360,9 +1366,13 @@ async function loadRacc() {
 }
 
 function renderRacc() {
+  const annoSel = document.getElementById('rf-anno');
+  const curAnno = annoSel.value;
+  const anniRacc = [...new Set((S.racc||[]).map(r=>String(r.anno)).filter(Boolean))].sort().reverse();
+  annoSel.innerHTML = '<option value="">Tutti gli anni</option>' + anniRacc.map(a=>`<option value="${a}"${a===curAnno?' selected':''}>${a}</option>`).join('');
   const tb = document.getElementById('racc-tb');
-  const fc = gv('rf-campo');
-  let d = S.racc.filter(r=>!fc||r.campo===fc).sort((a,b)=>b.anno-a.anno);
+  const fc = gv('rf-campo'), fa = annoSel.value;
+  let d = S.racc.filter(r=>(!fc||r.campo===fc)&&(!fa||String(r.anno)===fa)).sort((a,b)=>b.anno-a.anno);
   if (!d.length) { tb.innerHTML = er(9,'🫙','Nessuna raccolta registrata.'); return; }
   tb.innerHTML = d.map(r=>`<tr>
     <td><strong>${r.anno}</strong></td><td>${r.campo}</td>
@@ -1410,12 +1420,21 @@ async function loadOverview() {
   document.getElementById('ov-cards').innerHTML = '<div class="spin-wrap"><div class="spinner"></div>Caricamento...</div>';
   document.getElementById('ov-stats').innerHTML = '';
   document.getElementById('ov-charts').innerHTML = '';
-  const data = await api('getOverview');
+  const annoFiltro = gv('ov-anno');
+  const params = annoFiltro ? { anno: annoFiltro } : {};
+  const data = await api('getOverview', params);
   renderOverview(data);
 }
 
 function renderOverview(data) {
-  const anno = new Date().getFullYear();
+  const anno = data.anno || new Date().getFullYear();
+  // Popola select anni overview
+  const ovAnnoSel = document.getElementById('ov-anno');
+  const curOvAnno = ovAnnoSel.value;
+  const curY = new Date().getFullYear();
+  const anniOv = [];
+  for (let y = curY + 1; y >= curY - 4; y--) anniOv.push(y);
+  ovAnnoSel.innerHTML = '<option value="">Anno corrente ('+curY+')</option>' + anniOv.map(a=>`<option value="${a}"${a===+curOvAnno?' selected':''}>${a}</option>`).join('');
   const campi = data.campi || [];
   const tEtt = campi.reduce((s,c)=>s+(parseFloat(c.ettari)||0),0);
   const tCos = campi.reduce((s,c)=>s+(parseFloat(c.costiAnno)||0),0);

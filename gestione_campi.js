@@ -37,7 +37,7 @@ function doGet(e) {
       case 'getLavorazioni':    result = getLavorazioni(); break;
       case 'getCosti':          result = getCosti(); break;
       case 'getRaccolte':       result = getRaccolte(); break;
-      case 'getOverview':       result = getOverviewData(); break;
+      case 'getOverview':       result = getOverviewData(e.parameter.anno ? +e.parameter.anno : null); break;
       case 'saveCampo':         result = saveCampo(JSON.parse(e.parameter.data)); break;
       case 'deleteCampo':       result = deleteCampo(+e.parameter.rowId); break;
       case 'saveLavorazione':   result = saveLavorazione(JSON.parse(e.parameter.data)); break;
@@ -396,9 +396,9 @@ function deleteMoscaEntry(rowId) { getSheet(SHEETS.MOSCA).deleteRow(rowId); retu
 // OVERVIEW
 // ============================================================
 
-function getOverviewData() {
+function getOverviewData(annoParam) {
   const campi = getCampi(), lav = getLavorazioni(), costi = getCosti(), racc = getRaccolte(), entrate = getEntrate();
-  const anno  = new Date().getFullYear();
+  const anno  = annoParam || new Date().getFullYear();
 
   const campiData = campi.map(c => {
     const lc       = lav.filter(l => l.campo.trim() === c.nome.trim());
@@ -438,7 +438,7 @@ function getOverviewData() {
     };
   }
 
-  return { campi: campiData, costiPerCategoria, entrateAnno, raccoltaRiepilogo };
+  return { anno, campi: campiData, costiPerCategoria, entrateAnno, raccoltaRiepilogo };
 }
 
 function ultimaData(lav, tipo) {
