@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.30</title>
+<title>Gestione Oliveto v11.31</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
@@ -356,7 +356,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.30</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.31</div>
     </div>
   </div>
   <div class="nav">
@@ -798,7 +798,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.30';
+const VERSION      = 'v11.31';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -2302,7 +2302,7 @@ function fdh(d) {
   const dt = new Date(d);
   return isNaN(dt) ? d : dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
-function fe(n) { return '€\u00a0'+parseFloat(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fe(n) { const v=parseFloat(n); return '€\u00a0'+v.toLocaleString('it-IT',{minimumFractionDigits:v%1===0?0:2,maximumFractionDigits:2}); }
 function er(cols, ic, msg) { return '<tr><td colspan="' + cols + '"><div class="empty"><div class="empty-ic">' + ic + '</div><p>' + msg + '</p></div></td></tr>'; }
 function toast(msg) {
   const t = document.getElementById('toast');
