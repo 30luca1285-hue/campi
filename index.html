@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.29</title>
+<title>Gestione Oliveto v11.30</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
@@ -288,8 +288,12 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 }
 /* ── OVERVIEW STATS ─────────────────────────────────── */
 .ov-stat-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
-.ov-stat{background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px 10px;text-align:center}
-.ov-stat-lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;color:#888;letter-spacing:.05em;margin-bottom:6px}
+.ov-stat{background:#fff;border:1px solid #e8e0d0;border-radius:8px;padding:14px 10px;text-align:center;border-top:4px solid #ccc}
+.ov-stat:nth-child(1){border-top-color:#3a6b1e}
+.ov-stat:nth-child(2){border-top-color:#8b6914}
+.ov-stat:nth-child(3){border-top-color:#a0522d}
+.ov-stat:nth-child(4){border-top-color:#1e6b7a}
+.ov-stat-lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;color:#8a7a5a;letter-spacing:.05em;margin-bottom:6px}
 .ov-stat-val{font-size:1.15rem;font-weight:700;color:#1a2416;line-height:1.1}
 .ov-stat-foot{font-size:.6rem;color:#aaa;margin-top:4px}
 /* Charts */
@@ -352,7 +356,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="logo-title">Gestione Oliveto</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
       <div class="logo-sub">Pannello di controllo</div>
-      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.29</div>
+      <div style="font-size:.62rem;font-weight:700;background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px;opacity:.8">v11.30</div>
     </div>
   </div>
   <div class="nav">
@@ -794,7 +798,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.29';
+const VERSION      = 'v11.30';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
