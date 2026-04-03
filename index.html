@@ -6,9 +6,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.31</title>
+<title>Gestione Oliveto v11.32</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --green:#2d6a4f;--green-dark:#1a3d2b;--green-light:#d8f3dc;
@@ -403,6 +405,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   <div class="tab-bar">
     <div class="tab active" id="tab-campi" onclick="switchCampiTab('campi')">🗺️ Lista Campi</div>
     <div class="tab" id="tab-diari" onclick="switchCampiTab('diari')">📷 Diari</div>
+    <div class="tab" id="tab-mappa" onclick="switchCampiTab('mappa')">🗾 Mappa</div>
   </div>
   <div class="pb">
     <div id="sort-bar" style="display:none;background:var(--green);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:8px">
@@ -423,6 +426,10 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
         <select id="apf-campo" onchange="renderAppunti()" style="max-width:220px"><option value="">Tutti i campi</option></select>
       </div>
       <div class="ap-grid" id="ap-grid"></div>
+    </div>
+    <div id="mappa-section" style="display:none">
+      <div id="campi-map" style="width:100%;height:480px;border-radius:12px;border:1px solid var(--border)"></div>
+      <p id="mappa-no-gps" style="display:none;color:var(--muted);font-size:.9rem;margin-top:10px;text-align:center">Nessun campo ha coordinate GPS salvate.</p>
     </div>
   </div>
 </div>
@@ -798,7 +805,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.31';
+const VERSION      = 'v11.32';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -969,17 +976,52 @@ window.addEventListener('DOMContentLoaded', () => {
 // CAMPI + TAB DIARI
 // ============================================================
 function switchCampiTab(tab) {
-  const isDiari = tab === 'diari';
-  document.getElementById('campi-section').style.display = isDiari ? 'none' : '';
-  document.getElementById('diari-section').style.display = isDiari ? '' : 'none';
-  document.getElementById('tab-campi').classList.toggle('active', !isDiari);
-  document.getElementById('tab-diari').classList.toggle('active', isDiari);
-  document.getElementById('btn-nuovo-campo').style.display = isDiari ? 'none' : '';
-  document.getElementById('btn-nuovo-appunto').style.display = isDiari ? '' : 'none';
-  if (isDiari) {
+  document.getElementById('campi-section').style.display  = tab === 'campi'  ? '' : 'none';
+  document.getElementById('diari-section').style.display  = tab === 'diari'  ? '' : 'none';
+  document.getElementById('mappa-section').style.display  = tab === 'mappa'  ? '' : 'none';
+  document.getElementById('tab-campi').classList.toggle('active', tab === 'campi');
+  document.getElementById('tab-diari').classList.toggle('active', tab === 'diari');
+  document.getElementById('tab-mappa').classList.toggle('active', tab === 'mappa');
+  document.getElementById('btn-nuovo-campo').style.display    = tab === 'campi' ? '' : 'none';
+  document.getElementById('btn-nuovo-appunto').style.display  = tab === 'diari' ? '' : 'none';
+  if (tab === 'diari') {
     if (!S.appunti.length) loadAppunti();
     else renderAppunti();
   }
+  if (tab === 'mappa') renderMappaCampi();
+}
+
+let _mappaInstance = null;
+function renderMappaCampi() {
+  const campiGPS = S.campi.filter(c => c.lat && c.lon && !isNaN(parseFloat(c.lat)) && !isNaN(parseFloat(c.lon)));
+  const noGpsEl = document.getElementById('mappa-no-gps');
+  const mapEl   = document.getElementById('campi-map');
+  if (!campiGPS.length) {
+    mapEl.style.display = 'none';
+    noGpsEl.style.display = '';
+    return;
+  }
+  mapEl.style.display = '';
+  noGpsEl.style.display = 'none';
+  if (_mappaInstance) { _mappaInstance.remove(); _mappaInstance = null; }
+  const map = L.map('campi-map');
+  _mappaInstance = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+  const greenIcon = L.divIcon({
+    html: '<div style="background:var(--green);width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+    className: '', iconSize:[14,14], iconAnchor:[7,7]
+  });
+  const bounds = [];
+  campiGPS.forEach(c => {
+    const lat = parseFloat(c.lat), lon = parseFloat(c.lon);
+    bounds.push([lat, lon]);
+    const popup = `<strong>${c.nome}</strong><br>${c.comune||''}<br>${c.ettari ? c.ettari+' ha' : ''} · ${c.numPiante ? c.numPiante+' piante' : ''}`;
+    L.marker([lat, lon], {icon: greenIcon}).addTo(map).bindPopup(popup);
+  });
+  map.fitBounds(bounds, {padding: [40, 40]});
 }
 
 async function loadCampi() {
