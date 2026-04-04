@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.32</title>
+<title>Gestione Oliveto v11.33</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -425,6 +425,10 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="ap-grid" id="ap-grid"></div>
     </div>
     <div id="mappa-section" style="display:none">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="btn-layer-satellite" onclick="setMapLayer('satellite')" style="padding:6px 14px;border-radius:20px;border:none;background:var(--green);color:#fff;font-size:.82rem;font-weight:600;cursor:pointer">🛰️ Satellite</button>
+        <button id="btn-layer-mappa" onclick="setMapLayer('mappa')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:.82rem;font-weight:600;cursor:pointer">🗺️ Mappa</button>
+      </div>
       <div id="campi-map" style="width:100%;height:480px;border-radius:12px;border:1px solid var(--border)"></div>
       <p id="mappa-no-gps" style="display:none;color:var(--muted);font-size:.9rem;margin-top:10px;text-align:center">Nessun campo ha coordinate GPS salvate.</p>
     </div>
@@ -802,7 +806,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.32';
+const VERSION      = 'v11.33';
 if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -989,6 +993,33 @@ function switchCampiTab(tab) {
 }
 
 let _mappaInstance = null;
+let _mappaLayers = {};
+let _mappaActiveLayer = 'satellite';
+
+const _tileLayers = {
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    options: { attribution: '© Esri World Imagery', maxZoom: 19 }
+  },
+  mappa: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    options: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19 }
+  }
+};
+
+function setMapLayer(tipo) {
+  if (!_mappaInstance) return;
+  _mappaActiveLayer = tipo;
+  Object.keys(_mappaLayers).forEach(k => _mappaInstance.removeLayer(_mappaLayers[k]));
+  _mappaLayers[tipo].addTo(_mappaInstance);
+  document.getElementById('btn-layer-satellite').style.background = tipo === 'satellite' ? 'var(--green)' : '#fff';
+  document.getElementById('btn-layer-satellite').style.color      = tipo === 'satellite' ? '#fff' : 'var(--text)';
+  document.getElementById('btn-layer-satellite').style.border     = tipo === 'satellite' ? 'none' : '1px solid var(--border)';
+  document.getElementById('btn-layer-mappa').style.background     = tipo === 'mappa' ? 'var(--green)' : '#fff';
+  document.getElementById('btn-layer-mappa').style.color          = tipo === 'mappa' ? '#fff' : 'var(--text)';
+  document.getElementById('btn-layer-mappa').style.border         = tipo === 'mappa' ? 'none' : '1px solid var(--border)';
+}
+
 function renderMappaCampi() {
   const campiGPS = S.campi.filter(c => c.lat && c.lon && !isNaN(parseFloat(c.lat)) && !isNaN(parseFloat(c.lon)));
   const noGpsEl = document.getElementById('mappa-no-gps');
@@ -1000,13 +1031,13 @@ function renderMappaCampi() {
   }
   mapEl.style.display = '';
   noGpsEl.style.display = 'none';
-  if (_mappaInstance) { _mappaInstance.remove(); _mappaInstance = null; }
+  if (_mappaInstance) { _mappaInstance.remove(); _mappaInstance = null; _mappaLayers = {}; }
   const map = L.map('campi-map');
   _mappaInstance = map;
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
-  }).addTo(map);
+  _mappaLayers.satellite = L.tileLayer(_tileLayers.satellite.url, _tileLayers.satellite.options);
+  _mappaLayers.mappa     = L.tileLayer(_tileLayers.mappa.url,     _tileLayers.mappa.options);
+  _mappaLayers[_mappaActiveLayer].addTo(map);
+  setMapLayer(_mappaActiveLayer);
   const greenIcon = L.divIcon({
     html: '<div style="background:var(--green);width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
     className: '', iconSize:[14,14], iconAnchor:[7,7]
