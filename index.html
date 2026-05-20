@@ -935,8 +935,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.37';
-if (!location.search.includes('v=11.37')) { location.replace(location.pathname + '?v=11.37'); }
+const VERSION      = 'v11.38';
+if (!location.search.includes('v=11.38')) { location.replace(location.pathname + '?v=11.38'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2748,11 +2748,11 @@ function pianoApri(meseNum, opIdx) {
   document.getElementById('mp-titolo').textContent = op.titolo;
   document.getElementById('mp-sub').textContent = `${m.mese} · ${m.feno}`;
   document.getElementById('mp-body').innerHTML = op.articolo || '<p><em>Approfondimento non ancora disponibile per questa operazione.</em></p>';
-  overlay.classList.add('show');
+  overlay.classList.add('open');
 }
 
 function pianoChiudi() {
-  document.getElementById('m-piano-art').classList.remove('show');
+  document.getElementById('m-piano-art').classList.remove('open');
 }
 </script>
 </body>
