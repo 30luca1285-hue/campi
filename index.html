@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.36</title>
+<title>Gestione Oliveto v11.37</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -268,6 +268,17 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 .piano-ref-note{margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:.74rem;color:var(--muted);line-height:1.5}
 .piano-ref-note code{background:#fff;padding:1px 5px;border-radius:3px;font-size:.72rem;color:var(--green-dark);border:1px solid var(--border)}
 .piano-op-ref{margin-left:30px;margin-top:5px;font-size:.7rem;color:var(--green-dark);font-style:italic;background:#eef7f0;padding:5px 8px;border-radius:5px;border-left:2px solid var(--green)}
+/* Modal articolo Piano */
+.mp-body{font-size:.92rem;line-height:1.6;color:var(--text)}
+.mp-body h3{font-size:.95rem;font-weight:700;color:var(--green-dark);margin-top:18px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--green-light)}
+.mp-body h3:first-child{margin-top:0}
+.mp-body p{margin-bottom:12px}
+.mp-body ul{margin-left:22px;margin-bottom:12px}
+.mp-body ul li{margin-bottom:5px}
+.mp-body b{color:var(--green-dark);font-weight:700}
+.mp-body table{width:100%;border-collapse:collapse;margin-bottom:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.mp-body table td,.mp-body table th{padding:7px 10px;border:1px solid var(--border);font-size:.84rem}
+.mp-body table th{background:var(--green-light);font-weight:700;color:var(--green-dark)}
 
 /* FOTO FATTURA (costo) */
 .foto-area{border:2px dashed var(--border);border-radius:10px;overflow:hidden;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:center;background:var(--bg);margin-bottom:6px;transition:border-color .15s}
@@ -903,12 +914,29 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 
 <div id="toast" class="toast"></div>
 
+<!-- MODAL Piano Agronomico — Approfondisci -->
+<div id="m-piano-art" class="ov">
+  <div class="modal" style="max-width:680px">
+    <div class="mh" style="position:sticky;top:0;background:#fff;z-index:2;border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:flex-start;gap:10px;justify-content:space-between">
+      <div style="flex:1;min-width:0">
+        <div id="mp-titolo" style="font-size:1.05rem;font-weight:700;color:var(--green-dark);line-height:1.3"></div>
+        <div id="mp-sub" style="font-size:.78rem;color:var(--muted);margin-top:3px"></div>
+      </div>
+      <button onclick="pianoChiudi()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted);padding:0 6px;line-height:1">×</button>
+    </div>
+    <div id="mp-body" class="mp-body" style="padding:18px"></div>
+    <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid var(--border);padding:12px 18px;text-align:right">
+      <button class="btn btn-p" onclick="pianoChiudi()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.36';
-if (!location.search.includes('v=11.36')) { location.replace(location.pathname + '?v=11.36'); }
+const VERSION      = 'v11.37';
+if (!location.search.includes('v=11.37')) { location.replace(location.pathname + '?v=11.37'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2491,15 +2519,12 @@ const PIANO_AGRONOMICO = [
     note: 'Max 4 kg/ha/anno di rame totali (Reg. UE 2018/848). Disinfettare attrezzi con alcool tra una pianta e l\'altra (rogna olivo).',
     totale: '~5.000 €/anno (compost ammortizzato + rame)',
     ops: [
-      { titolo: 'Potatura a secco (continua)', prod: 'Cesoie elettriche, scala. Fatta direttamente da Luca.', cost: 'Tempo Luca, no costo monetario',
-        ref: '📖 Alfei/Pannelli: in zona Conero la potatura va completata entro fine febbraio, prima della ripresa vegetativa.',
-        lav: { tipo: 'Potatura', desc: 'Potatura a secco di produzione', prod: '', qty: 0, unit: 'h' } },
-      { titolo: 'Trattamento rame post-potatura', prod: 'Rame ossicloruro o poltiglia bordolese, <b>3 kg/ha</b> (72 kg totali). Entro 7 gg dalla potatura per cicatrizzare le ferite.', cost: '290-430 €/anno',
-        ref: '📖 CREA: il rame oltre 4 kg/ha/anno cumula nel suolo come metallo pesante. Dose minima efficace.',
-        lav: { tipo: 'Trattamento', desc: 'Rame post-potatura (cicatrizzazione ferite)', prod: 'Rame ossicloruro', qty: 3, unit: 'kg/ha' } },
+      { titolo: 'Potatura a secco di produzione', prod: 'Cesoie elettriche, scala. Eseguita direttamente da Luca.', cost: 'Tempo Luca, no costo monetario',
+        articolo: `<h3>Cos'è la potatura a secco di produzione</h3><p>Intervento manuale annuale che rimuove il 20-30% della chioma per favorire areazione, penetrazione della luce e ringiovanimento dei rami fruttiferi. L'olivo fruttifica sui <b>rami dell'anno precedente</b>, quindi va sempre garantito il ricambio.</p><h3>Perché si fa</h3><p>Una chioma troppo densa riduce la fotosintesi, favorisce malattie fungine (occhio di pavone) e disperde le riserve della pianta. Con una potatura ben fatta si stabilizza la produzione (riduce alternanza), si migliora la qualità delle drupe e si limita la diffusione di rogna (le ferite vengono sigillate prima della stagione umida).</p><h3>Come si fa</h3><p>Cesoie elettriche pulite e disinfettate (alcool/ipoclorito) tra una pianta e l'altra per evitare diffusione di <i>Pseudomonas savastanoi</i> (rogna). Tagli netti, inclinati, vicino al nodo. Si eliminano: succhioni, rami secchi, rami che si incrociano. Si mantiene una struttura aperta a "vaso policonico" tipica marchigiana.</p><h3>Calendario</h3><p>Da dicembre a febbraio (dopo raccolta, prima ripresa vegetativa). A Castelfidardo deadline fine febbraio. Per 9.000 piante: 750-1.500 ore totali (5-10 min/pianta).</p><h3>Fonti</h3><p>📖 <b>Alfei B. & Pannelli G.</b> (CREA Pesaro): la potatura in zona Conero va completata entro fine febbraio. Forma raccomandata: vaso policonico semplificato per cultivar marchigiane.</p>` },
+      { titolo: 'Rame post-potatura', prod: 'Rame ossicloruro o poltiglia bordolese, <b>3 kg/ha</b> (72 kg totali). Entro 7 gg dalla potatura per cicatrizzare le ferite.', cost: '290-430 €/anno',
+        articolo: `<h3>Cos'è il trattamento al rame post-potatura</h3><p>Applicazione di sali di rame (ossicloruro o poltiglia bordolese) sulle ferite di potatura per <b>azione battericida e fungicida di copertura</b>. Crea una barriera fisica che impedisce l'ingresso di patogeni dalle superfici esposte.</p><h3>Perché si fa</h3><p>Le ferite di potatura sono porte d'ingresso per:</p><ul><li><b>Pseudomonas savastanoi</b> (rogna dell'olivo) — batterio che causa tumori legnosi</li><li><b>Spilocea oleagina</b> (occhio di pavone) — fungo che provoca defogliazione</li><li>Verticilliosi e altri patogeni del legno</li></ul><p>Il rame è uno dei pochi fungicidi/battericidi ammessi in biologico (Reg. UE 2018/848).</p><h3>Come si fa</h3><p>Diluire 3 kg/ha di rame ossicloruro in acqua, spruzzare entro 7 giorni dalla potatura su tutta la chioma e in particolare sulle ferite. Tempo asciutto, no pioggia per 24h. Atomizzatore con pressione media.</p><h3>Dose e limiti bio</h3><p>⚠️ <b>Max 4 kg/ha/anno di rame metallico</b> (Reg. UE 2018/848, articolo 24). Il rame cumula nel suolo come metallo pesante, quindi va usato in dose minima efficace. Le applicazioni annuali totali (inverno + post-raccolta) non devono superare questa soglia.</p><h3>Costi 24ha</h3><p>72 kg × 4-6 €/kg = <b>290-430 €/anno</b>. Trascurabile rispetto al beneficio.</p><h3>Fonti</h3><p>🏛️ <b>CREA Olivicoltura</b> + Regolamento UE 2018/848. 📖 <b>Pannelli</b>: l'uso ragionato del rame in oliveto bio mediterraneo è efficace se distribuito 2-3 volte/anno (post-potatura, primavera umida, post-raccolta).</p>` },
       { titolo: 'Concimazione organica autunnale', prod: 'Compost maturo o letame, <b>20-30 t/ha</b> (480-720 t totali, distribuiti 3 anni).', cost: '3.200-4.800 €/anno (ammortizzato)',
-        ref: '📖 Pannelli: per oliveti collinari marchigiani, compost vegetale preferibile a letame puro (rischio salinità).',
-        lav: { tipo: 'Concimazione', desc: 'Compost/letame autunnale', prod: 'Compost maturo', qty: 25, unit: 't/ha' } },
+        articolo: `<h3>Cos'è la concimazione organica autunnale</h3><p>Apporto di sostanza organica al suolo (compost vegetale maturo, letame stagionato, farine organiche) in autunno per nutrire la pianta nel ciclo successivo. In biologico è l'<b>unica fonte di nutrienti ammessa</b> insieme al sovescio e alla mineralizzazione del cotico erboso.</p><h3>Perché si fa</h3><p>Tre obiettivi:</p><ul><li><b>Nutrizione lenta:</b> N-P-K + microelementi a rilascio graduale, no eccessi che il bio non ammetterebbe</li><li><b>Struttura del suolo:</b> aumenta humus, capacità di ritenzione idrica, attività microbica</li><li><b>Resilienza climatica:</b> suolo ricco di sostanza organica resiste meglio a siccità e shock termici</li></ul><h3>Come si fa</h3><p>Distribuzione superficiale o leggermente interrata di 20-30 t/ha. Da fare PRIMA delle piogge autunnali (la pioggia ne favorisce l'umificazione). Distribuire alla chioma, non al colletto. Compost: preferito al letame puro in zone collinari (no salinità). Letame maturo: bovino o equino, ben stagionato (almeno 6 mesi).</p><h3>Calendario</h3><p>Distribuzione autunnale (ottobre-dicembre), ogni 2-3 anni per parcella. Su 24 ha non si concima tutto ogni anno: si ruota.</p><h3>Costi 24ha</h3><p>~200 t/anno (rotazione 3 anni) × 30-60 €/t = <b>6.000-12.000 €/anno</b> compost. Distribuzione: 50-100 €/ha.</p><h3>Fonti</h3><p>📖 <b>Pannelli (CREA)</b>: per oliveti collinari marchigiani il compost vegetale è preferito al letame puro per evitare salinità del suolo. AIAB Marche: protocolli per concimazione bio compatibili con disciplinare ICEA/Suolo e Salute.</p>` },
     ],
   },
   {
@@ -2508,11 +2533,11 @@ const PIANO_AGRONOMICO = [
     totale: '~350-830 €',
     ops: [
       { titolo: 'Continua potatura secca (entro fine febbraio)', prod: 'Cesoie, scala. Fatta da Luca.', cost: 'Tempo Luca',
-        lav: { tipo: 'Potatura', desc: 'Potatura a secco', prod: '', qty: 0, unit: 'h' } },
+        articolo: `<h3>Fine potatura entro deadline</h3><p>A Castelfidardo l'ulteriore potatura va completata entro fine febbraio, prima della ripresa vegetativa (apertura gemme di marzo). Potare in piena vegetazione causa stress alla pianta, riduce la produzione e aumenta il rischio di rogna (le ferite sono attive quando il batterio si moltiplica).</p><h3>Cosa fare ora</h3><p>Completare le parcelle non ancora potate. Priorità: piante più vigorose e in piena produzione. Lasciare per ultimo (o saltare) piante deboli o sotto stress (es. anno di scarica).</p><h3>Fonti</h3><p>📖 <b>Alfei/Pannelli</b>: la potatura di gennaio-febbraio in zona Conero coincide con il periodo di minore attività vascolare della pianta = minor stress.</p>` },
       { titolo: '2° trattamento rame se piogge', prod: 'Rame, <b>2-3 kg/ha</b>. Solo se umidità alta.', cost: '200-430 €',
-        lav: { tipo: 'Trattamento', desc: 'Rame anti-occhio di pavone', prod: 'Rame ossicloruro', qty: 2.5, unit: 'kg/ha' } },
+        articolo: `<h3>Cos'è il 2° trattamento rame</h3><p>Trattamento <b>opzionale</b>, da fare SOLO se le condizioni meteo sono favorevoli all'occhio di pavone: temperature 15-20°C + umidità alta per più di 7 giorni consecutivi.</p><h3>Perché si fa</h3><p>L'occhio di pavone (<i>Spilocea oleagina</i>) è il fungo più dannoso dell'olivo dopo la mosca: causa defogliazione, riduzione fotosintesi, indebolimento generale. In zone umide marchigiane (Conero) può essere problema serio.</p><h3>Come decidere se trattare</h3><p>Osservare le foglie: le macchie circolari grigie con alone giallo (i tipici "occhi di pavone") indicano infezione già attiva. Se inizia a piovere a febbraio senza interruzioni, fare il trattamento preventivo.</p><h3>Dose e limiti</h3><p>2-3 kg/ha. Sommare al trattamento di gennaio per restare sotto 4 kg/ha totali anno.</p><h3>Fonti</h3><p>📰 <b>AMAP Marche bollettini fitosanitari</b>: monitora settimanalmente l'occhio di pavone in zona Conero. 🏛️ CREA: protocolli rame in olivo bio.</p>` },
       { titolo: 'Analisi suolo annuale', prod: 'Campionamento 1-3 punti, invio laboratorio.', cost: '150-400 €/anno',
-        lav: { tipo: 'Analisi', desc: 'Analisi chimico-fisica suolo', prod: '', qty: 1, unit: 'pz' } },
+        articolo: `<h3>Cos'è l'analisi del suolo</h3><p>Campionamento e analisi chimico-fisica del terreno (pH, sostanza organica, N-P-K, micronutrienti, calcare attivo, conducibilità) per <b>calibrare la fertilizzazione</b> e monitorare l'evoluzione del suolo nel tempo (specialmente con la conversione bio).</p><h3>Perché si fa</h3><p>In biologico è doppiamente importante:</p><ul><li>Verificare che la concimazione organica stia effettivamente arricchendo il suolo (aumento sostanza organica anno su anno = bene)</li><li>Monitorare il <b>rame accumulato</b> nel suolo (limite Reg. UE)</li><li>Identificare carenze prima che si manifestino come sintomi sulle piante</li></ul><h3>Come si fa</h3><p>Campionare 5-10 sotto-prelievi per area omogenea (es. 3 zone: alta, media, bassa pendenza), mescolarli, inviare al laboratorio. Profondità: 0-30 cm (zona radicale principale olivo). Periodo migliore: fine inverno, suolo umido.</p><h3>Costo</h3><p>Analisi base: 50-100 €/campione. Per 24 ha consigliato 3-5 campioni = <b>150-400 €/anno</b>.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: analisi suolo ogni 2-3 anni in olivicoltura bio sufficiente, ma annuale nei primi 3 anni di conversione per monitorare evoluzione. Laboratori convenzionati AIAB Marche.</p>` },
     ],
   },
   {
@@ -2521,28 +2546,26 @@ const PIANO_AGRONOMICO = [
     totale: '~6.600-14.100 €',
     ops: [
       { titolo: 'Fine potatura (deadline inizio aprile)', prod: 'Ultima sessione potatura.', cost: 'Tempo Luca',
-        lav: { tipo: 'Potatura', desc: 'Fine potatura a secco', prod: '', qty: 0, unit: 'h' } },
+        articolo: `<h3>Ultimo passaggio potatura</h3><p>Marzo è il mese limite per concludere la potatura. Dopo l'apertura delle gemme (vedi prime foglioline verde chiaro) ogni intervento causa stress eccessivo alla pianta.</p><h3>Cosa fare</h3><p>Verificare se tutte le parcelle sono state coperte. Se restano piante da potare, prioritizzare quelle con frutta dell'anno precedente ancora attaccata (pulizia post-raccolta), piante con succhioni evidenti, piante con rami secchi.</p><h3>Fonti</h3><p>📖 <b>Alfei</b>: deadline assoluta potatura olivo in Marche centrali = fine marzo. Oltre, attendere giugno-luglio per "potatura verde" leggera.</p>` },
       { titolo: 'Trinciatura inerbimento (sovescio leguminose)', prod: 'Trinciatrice interfilare. Restituisce azoto al suolo.', cost: '60 €/ha × 24ha = ~1.440 €',
-        lav: { tipo: 'Lavorazione', desc: 'Trinciatura sovescio leguminose', prod: '', qty: 24, unit: 'ha' } },
-      { titolo: 'Concimazione di copertura', prod: 'Concime organico pelletato, <b>200-400 kg/ha</b> (4,8-9,6 t totali).', cost: '5.000-12.000 €',
-        lav: { tipo: 'Concimazione', desc: 'Concime organico di copertura', prod: 'Pellettato organico', qty: 300, unit: 'kg/ha' } },
+        articolo: `<h3>Cos'è la trinciatura del sovescio</h3><p>Sminuzzamento delle leguminose seminate in autunno (Trifolium, Vicia, Medicago) prima della fioritura, per <b>incorporare azoto biologicamente fissato nel suolo</b>. È la pratica chiave dell'agricoltura biologica per la fertilità.</p><h3>Perché si fa</h3><p>Le leguminose hanno rizobi sulle radici che fissano azoto atmosferico (gratis). Trinciando la pianta intera prima che fiorisca completamente, l'azoto NON viene esportato nei semi ma rimane nelle foglie/steli. Decomponendosi, libera 30-80 kg/ha di azoto puro nel suolo.</p><h3>Come si fa</h3><p>Trinciatrice a martelli o coltelli, altezza 7-10 cm, una passata. Lasciare il materiale trinciato in superficie come pacciamatura (no interramento profondo: ossida l'azoto). Ottimale: fine fioritura leguminose, fine marzo-aprile.</p><h3>Costi 24ha</h3><p>Contoterzista 60 €/ha = <b>1.440 €/passata</b>. Se attrezzatura propria: gasolio + manutenzione, circa 30 €/ha.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: il sovescio invernale di leguminose in oliveto bio fornisce 30-80 kg/ha di N a costo zero. Sostituisce concimazioni di copertura. 🔬 <b>CREA</b>: studi decennali Marche confermano risparmio 40-60% su input azotati con sovescio annuale.</p>` },
+      { titolo: 'Concimazione di copertura (se serve)', prod: 'Concime organico pelletato, <b>200-400 kg/ha</b> (4,8-9,6 t totali).', cost: '5.000-12.000 €',
+        articolo: `<h3>Cos'è la concimazione di copertura</h3><p>Apporto di nutrienti aggiuntivo in primavera (oltre la concimazione autunnale di base) se analisi suolo o osservazioni indicano carenze. In biologico si usano concimi organici pelletati certificati (es. pollina, farine animali, alga marina).</p><h3>Quando NON farla</h3><p>Se il sovescio + compost autunnale + cotico inerbito stanno funzionando bene, la concimazione di copertura NON serve. È un costo evitabile. Decidere in base ad analisi suolo + vigore vegetativo osservato.</p><h3>Quando farla</h3><p>Se analisi mostra N < 1‰, sostanza organica < 2%, oppure se le piante mostrano vegetazione clorotica (foglie ingiallite). Su parcelle in conversione bio (primi anni) può essere necessaria perché il suolo non ha ancora la fertilità biologica di regime.</p><h3>Dose</h3><p>200-400 kg/ha di pelletato (5-6% N). Distribuire alla chioma, non al colletto. Da fare PRIMA delle piogge primaverili.</p><h3>Fonti</h3><p>📖 <b>Alfei/Pannelli</b>: in oliveto bio stabilizzato la concimazione di copertura è spesso evitabile. AIAB: protocollo concimazione bio.</p>` },
       { titolo: 'Installa trappole monitoraggio tignola', prod: 'Trappole feromone, <b>1-2/ha</b> (24-48 totali).', cost: '200-700 €',
-        lav: { tipo: 'Monitoraggio', desc: 'Installazione trappole tignola', prod: 'Trappole feromone Prays oleae', qty: 48, unit: 'pz' } },
+        articolo: `<h3>Cos'è il monitoraggio della tignola con trappole a feromoni</h3><p>Sistema per <b>misurare la pressione del parassita</b> (<i>Prays oleae</i>) prima di decidere se trattare. Le trappole catturano i maschi adulti con feromoni sessuali sintetici, e il conteggio settimanale indica la dinamica della popolazione.</p><h3>Perché si fa</h3><p>La tignola ha 3 generazioni/anno (marzo-aprile fillofaga, maggio-giugno antofaga, luglio-settembre carpofaga). Solo la generazione carpofaga (sui frutti) causa danni economici importanti. Il monitoraggio evita trattamenti inutili (= costi + impatto bio).</p><h3>Come si fa</h3><p>1-2 trappole/ha (24-48 totali per 24 ha), posizionate ad altezza chioma media, esposizione est/sud-est. Controllo settimanale: conta dei maschi catturati. Soglia di intervento generalmente >50 catture/trappola/settimana (varia per generazione).</p><h3>Calendario</h3><p>Installazione marzo, attive fino a settembre-ottobre. Sostituzione diffusore feromone ogni 6-8 settimane.</p><h3>Costi 24ha</h3><p>Trappole + diffusori: 200-700 €/anno. <b>Investimento ben ammortizzato</b> rispetto a trattamenti Bt evitati grazie al monitoraggio.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: 1 trappola/ha sufficiente in monitoraggio standard, 2/ha in zone con storico forti infestazioni. 🏛️ <b>AMAP Marche</b>: gestisce rete trappole regionale, dati pubblici utili per soglia comparativa.</p>` },
     ],
   },
   {
     mese: 'Aprile', num: 4, feno: '🌱 MIGNOLATURA (infiorescenze chiuse)',
-    note: 'Bt va applicato la sera (UV lo degrada). Solo se infestazione conclamata su foglie. ⚠️ Attenzione terminologia: le mignole NON sono fiori, sono infiorescenze chiuse PRIMA della fioritura.',
+    note: 'Bt va applicato la sera (UV lo degrada). ⚠️ Le mignole NON sono fiori: sono infiorescenze chiuse PRIMA della fioritura.',
     totale: '~1.700-2.400 €',
     ops: [
-      { titolo: 'Trattamento Bt tignola fillofaga', prod: 'Bacillus thuringiensis, <b>0,5-1 kg/ha</b> (12-24 kg).', cost: '300-960 €',
-        ref: '📖 Pannelli: la tignola fillofaga ha 3 cicli/anno, il primo a marzo-aprile sulle foglie giovani.',
-        lav: { tipo: 'Trattamento', desc: 'Bt anti-tignola fillofaga', prod: 'Bacillus thuringiensis', qty: 0.75, unit: 'kg/ha' } },
+      { titolo: 'Trattamento Bt tignola fillofaga (se serve)', prod: 'Bacillus thuringiensis, <b>0,5-1 kg/ha</b> (12-24 kg).', cost: '300-960 €',
+        articolo: `<h3>Cos'è il Bacillus thuringiensis (Bt)</h3><p>Batterio del suolo (sottospecie <i>kurstaki</i> per lepidotteri) che produce una tossina specifica per le larve di farfalle/falene. <b>Innocuo per uomo, api, predatori naturali</b>. È uno dei pilastri della difesa biologica.</p><h3>Perché si fa il trattamento ad aprile</h3><p>La generazione fillofaga di tignola (<i>Prays oleae</i>) attacca le foglie tenere appena spuntate. Se l'infestazione supera la soglia (defogliazione visibile, foglie con fori), un trattamento Bt elimina le larve preservando gli adulti utili.</p><h3>Come si fa</h3><p>Diluire 0,5-1 kg/ha in 800-1000 L acqua + bagnante bio. <b>Applicare la sera o all'alba</b> (i raggi UV degradano il Bt in 24-48h). Coprire 70%+ della superficie fogliare. Temperatura 15-25°C ottimale. Niente pioggia per 12h.</p><h3>Quando NON farlo</h3><p>Se trappole tignola mostrano popolazione bassa o trascurabile = risparmio costo + meno impatto. Il Bt è specifico ma comunque ogni trattamento è uno stress per l'ecosistema oliveto.</p><h3>Costi 24ha</h3><p>12-24 kg × 25-40 €/kg = <b>300-960 €</b>. Eventuale, solo se soglia superata.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: Bt efficace contro fillofaga di marzo-aprile, ma raramente necessario su olivo adulto in zona Marche. Trattare solo se danno >15% foglioline.</p>` },
       { titolo: '1° sfalcio inerbimento (leggero)', prod: 'Altezza taglio min. 7-8 cm.', cost: '1.440 €',
-        lav: { tipo: 'Lavorazione', desc: '1° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
+        articolo: `<h3>Cos'è il primo sfalcio dell'inerbimento</h3><p>Taglio di contenimento del cotico erboso interfilare quando la biomassa primaverile diventa eccessiva (>40-50 cm). Mantiene l'inerbimento <b>vivo ma controllato</b>, evitando competizione idrica eccessiva con l'olivo.</p><h3>Perché si fa</h3><p>Un cotico troppo alto:</p><ul><li>Consuma acqua nel periodo critico fioritura-allegagione</li><li>Crea microclima umido che favorisce funghi</li><li>Compete per azoto disponibile</li></ul><p>Ma è fondamentale NON eliminarlo: fornisce habitat per impollinatori (api selvatiche) e predatori naturali (sirfidi, coccinelle).</p><h3>Come si fa</h3><p><b>Altezza taglio MINIMA 7-8 cm</b> (mai più basso, danneggia il colletto delle leguminose e in siccità il cotico non recupera). Trinciatrice a martelli, una passata. Residuo lasciato come pacciamatura.</p><h3>Costi 24ha</h3><p>60 €/ha × 24 = <b>1.440 €</b>. Se attrezzatura propria: ~700 €.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: nei mediterranei aridi, altezza taglio 7-10 cm minima per preservare leguminose e capacità di ricaccio dopo siccità. 🔬 Studi Andalusia: sfalci troppo bassi riducono biodiversità del cotico del 40% in 5 anni.</p>` },
       { titolo: 'Monitoraggio mignolatura', prod: 'Conta infiorescenze su piante campione = potenziale produttivo.', cost: 'Tempo Luca',
-        ref: '📖 Alfei: nelle Marche la mignolatura cade aprile-maggio, fioritura entro fine maggio-inizio giugno. Anticipo di 7-10 gg negli ultimi anni per riscaldamento.',
-        lav: { tipo: 'Monitoraggio', desc: 'Conta mignole su piante campione', prod: '', qty: 0, unit: 'pz' } },
+        articolo: `<h3>Cos'è il monitoraggio mignolatura</h3><p>Osservazione e conta delle <b>mignole</b> (infiorescenze ancora chiuse, sembrano piccoli grappolini verdi) sulle piante campione. Permette di stimare il potenziale produttivo dell'annata PRIMA della fioritura.</p><h3>Perché si fa</h3><p>La mignolatura è il momento in cui la pianta "dichiara" il suo potenziale. Pochi rami con mignole = annata di scarica. Molte mignole = annata di carica. Il dato serve a:</p><ul><li>Pianificare risorse (manodopera raccolta, sacchi, frantoio)</li><li>Decidere se aumentare gli interventi (irrigazione di soccorso, biostimolanti) per supportare una buona annata</li><li>In anni di scarica: ridurre input e accettare la naturale alternanza</li></ul><h3>Come si fa</h3><p>Scegliere 5-10 piante campione rappresentative (per cultivar e parcella). Su ogni pianta, contare le mignole su 4 rami a quote diverse della chioma. Calcolare media. Confronto con anni precedenti.</p><h3>⚠️ Terminologia importante</h3><p>Le <b>mignole NON sono fiori</b>: sono infiorescenze ancora chiuse a "racemo". I fiori si aprono solo a maggio. Mai scrivere "le mignole (i fiori)" nei contenuti aziendali — è un errore tecnico.</p><h3>Fonti</h3><p>📖 <b>Alfei</b>: nelle Marche la mignolatura cade aprile-maggio, fioritura entro fine maggio-inizio giugno. Negli ultimi anni anticipo di 7-10 gg per riscaldamento climatico.</p>` },
     ],
   },
   {
@@ -2551,26 +2574,26 @@ const PIANO_AGRONOMICO = [
     totale: '~1.700-2.400 €',
     ops: [
       { titolo: 'Monitoraggio tignola antofaga', prod: 'Trappole + osservazione fiori.', cost: 'Tempo Luca',
-        lav: { tipo: 'Monitoraggio', desc: 'Tignola antofaga (fiori)', prod: '', qty: 0, unit: 'pz' } },
+        articolo: `<h3>Cos'è il monitoraggio della tignola antofaga</h3><p>La seconda generazione di <i>Prays oleae</i> (maggio-giugno) attacca i <b>fiori</b> nutrendosi degli stami. Causa "cascola fiorale anticipata" = riduzione frutti.</p><h3>Perché monitorare</h3><p>Non si può trattare durante la fioritura (api), quindi serve <b>misurare la pressione PRIMA</b> per intervenire subito dopo la caduta dei petali, se necessario. Trappole feromoni installate a marzo continuano a registrare.</p><h3>Come si fa</h3><p>Conta settimanale trappole + osservazione diretta: aprire alcune infiorescenze, cercare larvette di 1-3 mm bianche con capo scuro all'interno degli stami. Soglia: >10% infiorescenze con larve = intervento Bt post-fioritura.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: tignola antofaga raramente causa danni economici significativi su olivo adulto, ma in annate di scarica può aggravare la già ridotta produzione.</p>` },
       { titolo: '2° sfalcio inerbimento', prod: 'Lasciare residuo come pacciamatura.', cost: '1.440 €',
-        lav: { tipo: 'Lavorazione', desc: '2° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
-      { titolo: 'Bt post-fioritura se serve', prod: 'Solo se trappole > soglia. <b>0,5-1 kg/ha</b>.', cost: '300-960 € (eventuale)',
-        lav: { tipo: 'Trattamento', desc: 'Bt post-fioritura tignola', prod: 'Bacillus thuringiensis', qty: 0.75, unit: 'kg/ha' } },
+        articolo: `<h3>Secondo sfalcio dell'inerbimento</h3><p>Maggio è il mese di massima crescita del cotico erboso, prima del calo estivo. Un secondo sfalcio mantiene il controllo della biomassa.</p><h3>Perché ora</h3><p>Il cotico ha raggiunto altezza eccessiva, le specie più alte (avena selvatica, festuca arundinacea) iniziano a allettarsi. Sfalcio = ricaccio + ripartizione nutrienti nel suolo + pacciamatura per estate (riduce evaporazione).</p><h3>Come si fa</h3><p>Stessa tecnica del primo sfalcio: 7-8 cm minimo, residuo in superficie. Considerare di sfalciare a strisce alternate (una passata sì, una no) per preservare aree con leguminose ancora in fioritura → habitat per api.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: pratica dello "sfalcio alternato" raccomandata in oliveti bio mediterranei per massimizzare biodiversità funzionale (impollinatori, predatori naturali).</p>` },
+      { titolo: 'Bt post-fioritura SE serve', prod: 'Solo se trappole > soglia. <b>0,5-1 kg/ha</b>.', cost: '300-960 € (eventuale)',
+        articolo: `<h3>Trattamento Bt post-fioritura</h3><p>Intervento opzionale, da fare SOLO se il monitoraggio tignola antofaga ha mostrato pressione sopra soglia. Si applica appena caduti i petali, quando le larve sono ancora piccole e i fiori "sicuri" per le api.</p><h3>Perché aspettare la fine della fioritura</h3><p>Anche se il Bt è specifico per lepidotteri (non tossico per api), durante la piena fioritura ogni trattamento sui fiori interferisce con il loro lavoro di impollinazione. Etica bio + funzionale: aspettare 2-3 giorni dopo la caduta dei petali.</p><h3>Come si fa</h3><p>Stesso protocollo Bt fillofaga: 0,5-1 kg/ha la sera, copertura 70%, no pioggia 12h.</p><h3>Fonti</h3><p>📖 <b>Pannelli/Alfei</b>: trattamenti Bt post-fioritura riducono fino al 50% i danni della generazione successiva (carpofaga estiva), che è quella che colpisce i frutti.</p>` },
     ],
   },
   {
     mese: 'Giugno', num: 6, feno: '⭐ Allegagione + crescita drupa — MESE CHIAVE',
-    note: '⭐ MESE PIÙ IMPORTANTE: installa cattura massale mosca olearia + biostimolanti. Picholine/Pendolino: prioritari per irrigazione di soccorso.',
+    note: '⭐ MESE PIÙ IMPORTANTE: installa cattura massale mosca + biostimolanti. Picholine/Pendolino: prioritari per irrigazione di soccorso.',
     totale: '~3.200 €',
     ops: [
-      { titolo: '🪰 INSTALLAZIONE Tap Trap cattura massale', prod: 'Tap Trap (Decostore.it), <b>60/ha = 1.440 trappole totali</b> + bicarbonato d\'ammonio 3% come esca.', cost: '~2.150 € (ammortizzato + esche + manodopera)',
-        lav: { tipo: 'Trattamento', desc: 'Installazione cattura massale mosca', prod: 'Tap Trap + bicarbonato ammonio 3%', qty: 1440, unit: 'pz' } },
+      { titolo: '🪰 INSTALLAZIONE Tap Trap cattura massale mosca olearia', prod: 'Tap Trap (Decostore.it), <b>60/ha = 1.440 trappole totali</b> + bicarbonato d\'ammonio 3% come esca.', cost: '~2.150 € (ammortizzato + esche + manodopera)',
+        articolo: `<h3>Cos'è la cattura massale della mosca olearia</h3><p>Tecnica preventiva contro <i>Bactrocera oleae</i> (mosca dell'olivo), il parassita N°1 dell'olivo. Si installa una rete densa di trappole alimentari (60-80/ha) per <b>catturare gli adulti PRIMA della deposizione delle uova</b>, riducendo drasticamente la pressione del parassita senza usare insetticidi.</p><h3>Perché Tap Trap + bicarbonato d'ammonio 3%</h3><p>Confronto delle esche dimostrato in studi M'Sila (Algeria), confermato in Andalusia e Sicilia:</p><ul><li><b>Bicarbonato d'ammonio 3%</b>: vincente. Attrae soprattutto FEMMINE (quelle che depongono uova).</li><li>Feromoni Russell IPM: utili per monitoraggio, meno per cattura massale.</li><li>Spinosad esca (Magnet MED): efficace ma più caro (4-7 €/trappola vs 1-3 € Tap Trap).</li></ul><h3>Come si fa</h3><p>Tap Trap (bottiglia + tappo giallo) appese ai rami esterni a 1,5-2 m altezza, esposizione sud/est. Densità 60/ha (~1 ogni 12-13 piante). Riempire con 200 ml soluzione: 6 g bicarbonato ammonio in 200 ml acqua (3%). Ricaricare ogni 3-4 settimane.</p><h3>Costi 24ha</h3><table style="font-size:.85em"><tr><td>1.440 Tap Trap ammortizzato</td><td><b>432 €</b></td></tr><tr><td>Bicarbonato ammonio (~70 kg stagione)</td><td>140 €</td></tr><tr><td>Materiali esca (bottiglie)</td><td>432 €</td></tr><tr><td>Manodopera installazione (4,5 h/ha × 16 €)</td><td>1.728 €</td></tr><tr><td><b>TOTALE</b></td><td><b>~2.730 €/stagione</b></td></tr></table><p>Pari a <b>114 €/ha</b>, scenario A pienamente bio.</p><h3>Calendario installazione</h3><p>Entro <b>15 giugno</b> (prima che la mosca arrivi). Pico mosca: fine agosto-ottobre. Rimozione a fine raccolta (novembre).</p><h3>Fonti</h3><p>🔬 <b>Perplexity Deep Research maggio 2026</b> (50 fonti): studi M'Sila + Andalusia + Sicilia dimostrano bicarbonato superiore a feromoni per cattura massale. 📰 <b>teatronaturale.it 19/05/2026</b> articolo specifico sul confronto trappole.</p>` },
       { titolo: '🌱 MICOSAT F GO biostimolante', prod: 'CCS Aosta, <b>500 g/ha</b> in 100 L acqua, fertirrigazione. Funghi micorrizici + Trichoderma + Bacillus.', cost: '480 €/anno',
-        lav: { tipo: 'Trattamento', desc: 'Biostimolante MICOSAT F GO', prod: 'MICOSAT F GO CCS Aosta', qty: 0.5, unit: 'kg/ha' } },
+        articolo: `<h3>Cos'è MICOSAT F GO</h3><p>Consorzio microbico commerciale (CCS Aosta) composto da <b>funghi micorrizici arbuscolari</b> (<i>Glomus mosseae</i>, <i>G. viscosum</i>) + <b>Trichoderma harzianum</b> + batteri rizosferici (<i>Bacillus subtilis</i>, <i>Streptomyces</i>) + <i>Pichia</i>. Si applica al suolo per <b>colonizzare le radici e aumentare resilienza/produttività</b>.</p><h3>Perché si fa</h3><p>Studio CNR-Università Perugia (2024) ha misurato sull'olivo:</p><ul><li>Crescita: ↑ diametro fusto, biomassa, ramificazione</li><li>Fotosintesi stabile anche a <b>>40°C</b> (chiave per estati Marche)</li><li>Azoto: pianta più autonoma → meno fertilizzanti minerali</li><li>Resistenza idrica aumentata</li></ul><p>In conversione biologica dal 2021, integrare biostimolanti microbici = aumentare resilienza al cambiamento climatico senza input chimici.</p><h3>Come si fa</h3><p>500 g/ha (12 kg totali per 24 ha) sciolti in 100 L acqua. Distribuzione in <b>fertirrigazione</b> (se irrigazione attiva) o a terra alla base delle piante. Suolo umido per favorire colonizzazione radicale.</p><h3>Calendario</h3><p>Una applicazione annuale a inizio attività vegetativa intensa (giugno). Eventuale seconda a settembre se annata di carica.</p><h3>Costi 24ha + ROI</h3><p>~480 €/anno. ROI stimato (basato su modello prudente): +3% resa = +3.110 €. Scenario intermedio (+5% resa + 0,5€/kg premio qualità): +8.424 €. <b>ROI 62-295%</b>.</p><h3>Fonti</h3><p>🔬 <b>CNR-Università Perugia</b> studio MICOSAT su olivo (2024). 📰 <b>teatronaturale.it 18/05/2026</b> articolo dettagliato. 🌐 CCS Aosta scheda tecnica MICOSAT F GO.</p>` },
       { titolo: 'Potatura verde leggera', prod: 'Diradamento per luce centro pianta.', cost: 'Tempo Luca',
-        lav: { tipo: 'Potatura', desc: 'Potatura verde estiva', prod: '', qty: 0, unit: 'h' } },
-      { titolo: 'Irrigazione soccorso (se siccità >30gg)', prod: 'Goccia, <b>20-30 L/pianta/sett</b>. Priorità Picholine + Pendolino.', cost: 'Variabile',
-        lav: { tipo: 'Irrigazione', desc: 'Irrigazione soccorso parcelle sensibili', prod: '', qty: 25, unit: 'L/pianta' } },
+        articolo: `<h3>Cos'è la potatura verde estiva</h3><p>Intervento manuale leggero in pieno sviluppo vegetativo, per <b>migliorare areazione e penetrazione luce</b> nel centro della chioma. NON è una potatura di produzione (che si fa in inverno) ma un "diradamento estivo".</p><h3>Perché si fa</h3><p>Le piante con chioma molto densa in estate hanno:</p><ul><li>Microclima umido → favorisce malattie fungine</li><li>Frutti del centro che non maturano bene (poca luce)</li><li>Calore eccessivo nelle ondate di caldo</li></ul><p>Un diradamento leggero apre la pianta a "lanterna" lasciando entrare aria e luce.</p><h3>Come si fa</h3><p>Rimuovere succhioni vigorosi nati durante la primavera, rami che si incrociano nel centro, polloni alla base. <b>Non più del 5-10% della vegetazione</b> (la pianta sta accumulando riserve per la drupa). Cesoie pulite.</p><h3>Fonti</h3><p>📖 <b>Alfei/Pannelli</b>: potatura verde di giugno-luglio raccomandata per cultivar a chioma densa (es. Leccino, Picholine). Meno necessaria su cultivar a portamento naturale aperto (Pendolino).</p>` },
+      { titolo: 'Irrigazione di soccorso (se siccità >30gg)', prod: 'Goccia, <b>20-30 L/pianta/sett</b>. Priorità Picholine + Pendolino.', cost: 'Variabile',
+        articolo: `<h3>Cos'è l'irrigazione di soccorso</h3><p>Irrigazione MINIMA in periodi di siccità prolungata (>30 giorni senza pioggia) per <b>evitare lo stress idrico estremo</b> che causa cascola dei frutti e riduzione produzione. NON è un'irrigazione di produzione (che richiederebbe impianto strutturato).</p><h3>Perché solo "soccorso"</h3><p>L'olivo è resistente alla siccità, e un certo stress idrico controllato <b>aumenta la qualità dell'olio</b> (più polifenoli, più acido oleico). Ma c'è una soglia: oltre 45-60 gg senza acqua la pianta lascia cadere i frutti.</p><h3>Priorità cultivar</h3><p>Non tutte le 7 cultivar hanno stessa tolleranza siccità:</p><ul><li><b>Picholine</b>: medio-bassa resistenza. PRIORITÀ ASSOLUTA in soccorso (è anche la più premiata, 4 Ori Marche)</li><li><b>Pendolino</b>: bassa. Prioritaria</li><li>Raggia, Mignola: media. In caso di siccità lunga, irrigare</li><li>Leccio del Corno, Leccino, Piantone: medio-alta. Resistono meglio, ultime priorità</li></ul><h3>Come si fa</h3><p>Goccia mobile (tubi superficie) o secchio + pala per piante singole. <b>20-30 L/pianta/settimana</b> = irrigazione minima. La sera o all'alba (no perdite evaporazione).</p><h3>Soluzione strutturale futura</h3><p>Subirrigazione interrata permanente (ali 20-30 cm sotto suolo). Investimento 2.767 €/ha = 66.000 € per 24 ha. <b>Bandi PNRR irrigazione 880 mln € coprono 30-50%</b>.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: studi resistenza idrica cultivar marchigiane. 🔬 <b>Perplexity Deep Research</b>: confronto sistemi irrigui oliveto + bandi PAC/PNRR Marche.</p>` },
     ],
   },
   {
@@ -2579,13 +2602,13 @@ const PIANO_AGRONOMICO = [
     totale: '~3.000 €',
     ops: [
       { titolo: '🪰 Monitoraggio trappole mosca settimanale', prod: 'Conteggio catture + valutazione soglia.', cost: 'Tempo Luca',
-        lav: { tipo: 'Monitoraggio', desc: 'Conta catture mosca olearia', prod: '', qty: 1440, unit: 'pz' } },
-      { titolo: '1° trattamento caolino (se pressione mosca alta)', prod: 'Caolino tipo Surround WP, <b>25 kg/ha</b> = 600 kg totali.', cost: '720 € caolino + 840 € distribuzione',
-        lav: { tipo: 'Trattamento', desc: '1° caolino anti-mosca', prod: 'Caolino Surround WP', qty: 25, unit: 'kg/ha' } },
+        articolo: `<h3>Monitoraggio settimanale mosca</h3><p>Da luglio è critico controllare ogni 7 giorni le Tap Trap installate a giugno. Il conteggio determina se la pressione è sotto controllo o se serve intervento aggiuntivo (caolino).</p><h3>Cosa contare</h3><p>Tirare giù 3-5 trappole campione, svuotare la soluzione, contare le mosche (sono piccole, 4-5 mm, addome bruno). Annotare numero per trappola/settimana.</p><h3>Soglie indicative</h3><ul><li><b><10 catture/trappola/sett</b>: situazione tranquilla, cattura massale funziona</li><li><b>10-30</b>: attenzione, monitorare più spesso</li><li><b>>30</b>: pressione alta, considerare 1° trattamento caolino</li><li><b>>50</b>: pressione critica, caolino subito</li></ul><h3>Fonti</h3><p>🏛️ <b>AMAP Marche rete trappole</b>: dati di confronto regionali pubblici. 📰 <b>teatronaturale.it</b>: articoli aggiornati su soglie e dinamica mosca.</p>` },
+      { titolo: '1° trattamento caolino (se mosca > soglia)', prod: 'Caolino tipo Surround WP, <b>25 kg/ha</b> = 600 kg totali.', cost: '720 € caolino + 840 € distribuzione',
+        articolo: `<h3>Cos'è il trattamento al caolino</h3><p>Argilla bianca naturale (caolino calcinato) distribuita sulla chioma con atomizzatore. Crea una <b>pellicola bianca riflettente che "confonde" la mosca</b> nella ricerca della drupa e ne dissuade la deposizione delle uova.</p><h3>Perché funziona</h3><p>La mosca individua le olive per colore (verde-viola) e forma. Il velo bianco di caolino:</p><ul><li>Maschera il colore della drupa</li><li>Crea superficie ruvida che disturba la deposizione</li><li>Riflette UV (effetto secondario: riduce stress termico pianta)</li></ul><h3>Come si fa</h3><p>25 kg/ha sciolti in 800-1000 L acqua, spruzzati con atomizzatore. <b>Copertura completa della chioma</b>, soprattutto rami portatori di drupe. Tempo asciutto, no pioggia per 24h (altrimenti dilava).</p><h3>Quante volte all'anno</h3><p>1-3 trattamenti tra luglio e settembre, ricaricando dopo ogni pioggia o quando il velo bianco è degradato (visibilmente assottigliato). Massimo 3 trattamenti per evitare residui visibili al raccolto.</p><h3>Costi 24ha</h3><p>600 kg × 1,2 €/kg = 720 € + distribuzione 35 €/ha × 24 = 840 € = <b>1.560 € per trattamento</b>. Pienamente compatibile bio (è una semplice argilla).</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: caolino è la prima linea di difesa bio contro mosca in olivicoltura mediterranea. Riduce danno del 40-60% se ben applicato e mantenuto. 🔬 Studi CREA + Università Bari.</p>` },
       { titolo: '3° sfalcio inerbimento', prod: 'Leggero, lasciare 7-8 cm.', cost: '1.440 €',
-        lav: { tipo: 'Lavorazione', desc: '3° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
-      { titolo: 'Ricarica esche bicarbonato', prod: 'Sostituzione bicarbonato 3% nelle Tap Trap.', cost: '~30 €',
-        lav: { tipo: 'Trattamento', desc: 'Ricarica esca bicarbonato Tap Trap', prod: 'Bicarbonato ammonio', qty: 15, unit: 'kg' } },
+        articolo: `<h3>Terzo sfalcio (estivo leggero)</h3><p>Il cotico estivo è in stasi, ma se ci sono erbe alte residue conviene un passaggio leggero per ridurre evaporazione e tenere ordinato.</p><h3>Cose da non fare</h3><p>NON sfalciare basso: il poco verde residuo del cotico estivo è prezioso (microclima, biodiversità). NON sfalciare se siccità estrema: si rischia di esporre suolo e accelerare evaporazione.</p><h3>Quando saltarlo</h3><p>In annate molto secche, lasciare il cotico secco come pacciamatura naturale. Il "secco" in estate è una funzione, non un problema.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: in oliveto bio mediterraneo, il cotico secco estivo svolge funzione pacciamante. Sfalciare solo se altezza > 30 cm o per attraversabilità con mezzi.</p>` },
+      { titolo: 'Ricarica esche bicarbonato Tap Trap', prod: 'Sostituzione bicarbonato 3% nelle Tap Trap.', cost: '~30 €',
+        articolo: `<h3>Ricarica esche cattura massale</h3><p>Ogni 3-4 settimane il bicarbonato d'ammonio nelle Tap Trap si esaurisce (evaporato o saturato di mosche catturate). Va sostituito per mantenere efficacia.</p><h3>Come si fa</h3><p>Svuotare la soluzione esistente (contiene anche mosche morte = utile per conta monitoraggio), pulire bottiglia, riempire con nuova soluzione: <b>200 ml acqua + 6 g bicarbonato d'ammonio</b> (3%). Richiudere bene per evitare evaporazione.</p><h3>Costo</h3><p>~15 kg bicarbonato per ricarica totale 1.440 trappole × 2 €/kg = <b>30 €/ricarica</b>. Materiali trascurabili.</p><h3>Tempo necessario</h3><p>1.440 trappole / 60 trappole all'ora = <b>24 ore</b>. Più conveniente in più sessioni distribuite su una settimana.</p><h3>Fonti</h3><p>📰 <b>teatronaturale.it 17/05/2026</b>: ricarica esca ogni 21-28 giorni per mantenere efficacia >90%.</p>` },
     ],
   },
   {
@@ -2594,47 +2617,45 @@ const PIANO_AGRONOMICO = [
     totale: '~1.700-2.000 €',
     ops: [
       { titolo: '🪰 2° trattamento caolino', prod: '<b>25 kg/ha</b> se infestazione confermata (>5-10% olive con uova).', cost: '720 € + 840 € distribuzione',
-        lav: { tipo: 'Trattamento', desc: '2° caolino anti-mosca', prod: 'Caolino', qty: 25, unit: 'kg/ha' } },
+        articolo: `<h3>Secondo caolino (rinforzo)</h3><p>Se le trappole mostrano pressione mosca alta e/o si osservano direttamente i primi danni sulle olive, conviene un secondo trattamento caolino per mantenere protezione efficace.</p><h3>Come decidere</h3><p>Controllo diretto: raccogliere 100 olive a caso da 5 piante diverse, aprirle con coltellino. Cercare puntura ovideposizione (piccolo foro nero) o larva bianca dentro la polpa. <b>>5-10% olive con uova/larve = intervento necessario</b>.</p><h3>Come si fa</h3><p>Stessa tecnica del primo: 25 kg/ha, atomizzatore, copertura completa, tempo asciutto. Verificare che il velo bianco residuo del primo trattamento sia degradato.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: protocollo standard contro mosca olearia in Marche = 2-3 caolini distribuiti tra luglio e settembre, con intervallo 4-6 settimane.</p>` },
       { titolo: '🪰 Spinosad esca SE infestazione conclamata', prod: 'Esca (es. Tracer), <b>0,1-0,2 l/ha</b>. Max 2 trattamenti/anno totali (anche se mai usato prima).', cost: '100-300 € (se serve)',
-        lav: { tipo: 'Trattamento', desc: 'Spinosad esca antimosca', prod: 'Spinosad Tracer esca', qty: 0.15, unit: 'l/ha' } },
+        articolo: `<h3>Cos'è lo Spinosad esca</h3><p>Insetticida biologico (estratto dal batterio <i>Saccharopolyspora spinosa</i>) <b>ammesso in agricoltura biologica</b>. Si usa in formulazione "esca attrattiva" (es. GF-120, Tracer), applicato a chiazze su pochi rami per pianta. La mosca lo trova come fonte di cibo e muore.</p><h3>Quando usarlo</h3><p>Strategia di ultima istanza, da usare SOLO se:</p><ul><li>Cattura massale + caolino non hanno tenuto sotto controllo</li><li>Infestazione confermata >10-15% olive con uova/larve</li><li>Si è entro 2 trattamenti annui consentiti (Reg. UE)</li></ul><h3>Perché "ultima istanza"</h3><p>Anche se bio, lo Spinosad è un insetticida vero: ha impatto su predatori utili (parassitoidi delle larve), va usato con parsimonia. <b>Massimo 2 trattamenti/anno</b>, anche se è la prima volta che lo usi nella stagione.</p><h3>Come si fa</h3><p>Esca pronta o miscelata in azienda. 0,1-0,2 l/ha applicati a chiazze (50-100 ml/pianta) su 1-2 rami per pianta. NON copertura totale.</p><h3>Costi 24ha</h3><p>2,4-4,8 l × 40-60 €/l = <b>100-300 €</b>. Trattamento "puntuale" molto economico.</p><h3>Fonti</h3><p>🏛️ <b>CREA Olivicoltura</b>: Spinosad esca è il trattamento bio più efficace contro mosca olearia in regime di alta infestazione. Disciplinari ICEA/AIAB lo ammettono.</p>` },
       { titolo: 'Ricarica bicarbonato', prod: '~15 kg per ricarica.', cost: '30 €',
-        lav: { tipo: 'Trattamento', desc: 'Ricarica esche bicarbonato', prod: 'Bicarbonato ammonio', qty: 15, unit: 'kg' } },
+        articolo: `<h3>Ricarica bicarbonato (3-4 settimana)</h3><p>Continua manutenzione Tap Trap: terza ricarica della stagione. Vedi articolo "Ricarica esche bicarbonato" di luglio per dettagli operativi.</p>` },
     ],
   },
   {
     mese: 'Settembre', num: 9, feno: '⭐ INVAIATURA (cambio colore drupa)',
-    note: '⭐ DECISIONE: raccolta anticipata (DodiciOre, Mignola early) o continuare. Analisi pre-raccolta utile per polifenoli. 📖 Alfei: a Castelfidardo invaiatura inizia a SETTEMBRE (non ottobre come in altre zone).',
+    note: '⭐ DECISIONE: raccolta anticipata (DodiciOre, Mignola early) o continuare. Analisi pre-raccolta utile per polifenoli. 📖 Alfei: a Castelfidardo invaiatura inizia a SETTEMBRE.',
     totale: '~1.800-2.300 €',
     ops: [
       { titolo: 'Decisione raccolta anticipata', prod: 'Valutazione cultivar early: DodiciOre, Mignola, parte Picholine.', cost: 'Tempo Luca',
-        ref: '📖 Alfei/Pannelli: il rapporto polifenoli/resa olio è ottimale alla fine dell\'invaiatura (50% drupe colorate). Anticipare = più polifenoli, posticipare = più olio.',
-        lav: { tipo: 'Monitoraggio', desc: 'Valutazione maturazione drupa', prod: '', qty: 0, unit: 'pz' } },
+        articolo: `<h3>Cos'è l'invaiatura e la decisione raccolta</h3><p>L'<b>invaiatura</b> è il cambio di colore della drupa: verde → giallo → viola → nero. È il segnale di maturazione fisiologica. A Castelfidardo inizia tipicamente a settembre.</p><h3>Il dilemma anticipare vs aspettare</h3><table style="font-size:.85em"><tr><th></th><th>Anticipare (50% invaiate)</th><th>Aspettare (100% nere)</th></tr><tr><td>Resa olio</td><td>BASSA (10-14%)</td><td>ALTA (16-20%)</td></tr><tr><td>Polifenoli</td><td>ALTI (>300 mg/kg)</td><td>BASSI (<200 mg/kg)</td></tr><tr><td>Acido oleico</td><td>Stabile</td><td>Stabile</td></tr><tr><td>Qualità olio</td><td>PREMIUM (DodiciOre)</td><td>Commerciale</td></tr><tr><td>Tipologia mercato</td><td>Alto valore</td><td>Volume</td></tr></table><h3>Strategia Galluzzi</h3><ul><li><b>DodiciOre</b>: raccolta anticipata (invaiatura 30-50%), polifenoli massimi, posizionamento premium</li><li><b>Mignola</b>: cultivar precoce, raccolta a settembre-inizio ottobre per profilo aromatico unico</li><li><b>Picholine</b>: raccolta ottobre, può aspettare un po\' (cultivar Oro Marche)</li><li><b>Leccino, Raggia, Piantone</b>: cultivar tardive, raccolta novembre-dicembre</li></ul><h3>Come decidere precisamente</h3><p>Analisi pre-raccolta (vedi operazione successiva) su campione olive: misurazione % grasso e polifenoli al laboratorio. Il dato oggettivo guida la scelta.</p><h3>Fonti</h3><p>📖 <b>Alfei/Pannelli</b>: rapporto polifenoli/resa olio ottimale alla fine dell'invaiatura (50% drupe colorate). Anticipare = più polifenoli, posticipare = più olio. La scelta dipende dal posizionamento commerciale.</p>` },
       { titolo: '3° caolino se mosca ancora attiva', prod: 'Solo se monitoraggio dice sì.', cost: '1.560 € (se serve)',
-        lav: { tipo: 'Trattamento', desc: '3° caolino di sicurezza', prod: 'Caolino', qty: 25, unit: 'kg/ha' } },
+        articolo: `<h3>Terzo caolino (di sicurezza)</h3><p>Settembre è ancora periodo critico per mosca (le drupe sono mature, attrattive). Se il monitoraggio mostra che la pressione è ancora alta, conviene un terzo trattamento caolino prima della raccolta.</p><h3>Attenzione al residuo visibile</h3><p>Il caolino lascia velo bianco sulle olive. Se trattato troppo vicino alla raccolta, le olive possono apparire "polverose" al frantoio. Trattare almeno <b>2 settimane prima della raccolta</b> per dare tempo a pioggia/vento di pulire.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: ultimo caolino deve precedere raccolta di almeno 15 giorni per evitare residui visivi sui frutti.</p>` },
       { titolo: 'Contatto frantoio per prenotare slot', prod: 'Frantoio di fiducia, calendari ottobre-novembre.', cost: 'Telefonata',
-        lav: { tipo: 'Logistica', desc: 'Prenotazione slot frantoio', prod: '', qty: 0, unit: 'pz' } },
-      { titolo: 'Analisi pre-raccolta', prod: 'Campione olive: maturazione, polifenoli, acidità.', cost: '150-300 €',
-        lav: { tipo: 'Analisi', desc: 'Analisi pre-raccolta su drupa', prod: '', qty: 1, unit: 'pz' } },
+        articolo: `<h3>Prenotazione slot frantoio</h3><p>Il frantoio in piena stagione (ottobre-novembre) è MOLTO richiesto. Senza prenotazione anticipata si rischia di portare le olive fuori dalla finestra ottimale (>24h dal raccolto = degradazione).</p><h3>Cosa concordare</h3><ul><li>Giorni di prenotazione preferenziali (es. lunedì + giovedì)</li><li>Quantità stimata in kg per ogni slot</li><li>Modalità di lavorazione (3 fasi continuo, ciclo freddo <27°C)</li><li>Stoccaggio temporaneo se serve</li><li>Per DodiciOre: priorità assoluta su tempi (entro 12h da raccolta)</li></ul><h3>Frantoio Galluzzi</h3><p>Il frantoio di fiducia è esterno (gestione separata da costi colturali). Tecnologia moderna a ciclo continuo a 3 fasi, a pochi minuti da Castelfidardo.</p><h3>Fonti</h3><p>Standard pratica olivicoltura artigianale.</p>` },
+      { titolo: 'Analisi pre-raccolta su campione drupa', prod: 'Campione olive: maturazione, polifenoli, acidità.', cost: '150-300 €',
+        articolo: `<h3>Cos'è l'analisi pre-raccolta</h3><p>Test di laboratorio su un campione di olive (200-500 g) per misurare:</p><ul><li><b>% di grasso</b> (resa olio attesa)</li><li><b>Polifenoli totali</b> (qualità antiossidanti)</li><li><b>Acidità libera</b> (qualità chimica)</li><li><b>Indice maturazione</b> (Jaen index)</li></ul><h3>Perché si fa</h3><p>L'occhio nudo non basta a decidere il momento ottimale di raccolta. L'analisi fornisce dati oggettivi per:</p><ul><li>Decidere settimana raccolta cultivar per cultivar</li><li>Documentare qualità (utile per certificazioni e marketing)</li><li>Confronto con annate precedenti (trend pluriennale)</li></ul><h3>Come si fa</h3><p>Prelevare 100-200 olive da 5-10 piante diverse della stessa cultivar/parcella. Trasporto rapido (entro 24h) al laboratorio (CCIAA, AMAP, o privato). Costo: 30-80 €/campione. Per Galluzzi consigliato 3-5 campioni (cultivar principali) = <b>150-300 €/anno</b>.</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: analisi pre-raccolta è strumento essenziale per olivicoltura di qualità. Camera Commercio Ancona offre servizio convenzionato.</p>` },
       { titolo: 'Pulizia attrezzi raccolta', prod: 'Cassette, ali raccolta, abbacchiatori elettrici.', cost: '200-500 €',
-        lav: { tipo: 'Lavorazione', desc: 'Manutenzione attrezzi raccolta', prod: '', qty: 0, unit: 'pz' } },
+        articolo: `<h3>Manutenzione attrezzi pre-raccolta</h3><p>Controllo e pulizia di tutta l'attrezzatura usata per la raccolta: abbacchiatori elettrici (batterie cariche, motorini funzionanti), ali di raccolta (no buchi, ganci integri), cassette (lavate, integre), forbici e attrezzi minori.</p><h3>Perché è critico</h3><p>Una rottura in piena raccolta = mezza giornata persa. Cassette sporche = contaminazione olive = degradazione olio. Abbacchiatore guasto = raccolta manuale faticosa e lenta.</p><h3>Costi</h3><p>~200-500 € per ricambi/manutenzione preventiva. Investimento ben ammortizzato dalla velocità di raccolta che ne deriva.</p>` },
     ],
   },
   {
     mese: 'Ottobre', num: 10, feno: '🍇 RACCOLTA inizio (cultivar early)',
-    note: '⭐ MESE PIENO. DodiciOre entro 12h al frantoio. Inerbimento: seminare dopo prime piogge autunnali. 📖 Alfei: raccolta marchigiana va da ottobre (Mignola precoce) a dicembre (Leccino tardivo) — finestra di 2 mesi.',
+    note: '⭐ MESE PIENO. DodiciOre entro 12h al frantoio. Inerbimento: seminare dopo prime piogge autunnali.',
     totale: '~4.500-10.000 € (inerbimento one-time)',
     ops: [
       { titolo: '🍇 Raccolta cultivar early (Mignola, Picholine, DodiciOre)', prod: 'Abbacchiatori elettrici, ali, cassette.', cost: 'Gestione separata',
-        ref: '📖 Alfei: la Mignola è cultivar autoctona marchigiana del 1807 (Gallesio), riconosciuta da Catalogo Biodiversità Marche 2001 come patrimonio genetico prioritario.',
-        lav: { tipo: 'Raccolta', desc: 'Raccolta cultivar early', prod: '', qty: 0, unit: 'q' } },
+        articolo: `<h3>Inizio raccolta cultivar early</h3><p>Ottobre è l'inizio della raccolta per cultivar a invaiatura precoce: <b>Mignola</b> (cultivar autoctona Marche, 1807), <b>Picholine</b> (premiata 4 Ori Marche), <b>DodiciOre</b> (blend premium con regola 12h frantoio).</p><h3>Tecnica raccolta</h3><p>Abbacchiatori elettrici (NON manuale, NON meccanizzata industriale). Le olive cadono su reti di raccolta (ali) stese sotto la pianta. Si raccolgono in cassette piccole (max 25 kg) per evitare schiacciamento.</p><h3>Trasporto frantoio</h3><p>Le olive iniziano a degradare appena raccolte. Tempi:</p><ul><li><b>DodiciOre: entro 12h</b> (regola di produzione che dà il nome al prodotto)</li><li>Altri oli premium: entro 24h</li><li>Olio commerciale: entro 48h</li></ul><h3>Fonti</h3><p>📖 <b>Alfei</b>: la Mignola è cultivar autoctona marchigiana documentata dal 1807 (Gallesio, Pomona Italica), riconosciuta dal Catalogo Biodiversità Marche 2001 come <b>patrimonio genetico prioritario</b>. Resa olive: 13-15%, polifenoli molto alti.</p>` },
       { titolo: 'Trasporto frantoio (DodiciOre entro 12h)', prod: 'Logistica trasporto.', cost: 'Gestione separata',
-        lav: { tipo: 'Logistica', desc: 'Trasporto olive al frantoio', prod: '', qty: 0, unit: 'q' } },
+        articolo: `<h3>Logistica trasporto</h3><p>Trasporto rapido al frantoio di fiducia (a pochi minuti da Castelfidardo). Per DodiciOre la regola è ferrea: <b>entro 12h dalla raccolta</b>. Per altre cultivar: entro 24h.</p><h3>Perché conta la velocità</h3><p>Appena staccata dalla pianta, l'oliva inizia processi enzimatici di degradazione (lipasi → idrolisi trigliceridi → acidità libera ↑) e fermentativi (lieviti). Più tempo passa = più acidità, più difetti, meno polifenoli stabili.</p><h3>Come si fa</h3><p>Cassette piccole (impilare con cautela, no più di 5 alte), trasporto coperto (no sole diretto), scarico immediato al frantoio. Concordare slot in anticipo.</p>` },
       { titolo: 'Stoccaggio acciaio inox + azoto (DodiciOre)', prod: 'Sotto azoto inerte per preservare polifenoli.', cost: 'Già attivo',
-        lav: { tipo: 'Stoccaggio', desc: 'Stoccaggio olio nuovo sotto azoto', prod: '', qty: 0, unit: 'l' } },
+        articolo: `<h3>Stoccaggio sotto azoto</h3><p>Dopo la frangitura, l'olio nuovo viene stoccato in <b>fusti di acciaio inox a tenuta</b> con saturazione di azoto inerte nello spazio di testa. Sostituisce l'ossigeno che ossiderebbe i polifenoli.</p><h3>Perché funziona</h3><p>L'ossidazione è il nemico N°1 della qualità olio:</p><ul><li>Polifenoli → ossidati → perdita antiossidanti</li><li>Acidi grassi insaturi → ossidati → rancido</li><li>Aromi volatili → perdono freschezza</li></ul><p>Azoto = gas inerte, blocca ossidazione = olio rimane "appena franto" per mesi.</p><h3>Costi</h3><p>Infrastruttura già presente in azienda (locali stoccaggio con temperatura controllata). Azoto: bombola industriale ~80-150 €/anno, trascurabile.</p><h3>Fonti</h3><p>Standard industria olio EVO premium.</p>` },
       { titolo: '🪰 Rimozione trappole mosca fine mese', prod: 'Smontaggio Tap Trap, pulizia.', cost: 'Tempo Luca',
-        lav: { tipo: 'Lavorazione', desc: 'Rimozione trappole mosca a fine stagione', prod: '', qty: 1440, unit: 'pz' } },
-      { titolo: '🌱 SEMINA INERBIMENTO (post-piogge)', prod: 'Miscuglio Trifolium subterraneum + Medicago polymorpha + Lolium + Festuca arundinacea. <b>40-60 kg/ha</b> (960-1.440 kg totali). Fornitori: Padana Sementi, Peragrosementi.', cost: '2.880-7.200 € (semente) + 1.680-3.600 € (lavorazione+semina)',
-        lav: { tipo: 'Semina', desc: 'Semina inerbimento permanente', prod: 'Miscuglio leguminose + graminacee', qty: 50, unit: 'kg/ha' } },
+        articolo: `<h3>Fine stagione cattura massale</h3><p>A fine ottobre la pressione mosca cala drasticamente (temperature più basse + raccolta in corso = drupe sempre meno disponibili). Le Tap Trap vanno smontate, pulite e conservate per la prossima stagione.</p><h3>Come si fa</h3><p>Staccare ogni trappola, svuotare la soluzione, lavare bottiglia con acqua + sapone bio. Conservare in scatole asciutte e ventilate fino al giugno successivo. <b>Le Tap Trap durano 3-5 stagioni</b> se conservate bene → ammortamento basso.</p><h3>Tempo</h3><p>1.440 trappole = ~24 ore di lavoro distribuite in 3-4 sessioni.</p>` },
+      { titolo: '🌱 SEMINA INERBIMENTO PERMANENTE', prod: 'Miscuglio Trifolium subterraneum + Medicago polymorpha + Lolium + Festuca arundinacea. <b>40-60 kg/ha</b> (960-1.440 kg totali). Fornitori: Padana Sementi, Peragrosementi.', cost: '2.880-7.200 € (semente) + 1.680-3.600 € (lavorazione+semina)',
+        articolo: `<h3>Cos'è l'inerbimento permanente</h3><p>Semina di una miscela di leguminose + graminacee tra i filari per creare un <b>cotico vivente permanente</b>. Sostituisce le lavorazioni meccaniche del suolo. È la pratica più importante dell'agricoltura biologica conservativa.</p><h3>Composizione mix raccomandato Galluzzi</h3><table style="font-size:.85em"><tr><th>Specie</th><th>Tipo</th><th>Funzione</th></tr><tr><td>Trifolium subterraneum</td><td>Leguminosa</td><td>Fissazione N, autorisemina, fioritura</td></tr><tr><td>Medicago polymorpha</td><td>Leguminosa</td><td>Fissazione N, adattabile</td></tr><tr><td>Lolium rigidum</td><td>Graminacea</td><td>Copertura rapida, biomassa</td></tr><tr><td>Festuca arundinacea</td><td>Graminacea poliennale</td><td>Struttura suolo</td></tr></table><h3>Perché si fa</h3><ul><li>↑ sostanza organica suolo</li><li>↑ infiltrazione acqua piovana, riduce erosione</li><li>↑ biodiversità artropodi utili (predatori naturali mosca!)</li><li>↓ lavorazioni meccaniche (carburante, ore, usura)</li><li>Resa olive non penalizzata nel medio-lungo periodo</li></ul><h3>Come si fa</h3><p>Lavorazione superficiale leggera (5-10 cm) per preparare letto di semina. Semina a spaglio o con seminatrice 40-60 kg/ha. <b>Dopo prime piogge autunnali</b> (ottobre tipicamente). Rullatura per favorire contatto seme-suolo.</p><h3>Costi 24ha (one-time)</h3><table style="font-size:.85em"><tr><td>Miscuglio sementiero (3-5 €/kg × 50 kg/ha)</td><td>2.880-7.200 €</td></tr><tr><td>Lavorazione + semina (contoterzista 70-150 €/ha)</td><td>1.680-3.600 €</td></tr><tr><td><b>TOTALE impianto primo anno</b></td><td><b>4.500-10.800 €</b></td></tr></table><p>Dopo l'impianto, costo annuo solo gestione sfalci: ~2.000 €/anno.</p><h3>Fonti</h3><p>🔬 <b>Perplexity Deep Research</b>: studi decennali Andalusia + Italia centrale. 📖 <b>Pannelli</b>: protocollo standard inerbimento bio per oliveti Marche. 📰 <b>teatronaturale.it 16/05/2026</b>: vantaggi inerbimento anche in anni aridi.</p>` },
     ],
   },
   {
@@ -2643,28 +2664,28 @@ const PIANO_AGRONOMICO = [
     totale: '~200-430 €',
     ops: [
       { titolo: '🍇 Raccolta cultivar tardive (Leccino, Raggia, Piantone di Mogliano)', prod: 'Continua dalle parcelle non ancora raccolte.', cost: 'Gestione separata',
-        lav: { tipo: 'Raccolta', desc: 'Raccolta cultivar tardive', prod: '', qty: 0, unit: 'q' } },
+        articolo: `<h3>Raccolta cultivar tardive</h3><p>Le cultivar a invaiatura tardiva si raccolgono a novembre: <b>Leccino</b> (toscana, blend Cortese), <b>Raggia</b> (autoctona marchigiana), <b>Piantone di Mogliano</b> (autoctona, Oro Marche 2021).</p><h3>Profilo organolettico cultivar tardive</h3><ul><li><b>Leccino</b>: fruttato leggero, gentile, mandorla. Base del blend "Il Cortese".</li><li><b>Raggia</b>: fruttato armonico, sentori carciofo ed erba. Base del blend "Il Raggiante".</li><li><b>Piantone di Mogliano</b>: fruttato medio elegante, mandorla fresca, carciofo. Premio Oro Marche 2021.</li></ul><h3>Fonti</h3><p>📖 <b>Alfei</b>: la finestra di raccolta marchigiana ottobre-dicembre permette di gestire 6-7 cultivar diverse con flessibilità organizzativa. Cultivar tardive = maggior resa olio (fino 20%) ma polifenoli inferiori.</p>` },
       { titolo: 'Imbottigliamento parziale prime cultivar', prod: 'Olio nuovo già decantato dall\'ottobre.', cost: 'Gestione separata',
-        lav: { tipo: 'Imbottigliamento', desc: 'Imbottigliamento prime cultivar', prod: '', qty: 0, unit: 'l' } },
+        articolo: `<h3>Imbottigliamento prime cultivar</h3><p>L'olio raccolto in ottobre (DodiciOre, Mignola, Picholine) ha avuto tempo per decantare. Può iniziare l'imbottigliamento per le prime vendite/spedizioni.</p><h3>Cosa fare</h3><p>Filtrazione (opzionale, dipende dalla scelta commerciale), imbottigliamento in vetro scuro (proteggere da luce), etichettatura, stoccaggio in magazzino a temperatura controllata.</p>` },
       { titolo: 'Trattamento rame post-raccolta', prod: 'Rame, <b>2-3 kg/ha</b> (preventivo invernale).', cost: '200-430 €',
-        lav: { tipo: 'Trattamento', desc: 'Rame post-raccolta preventivo', prod: 'Rame ossicloruro', qty: 2.5, unit: 'kg/ha' } },
+        articolo: `<h3>Rame post-raccolta preventivo</h3><p>Trattamento di copertura per proteggere la chioma durante l'inverno umido (novembre-febbraio = stagione occhio di pavone).</p><h3>Perché farlo</h3><p>L'occhio di pavone si sviluppa con temperatura 15-20°C + umidità >80% per 12-24h. In autunno marchigiano queste condizioni sono frequenti. Il rame applicato a novembre crea protezione che dura 30-45 giorni.</p><h3>Dose finale anno</h3><p>2-3 kg/ha. <b>Verificare TOTALE annuo</b>: somma post-potatura gennaio + eventuale febbraio + post-raccolta novembre. Massimo 4 kg/ha/anno (Reg. UE).</p><h3>Fonti</h3><p>🏛️ <b>CREA</b>: protocollo rame in olivicoltura bio mediterranea = 3 trattamenti annui di copertura.</p>` },
     ],
   },
   {
     mese: 'Dicembre', num: 12, feno: 'Fine raccolta + inizio potatura + bilancio',
-    note: 'Bilancio stagione: resa €/q, qualità olio (analisi chimico-sensoriale), performance per cultivar. Concimazione autunnale fondamentale per anno successivo.',
+    note: 'Bilancio stagione: resa €/q, qualità olio, performance per cultivar. Concimazione autunnale fondamentale per anno successivo.',
     totale: '~7.500-15.000 €',
     ops: [
       { titolo: '🍇 Fine raccolta (entro inizio dicembre)', prod: 'Ultime parcelle.', cost: 'Gestione separata',
-        lav: { tipo: 'Raccolta', desc: 'Fine raccolta', prod: '', qty: 0, unit: 'q' } },
+        articolo: `<h3>Fine raccolta stagionale</h3><p>Entro inizio dicembre tutte le cultivar dovrebbero essere raccolte. Aspettare oltre = rischio cascola naturale (olive cadono da sole), olive sovramature, attacchi mosca residuali.</p><h3>Eccezioni</h3><p>In annate fredde la maturazione può essere ritardata. Verificare cultivar per cultivar. Mai oltre 15 dicembre per oli di qualità.</p>` },
       { titolo: '🌳 INIZIO potatura secca (fine dicembre)', prod: 'Inizio nuovo ciclo annuale.', cost: 'Tempo Luca',
-        lav: { tipo: 'Potatura', desc: 'Inizio potatura a secco', prod: '', qty: 0, unit: 'h' } },
+        articolo: `<h3>Riavvio ciclo potatura</h3><p>Fine dicembre è il momento per iniziare la nuova stagione di potatura secca. Il ciclo si chiude e si riapre.</p><h3>Strategia annuale</h3><p>Pianificare quali parcelle iniziare per prime (di solito quelle non potate l'anno scorso, o cultivar precoci). Il calendario potatura va da fine dicembre a fine febbraio (vedi gennaio per dettagli completi).</p>` },
       { titolo: '💩 Concimazione organica autunnale', prod: 'Compost o letame maturo, <b>20-30 t/ha</b> (200 t/anno ammortizzato).', cost: '6.000-12.000 €',
-        lav: { tipo: 'Concimazione', desc: 'Compost/letame maturo autunnale', prod: 'Compost maturo', qty: 25, unit: 't/ha' } },
+        articolo: `<h3>Concimazione organica autunnale</h3><p>L'apporto principale di sostanza organica al suolo per nutrire il ciclo successivo. Vedi articolo completo nel mese di GENNAIO per dettagli operativi e protocollo.</p><h3>Da fare ora</h3><p>Verificare disponibilità compost/letame, programmare distribuzione PRIMA delle piogge persistenti (che ne favoriscono umificazione). Su 24 ha si ruota: ogni 2-3 anni per parcella, distribuendo ~200 t/anno totali.</p>` },
       { titolo: '🛠️ Manutenzione attrezzi', prod: 'Abbacchiatori, ali raccolta, cesoie, trinciatrice.', cost: '300-600 €',
-        lav: { tipo: 'Lavorazione', desc: 'Manutenzione attrezzi fine stagione', prod: '', qty: 0, unit: 'pz' } },
+        articolo: `<h3>Manutenzione invernale attrezzi</h3><p>A fine stagione tutti gli attrezzi vanno controllati e riposti in buono stato:</p><ul><li>Abbacchiatori: batterie scariche prolungate degradano, ricaricare e mantenere</li><li>Ali raccolta: pulizia da foglie/terra, controllo strappi</li><li>Cesoie: affilatura, oliatura, disinfezione</li><li>Trinciatrice: controllo coltelli/martelli, cambio olio se proprio</li></ul><h3>Costi</h3><p>~300-600 € di ricambi e materiali (olio, batterie, lame, ecc.). Investimento che si recupera nella stagione successiva.</p>` },
       { titolo: '📊 Bilancio stagione', prod: 'Analisi €/q, qualità olio, performance cultivar.', cost: 'Tempo Luca',
-        lav: { tipo: 'Analisi', desc: 'Bilancio annuale produzione e qualità', prod: '', qty: 0, unit: 'pz' } },
+        articolo: `<h3>Bilancio annuale produzione</h3><p>Fine anno = momento di guardare indietro e capire cosa è andato bene e cosa va corretto. Dati da raccogliere:</p><ul><li><b>Resa per cultivar</b> (kg olive/pianta, kg olio/quintale olive)</li><li><b>Qualità per olio prodotto</b> (analisi panel, polifenoli, acidità)</li><li><b>Costi colturali</b> (tabella mese per mese da Lavorazioni)</li><li><b>Performance trattamenti</b> (Bt sì/no, caolino sì/no, dose rame totale)</li><li><b>Anomalie/problemi</b> (focolai malattie, piante perse, ecc.)</li></ul><h3>Output</h3><p>Documento di sintesi per: pianificazione anno successivo, eventuale aggiornamento piano agronomico, materiale per certificazione bio (ICEA/AIAB richiedono registri).</p><h3>Fonti</h3><p>📖 <b>Pannelli</b>: il bilancio annuale è strumento essenziale per olivicoltura di precisione. Indicatori chiave: kg olio/pianta, €/litro venduto, % qualità extravergine sul totale prodotto.</p>` },
     ],
   },
 ];
@@ -2672,17 +2693,15 @@ const PIANO_AGRONOMICO = [
 function loadPianoAgronomico() {
   const container = document.getElementById('piano-cards');
   if (!container) return;
-  const meseCorrente = new Date().getMonth() + 1; // 1-12
-  let html = '';
-  // Riordino: mese corrente in cima, poi successivi, poi precedenti
+  const meseCorrente = new Date().getMonth() + 1;
   const meseOrdinati = [
     ...PIANO_AGRONOMICO.filter(m => m.num >= meseCorrente),
     ...PIANO_AGRONOMICO.filter(m => m.num < meseCorrente),
   ];
-  meseOrdinati.forEach((m, idx) => {
+  let html = '';
+  meseOrdinati.forEach(m => {
     const isCorrente = m.num === meseCorrente;
-    const aperto = isCorrente ? 'open' : '';
-    html += `<div class="piano-mese ${isCorrente ? 'current' : ''} ${aperto}" data-mese="${m.num}">
+    html += `<div class="piano-mese ${isCorrente ? 'current' : ''} ${isCorrente ? 'open' : ''}" data-mese="${m.num}">
       <div class="piano-mese-hd" onclick="this.parentNode.classList.toggle('open')">
         <div class="piano-mese-titolo">
           <div class="piano-mese-num">${m.num}</div>
@@ -2695,14 +2714,13 @@ function loadPianoAgronomico() {
       </div>
       <div class="piano-mese-body">`;
     m.ops.forEach((op, opIdx) => {
+      const opKey = `${m.num}-${opIdx}`;
       html += `<div class="piano-op">
         <div class="piano-op-titolo"><span class="op-num">${opIdx+1}</span><span>${op.titolo}</span></div>
         <div class="piano-op-prod">${op.prod}</div>
         ${op.cost ? `<div class="piano-op-cost">💰 ${op.cost}</div>` : ''}
-        ${op.ref ? `<div class="piano-op-ref">${op.ref}</div>` : ''}
         <div class="piano-op-btns">
-          <button class="piano-op-btn" onclick='pianoAddLav(${JSON.stringify(op.lav).replace(/'/g,"\\'")})'>📝 Lavorazione</button>
-          <button class="piano-op-btn alt" onclick='pianoAddAppunto(${JSON.stringify({tipo: m.mese + ' — ' + op.titolo}).replace(/'/g,"\\'")})'>📓 Appunto</button>
+          <button class="piano-op-btn" onclick="pianoApri(${m.num},${opIdx})">📖 Approfondisci</button>
         </div>
       </div>`;
     });
@@ -2721,38 +2739,20 @@ function pianoToggleAll() {
   if (btn) btn.textContent = allOpen ? 'Espandi tutti' : 'Comprimi tutti';
 }
 
-function pianoAddLav(precompilato) {
-  // Apre il modal Lavorazioni precompilando i campi
-  if (typeof openLavModal === 'function') {
-    openLavModal();
-    // Aspetta che il modal sia aperto e precompila
-    setTimeout(() => {
-      const today = new Date().toISOString().slice(0,10);
-      const setIf = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-      setIf('lav-data', today);
-      setIf('lav-tipo', precompilato.tipo);
-      setIf('lav-desc', precompilato.desc);
-      setIf('lav-prod', precompilato.prod);
-      setIf('lav-qty', precompilato.qty);
-      setIf('lav-unit', precompilato.unit);
-    }, 80);
-  } else {
-    toast('Modal Lavorazione non disponibile');
-  }
+function pianoApri(meseNum, opIdx) {
+  const m = PIANO_AGRONOMICO.find(x => x.num === meseNum);
+  if (!m) return;
+  const op = m.ops[opIdx];
+  if (!op) return;
+  const overlay = document.getElementById('m-piano-art');
+  document.getElementById('mp-titolo').textContent = op.titolo;
+  document.getElementById('mp-sub').textContent = `${m.mese} · ${m.feno}`;
+  document.getElementById('mp-body').innerHTML = op.articolo || '<p><em>Approfondimento non ancora disponibile per questa operazione.</em></p>';
+  overlay.classList.add('show');
 }
 
-function pianoAddAppunto(precompilato) {
-  // Apre modal Appunto (se esiste) o fallback su Lavorazione
-  if (typeof openAppuntoModal === 'function') {
-    openAppuntoModal();
-    setTimeout(() => {
-      const ta = document.getElementById('app-testo');
-      if (ta) ta.value = precompilato.tipo + ': ';
-      if (ta) ta.focus();
-    }, 80);
-  } else {
-    toast('Modal Appunto non disponibile — usa Lavorazione');
-  }
+function pianoChiudi() {
+  document.getElementById('m-piano-art').classList.remove('show');
 }
 </script>
 </body>
