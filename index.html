@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.34</title>
+<title>Gestione Oliveto v11.35</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -72,7 +72,7 @@ a{color:inherit;text-decoration:none}
 .tw{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border)}
 .tb-bar{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-wrap:wrap}
 table{width:100%;border-collapse:collapse}
-th{background:var(--bg);padding:9px 13px;text-align:left;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{background:var(--bg);padding:10px 13px;text-align:left;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);white-space:nowrap}
 td{padding:10px 13px;font-size:.84rem;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fbfdfb}
@@ -83,12 +83,13 @@ tr:hover td{background:#fbfdfb}
 .bg{background:#d1fae5;color:#065f46}.br{background:#fee2e2;color:#991b1b}
 .by{background:#fef9c3;color:#854d0e}.bb{background:#dbeafe;color:#1e40af}.bgr{background:#f1f5f9;color:#475569}
 
-/* BUTTONS */
-.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:.83rem;font-weight:600;transition:all .15s;font-family:'Inter',sans-serif}
+/* BUTTONS — mobile-first: min 40px tap target */
+.btn{padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.86rem;font-weight:600;transition:all .15s;font-family:'Inter',sans-serif;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .btn-p{background:var(--green);color:#fff}.btn-p:hover{background:var(--green-dark)}
 .btn-s{background:var(--bg);color:var(--text);border:1px solid var(--border)}.btn-s:hover{background:var(--border)}
-.btn-ic{padding:4px 7px;background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.85rem;line-height:1;transition:background .15s}
+.btn-ic{padding:9px 11px;background:transparent;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:1rem;line-height:1;transition:background .15s;min-height:42px;min-width:42px;display:inline-flex;align-items:center;justify-content:center}
 .btn-ic:hover{background:var(--bg)}
+.btn-ic:active{background:var(--green-light)}
 
 /* INPUTS */
 .fg{margin-bottom:13px}
@@ -252,7 +253,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 .piano-op-prod b{color:var(--text);font-weight:600}
 .piano-op-cost{font-size:.7rem;color:var(--green-dark);margin-left:30px;font-weight:600;margin-bottom:7px}
 .piano-op-btns{display:flex;gap:6px;margin-left:30px;flex-wrap:wrap}
-.piano-op-btn{background:var(--green);color:#fff;border:none;border-radius:6px;padding:7px 11px;font-size:.72rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;min-height:34px}
+.piano-op-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;min-height:42px}
 .piano-op-btn:active{background:var(--green-dark)}
 .piano-op-btn.alt{background:#fff;color:var(--green-dark);border:1px solid var(--green)}
 .piano-mese-note{margin-top:10px;padding:9px 11px;background:#fef7e0;border-left:3px solid #d97706;border-radius:6px;font-size:.74rem;color:#78350f;line-height:1.45}
@@ -322,9 +323,20 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   .modal{width:100%;max-width:100%;border-radius:18px 18px 0 0;max-height:92vh}
   .modal::before{content:'';display:block;width:38px;height:4px;background:#ddd;border-radius:2px;margin:10px auto 0}
   .mh{padding-top:8px}
-  /* Touch target bottoni tabella */
-  .btn-ic{padding:7px 10px;font-size:.95rem}
-  .btn{padding:9px 16px}
+  /* Touch target bottoni tabella — mobile-first */
+  .btn-ic{padding:11px 13px;font-size:1.05rem;min-height:44px;min-width:44px}
+  .btn{padding:12px 18px;font-size:.92rem;min-height:46px}
+  .btn-s{padding:11px 16px;min-height:42px}
+  /* Tabelle: font più grande */
+  th{font-size:.78rem;padding:11px 12px}
+  td{padding:11px 12px;font-size:.86rem}
+  /* Piano agronomico: bottoni più cliccabili */
+  .piano-op-btn{padding:12px 16px;min-height:46px;font-size:.84rem}
+  /* Overview cards: meno densi */
+  .ov-stat-lbl{font-size:.78rem}
+  .ov-stat-foot{font-size:.78rem}
+  /* Input form: testo più grande per niente zoom auto iOS */
+  input,select,textarea{font-size:16px !important}
   /* Voce mic button */
   .mic-btn{padding:16px;font-size:.9rem}
 }
@@ -335,13 +347,13 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 .ov-stat:nth-child(2){border-top-color:#8b6914}
 .ov-stat:nth-child(3){border-top-color:#a0522d}
 .ov-stat:nth-child(4){border-top-color:#1e6b7a}
-.ov-stat-lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;color:#8a7a5a;letter-spacing:.05em;margin-bottom:6px}
+.ov-stat-lbl{font-size:.74rem;font-weight:600;text-transform:uppercase;color:#8a7a5a;letter-spacing:.05em;margin-bottom:6px}
 .ov-stat-val{font-size:1.15rem;font-weight:700;color:#1a2416;line-height:1.1}
-.ov-stat-foot{font-size:.6rem;color:#aaa;margin-top:4px}
+.ov-stat-foot{font-size:.72rem;color:#888;margin-top:4px}
 /* Charts */
 .ov-charts-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;animation:ov-rise .55s .28s ease both}
 .ov-chart-box{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 14px rgba(0,0,0,.07);border:1px solid #e8e0d0}
-.ov-chart-title{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#8a7a5a;margin-bottom:16px}
+.ov-chart-title{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#8a7a5a;margin-bottom:16px}
 /* Campo cards */
 .ov-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
 .ov-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.07);border:1px solid #e8e0d0;display:flex;flex-direction:column;animation:ov-rise .55s ease both}
@@ -873,8 +885,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.34';
-if (!location.search.includes('v=11.34')) { location.replace(location.pathname + '?v=11.34'); }
+const VERSION      = 'v11.35';
+if (!location.search.includes('v=11.35')) { location.replace(location.pathname + '?v=11.35'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
