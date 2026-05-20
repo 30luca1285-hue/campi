@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.33</title>
+<title>Gestione Oliveto v11.34</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -222,6 +222,46 @@ input[readonly]{background:var(--bg)}
 .iframe-box-hd a:hover{text-decoration:underline}
 iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:var(--bg)}
 
+/* PIANO AGRONOMICO */
+.piano-intro{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:center;box-shadow:var(--shadow);border:1px solid var(--border)}
+.piano-intro-ic{font-size:1.8rem;flex-shrink:0}
+.piano-intro-title{font-size:.95rem;font-weight:700;color:var(--green-dark)}
+.piano-intro-sub{font-size:.74rem;color:var(--muted);margin-top:3px;line-height:1.45}
+.piano-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.piano-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1280px){.piano-grid{grid-template-columns:repeat(3,1fr)}}
+.piano-mese{background:var(--card);border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;transition:box-shadow .15s}
+.piano-mese.current{border-left:4px solid var(--green);box-shadow:0 2px 10px rgba(45,106,79,.2)}
+.piano-mese-hd{padding:14px 16px;background:linear-gradient(135deg,var(--green-light),#fff);cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none}
+.piano-mese-hd:active{background:var(--green-light)}
+.piano-mese-titolo{display:flex;align-items:center;gap:10px}
+.piano-mese-num{background:var(--green);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;flex-shrink:0}
+.piano-mese.current .piano-mese-num{background:var(--green-dark);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,61,43,.4)}50%{box-shadow:0 0 0 6px rgba(26,61,43,0)}}
+.piano-mese-nome{font-size:1rem;font-weight:700;color:var(--text)}
+.piano-mese-feno{font-size:.7rem;color:var(--muted);margin-top:1px}
+.piano-mese-chev{font-size:.95rem;color:var(--muted);transition:transform .2s}
+.piano-mese.open .piano-mese-chev{transform:rotate(90deg)}
+.piano-mese-body{display:none;padding:14px 16px;border-top:1px solid var(--border)}
+.piano-mese.open .piano-mese-body{display:block}
+.piano-op{padding:11px 0;border-bottom:1px solid var(--border)}
+.piano-op:last-child{border-bottom:none}
+.piano-op-titolo{font-size:.86rem;font-weight:600;color:var(--text);display:flex;align-items:flex-start;gap:8px;margin-bottom:5px}
+.piano-op-titolo .op-num{flex-shrink:0;background:var(--green-light);color:var(--green-dark);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
+.piano-op-prod{font-size:.74rem;color:var(--muted);margin-left:30px;margin-bottom:5px;line-height:1.5}
+.piano-op-prod b{color:var(--text);font-weight:600}
+.piano-op-cost{font-size:.7rem;color:var(--green-dark);margin-left:30px;font-weight:600;margin-bottom:7px}
+.piano-op-btns{display:flex;gap:6px;margin-left:30px;flex-wrap:wrap}
+.piano-op-btn{background:var(--green);color:#fff;border:none;border-radius:6px;padding:7px 11px;font-size:.72rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;min-height:34px}
+.piano-op-btn:active{background:var(--green-dark)}
+.piano-op-btn.alt{background:#fff;color:var(--green-dark);border:1px solid var(--green)}
+.piano-mese-note{margin-top:10px;padding:9px 11px;background:#fef7e0;border-left:3px solid #d97706;border-radius:6px;font-size:.74rem;color:#78350f;line-height:1.45}
+.piano-mese-totale{margin-top:10px;padding-top:9px;border-top:1px dashed var(--border);font-size:.78rem;color:var(--green-dark);font-weight:700;text-align:right}
+.piano-footer{margin-top:22px;background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.piano-footer-title{font-size:.82rem;font-weight:700;margin-bottom:9px;color:var(--green-dark)}
+.piano-footer-link{display:block;padding:7px 0;font-size:.78rem;color:var(--green);font-weight:500}
+.piano-footer-link:hover{text-decoration:underline}
+
 /* FOTO FATTURA (costo) */
 .foto-area{border:2px dashed var(--border);border-radius:10px;overflow:hidden;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:center;background:var(--bg);margin-bottom:6px;transition:border-color .15s}
 .foto-area:hover{border-color:var(--green)}
@@ -367,6 +407,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="nav-item" data-view="entrate"><span class="nav-ic">💶</span>PAC / Biologico</div>
     <div class="nav-item" data-view="mosca"><span class="nav-ic">🪰</span>Mosca Olivo</div>
     <div class="nav-item" data-view="amap"><span class="nav-ic">📡</span>AMAP Marche</div>
+    <div class="nav-item" data-view="piano"><span class="nav-ic">📅</span>Piano Agronomico</div>
   </div>
   <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:10px">
     <div id="sync-dot" style="display:flex;align-items:center;gap:7px;font-size:.72rem;font-family:'Inter',sans-serif;color:rgba(255,255,255,.5)">
@@ -565,6 +606,32 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
         <a href="https://www.amap.marche.it" target="_blank" rel="noopener">Apri nel browser ↗</a>
       </div>
       <iframe class="amap-frame" src="https://www.amap.marche.it" title="AMAP Marche" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- PIANO AGRONOMICO -->
+<div id="view-piano" class="view">
+  <div class="ph">
+    <h2>📅 Piano Agronomico</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-s" onclick="pianoToggleAll()" id="piano-toggle-btn">Espandi tutti</button>
+    </div>
+  </div>
+  <div class="pb">
+    <div class="piano-intro">
+      <div class="piano-intro-ic">🌳</div>
+      <div>
+        <div class="piano-intro-title">Calendario operativo annuale — Biologico</div>
+        <div class="piano-intro-sub">24 ettari · 9.000 piante · 7 cultivar · Castelfidardo (AN). Operazioni mese per mese con prodotti consigliati, dosaggi, costi e link al registro Lavorazioni / Appunti.</div>
+      </div>
+    </div>
+    <div id="piano-cards" class="piano-grid"></div>
+    <div class="piano-footer">
+      <div class="piano-footer-title">📚 Risorse complete</div>
+      <a href="https://github.com/30luca1285-hue/hq-cervello/blob/main/docs/piano-agronomico-oliveto-bio.md" target="_blank" class="piano-footer-link">📖 Piano Agronomico completo (Markdown)</a>
+      <a href="https://github.com/30luca1285-hue/hq-cervello/blob/main/docs/oliveto-strategie-2026-05-20.md" target="_blank" class="piano-footer-link">🔬 Strategie 2026-2030 (300KB, 150 fonti Perplexity)</a>
+      <a href="https://github.com/30luca1285-hue/hq-cervello/blob/main/docs/studio-oliveto.md" target="_blank" class="piano-footer-link">🌿 Studio Oliveto — agronomia base</a>
     </div>
   </div>
 </div>
@@ -806,8 +873,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.33';
-if (!location.search.includes('v=11.10')) { location.replace(location.pathname + '?v=11.10'); }
+const VERSION      = 'v11.34';
+if (!location.search.includes('v=11.34')) { location.replace(location.pathname + '?v=11.34'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -901,7 +968,7 @@ async function _flushQueue() {
   _updateOfflineBanner();
   toast('✅ Sincronizzazione completata!');
   const v = document.querySelector('.nav-item.active')?.dataset?.view;
-  if (v) ({overview:loadOverview,campi:loadCampi,lavorazioni:loadLav,costi:loadCosti,raccolta:loadRacc,entrate:loadEntrate,mosca:loadMosca})[v]?.();
+  if (v) ({overview:loadOverview,campi:loadCampi,lavorazioni:loadLav,costi:loadCosti,raccolta:loadRacc,entrate:loadEntrate,mosca:loadMosca,piano:loadPianoAgronomico})[v]?.();
 }
 
 // ============================================================
@@ -964,7 +1031,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
-      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate, mosca:loadMosca, amap:loadAmap})[el.dataset.view]?.();
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate, mosca:loadMosca, amap:loadAmap, piano:loadPianoAgronomico})[el.dataset.view]?.();
       closeSidebar();
     });
   });
@@ -2378,6 +2445,272 @@ function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// PIANO AGRONOMICO — calendario operativo biologico
+// Doc completo: HQ/docs/piano-agronomico-oliveto-bio.md
+// ============================================================
+const PIANO_AGRONOMICO = [
+  {
+    mese: 'Gennaio', num: 1, feno: 'Riposo vegetativo',
+    note: 'Max 4 kg/ha/anno di rame totali (Reg. UE 2018/848). Disinfettare attrezzi con alcool tra una pianta e l\'altra (rogna olivo).',
+    totale: '~5.000 €/anno (compost ammortizzato + rame)',
+    ops: [
+      { titolo: 'Potatura a secco (continua)', prod: 'Cesoie elettriche, scala. Fatta direttamente da Luca.', cost: 'Tempo Luca, no costo monetario',
+        lav: { tipo: 'Potatura', desc: 'Potatura a secco di produzione', prod: '', qty: 0, unit: 'h' } },
+      { titolo: 'Trattamento rame post-potatura', prod: 'Rame ossicloruro o poltiglia bordolese, <b>3 kg/ha</b> (72 kg totali). Entro 7 gg dalla potatura per cicatrizzare le ferite.', cost: '290-430 €/anno',
+        lav: { tipo: 'Trattamento', desc: 'Rame post-potatura (cicatrizzazione ferite)', prod: 'Rame ossicloruro', qty: 3, unit: 'kg/ha' } },
+      { titolo: 'Concimazione organica autunnale', prod: 'Compost maturo o letame, <b>20-30 t/ha</b> (480-720 t totali, distribuiti 3 anni).', cost: '3.200-4.800 €/anno (ammortizzato)',
+        lav: { tipo: 'Concimazione', desc: 'Compost/letame autunnale', prod: 'Compost maturo', qty: 25, unit: 't/ha' } },
+    ],
+  },
+  {
+    mese: 'Febbraio', num: 2, feno: 'Fine inverno (gemme che si gonfiano)',
+    note: 'Trattamento rame solo se piogge persistenti (occhio di pavone).',
+    totale: '~350-830 €',
+    ops: [
+      { titolo: 'Continua potatura secca (entro fine febbraio)', prod: 'Cesoie, scala. Fatta da Luca.', cost: 'Tempo Luca',
+        lav: { tipo: 'Potatura', desc: 'Potatura a secco', prod: '', qty: 0, unit: 'h' } },
+      { titolo: '2° trattamento rame se piogge', prod: 'Rame, <b>2-3 kg/ha</b>. Solo se umidità alta.', cost: '200-430 €',
+        lav: { tipo: 'Trattamento', desc: 'Rame anti-occhio di pavone', prod: 'Rame ossicloruro', qty: 2.5, unit: 'kg/ha' } },
+      { titolo: 'Analisi suolo annuale', prod: 'Campionamento 1-3 punti, invio laboratorio.', cost: '150-400 €/anno',
+        lav: { tipo: 'Analisi', desc: 'Analisi chimico-fisica suolo', prod: '', qty: 1, unit: 'pz' } },
+    ],
+  },
+  {
+    mese: 'Marzo', num: 3, feno: 'Ripresa vegetativa (gemme che si aprono)',
+    note: 'Fine potatura entro fine marzo. Se inerbimento eccessivo: lavorazione superficiale interfilari.',
+    totale: '~6.600-14.100 €',
+    ops: [
+      { titolo: 'Fine potatura (deadline inizio aprile)', prod: 'Ultima sessione potatura.', cost: 'Tempo Luca',
+        lav: { tipo: 'Potatura', desc: 'Fine potatura a secco', prod: '', qty: 0, unit: 'h' } },
+      { titolo: 'Trinciatura inerbimento (sovescio leguminose)', prod: 'Trinciatrice interfilare. Restituisce azoto al suolo.', cost: '60 €/ha × 24ha = ~1.440 €',
+        lav: { tipo: 'Lavorazione', desc: 'Trinciatura sovescio leguminose', prod: '', qty: 24, unit: 'ha' } },
+      { titolo: 'Concimazione di copertura', prod: 'Concime organico pelletato, <b>200-400 kg/ha</b> (4,8-9,6 t totali).', cost: '5.000-12.000 €',
+        lav: { tipo: 'Concimazione', desc: 'Concime organico di copertura', prod: 'Pellettato organico', qty: 300, unit: 'kg/ha' } },
+      { titolo: 'Installa trappole monitoraggio tignola', prod: 'Trappole feromone, <b>1-2/ha</b> (24-48 totali).', cost: '200-700 €',
+        lav: { tipo: 'Monitoraggio', desc: 'Installazione trappole tignola', prod: 'Trappole feromone Prays oleae', qty: 48, unit: 'pz' } },
+    ],
+  },
+  {
+    mese: 'Aprile', num: 4, feno: '🌱 MIGNOLATURA (infiorescenze chiuse)',
+    note: 'Bt va applicato la sera (UV lo degrada). Solo se infestazione conclamata su foglie.',
+    totale: '~1.700-2.400 €',
+    ops: [
+      { titolo: 'Trattamento Bt tignola fillofaga', prod: 'Bacillus thuringiensis, <b>0,5-1 kg/ha</b> (12-24 kg).', cost: '300-960 €',
+        lav: { tipo: 'Trattamento', desc: 'Bt anti-tignola fillofaga', prod: 'Bacillus thuringiensis', qty: 0.75, unit: 'kg/ha' } },
+      { titolo: '1° sfalcio inerbimento (leggero)', prod: 'Altezza taglio min. 7-8 cm.', cost: '1.440 €',
+        lav: { tipo: 'Lavorazione', desc: '1° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
+      { titolo: 'Monitoraggio mignolatura', prod: 'Conta infiorescenze su piante campione = potenziale produttivo.', cost: 'Tempo Luca',
+        lav: { tipo: 'Monitoraggio', desc: 'Conta mignole su piante campione', prod: '', qty: 0, unit: 'pz' } },
+    ],
+  },
+  {
+    mese: 'Maggio', num: 5, feno: '🌸 FIORITURA (10-15 giorni, oliveto bianco)',
+    note: '🚫 NESSUN trattamento durante fioritura (api e impollinatori). Pendolino fiorisce in anticipo rispetto a Picholine/Leccino.',
+    totale: '~1.700-2.400 €',
+    ops: [
+      { titolo: 'Monitoraggio tignola antofaga', prod: 'Trappole + osservazione fiori.', cost: 'Tempo Luca',
+        lav: { tipo: 'Monitoraggio', desc: 'Tignola antofaga (fiori)', prod: '', qty: 0, unit: 'pz' } },
+      { titolo: '2° sfalcio inerbimento', prod: 'Lasciare residuo come pacciamatura.', cost: '1.440 €',
+        lav: { tipo: 'Lavorazione', desc: '2° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
+      { titolo: 'Bt post-fioritura se serve', prod: 'Solo se trappole > soglia. <b>0,5-1 kg/ha</b>.', cost: '300-960 € (eventuale)',
+        lav: { tipo: 'Trattamento', desc: 'Bt post-fioritura tignola', prod: 'Bacillus thuringiensis', qty: 0.75, unit: 'kg/ha' } },
+    ],
+  },
+  {
+    mese: 'Giugno', num: 6, feno: '⭐ Allegagione + crescita drupa — MESE CHIAVE',
+    note: '⭐ MESE PIÙ IMPORTANTE: installa cattura massale mosca olearia + biostimolanti. Picholine/Pendolino: prioritari per irrigazione di soccorso.',
+    totale: '~3.200 €',
+    ops: [
+      { titolo: '🪰 INSTALLAZIONE Tap Trap cattura massale', prod: 'Tap Trap (Decostore.it), <b>60/ha = 1.440 trappole totali</b> + bicarbonato d\'ammonio 3% come esca.', cost: '~2.150 € (ammortizzato + esche + manodopera)',
+        lav: { tipo: 'Trattamento', desc: 'Installazione cattura massale mosca', prod: 'Tap Trap + bicarbonato ammonio 3%', qty: 1440, unit: 'pz' } },
+      { titolo: '🌱 MICOSAT F GO biostimolante', prod: 'CCS Aosta, <b>500 g/ha</b> in 100 L acqua, fertirrigazione. Funghi micorrizici + Trichoderma + Bacillus.', cost: '480 €/anno',
+        lav: { tipo: 'Trattamento', desc: 'Biostimolante MICOSAT F GO', prod: 'MICOSAT F GO CCS Aosta', qty: 0.5, unit: 'kg/ha' } },
+      { titolo: 'Potatura verde leggera', prod: 'Diradamento per luce centro pianta.', cost: 'Tempo Luca',
+        lav: { tipo: 'Potatura', desc: 'Potatura verde estiva', prod: '', qty: 0, unit: 'h' } },
+      { titolo: 'Irrigazione soccorso (se siccità >30gg)', prod: 'Goccia, <b>20-30 L/pianta/sett</b>. Priorità Picholine + Pendolino.', cost: 'Variabile',
+        lav: { tipo: 'Irrigazione', desc: 'Irrigazione soccorso parcelle sensibili', prod: '', qty: 25, unit: 'L/pianta' } },
+    ],
+  },
+  {
+    mese: 'Luglio', num: 7, feno: 'Crescita drupa (olive verdi sode)',
+    note: 'Caolino: lasciare 7-8 cm altezza minima sfalcio. Sole forte → tornare ogni 2 sett. con bicarbonato.',
+    totale: '~3.000 €',
+    ops: [
+      { titolo: '🪰 Monitoraggio trappole mosca settimanale', prod: 'Conteggio catture + valutazione soglia.', cost: 'Tempo Luca',
+        lav: { tipo: 'Monitoraggio', desc: 'Conta catture mosca olearia', prod: '', qty: 1440, unit: 'pz' } },
+      { titolo: '1° trattamento caolino (se pressione mosca alta)', prod: 'Caolino tipo Surround WP, <b>25 kg/ha</b> = 600 kg totali.', cost: '720 € caolino + 840 € distribuzione',
+        lav: { tipo: 'Trattamento', desc: '1° caolino anti-mosca', prod: 'Caolino Surround WP', qty: 25, unit: 'kg/ha' } },
+      { titolo: '3° sfalcio inerbimento', prod: 'Leggero, lasciare 7-8 cm.', cost: '1.440 €',
+        lav: { tipo: 'Lavorazione', desc: '3° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
+      { titolo: 'Ricarica esche bicarbonato', prod: 'Sostituzione bicarbonato 3% nelle Tap Trap.', cost: '~30 €',
+        lav: { tipo: 'Trattamento', desc: 'Ricarica esca bicarbonato Tap Trap', prod: 'Bicarbonato ammonio', qty: 15, unit: 'kg' } },
+    ],
+  },
+  {
+    mese: 'Agosto', num: 8, feno: '⚠️ Picco mosca olearia',
+    note: '⚠️ MESE CRITICO. Spinosad max 2/anno totali. Controllo trappole RAVVICINATO (2/settimana). Monitorare rame accumulato totale anno.',
+    totale: '~1.700-2.000 €',
+    ops: [
+      { titolo: '🪰 2° trattamento caolino', prod: '<b>25 kg/ha</b> se infestazione confermata (>5-10% olive con uova).', cost: '720 € + 840 € distribuzione',
+        lav: { tipo: 'Trattamento', desc: '2° caolino anti-mosca', prod: 'Caolino', qty: 25, unit: 'kg/ha' } },
+      { titolo: '🪰 Spinosad esca SE infestazione conclamata', prod: 'Esca (es. Tracer), <b>0,1-0,2 l/ha</b>. Max 2 trattamenti/anno totali (anche se mai usato prima).', cost: '100-300 € (se serve)',
+        lav: { tipo: 'Trattamento', desc: 'Spinosad esca antimosca', prod: 'Spinosad Tracer esca', qty: 0.15, unit: 'l/ha' } },
+      { titolo: 'Ricarica bicarbonato', prod: '~15 kg per ricarica.', cost: '30 €',
+        lav: { tipo: 'Trattamento', desc: 'Ricarica esche bicarbonato', prod: 'Bicarbonato ammonio', qty: 15, unit: 'kg' } },
+    ],
+  },
+  {
+    mese: 'Settembre', num: 9, feno: '⭐ INVAIATURA (cambio colore drupa)',
+    note: '⭐ DECISIONE: raccolta anticipata (DodiciOre, Mignola early) o continuare. Analisi pre-raccolta utile per polifenoli.',
+    totale: '~1.800-2.300 €',
+    ops: [
+      { titolo: 'Decisione raccolta anticipata', prod: 'Valutazione cultivar early: DodiciOre, Mignola, parte Picholine.', cost: 'Tempo Luca',
+        lav: { tipo: 'Monitoraggio', desc: 'Valutazione maturazione drupa', prod: '', qty: 0, unit: 'pz' } },
+      { titolo: '3° caolino se mosca ancora attiva', prod: 'Solo se monitoraggio dice sì.', cost: '1.560 € (se serve)',
+        lav: { tipo: 'Trattamento', desc: '3° caolino di sicurezza', prod: 'Caolino', qty: 25, unit: 'kg/ha' } },
+      { titolo: 'Contatto frantoio per prenotare slot', prod: 'Frantoio di fiducia, calendari ottobre-novembre.', cost: 'Telefonata',
+        lav: { tipo: 'Logistica', desc: 'Prenotazione slot frantoio', prod: '', qty: 0, unit: 'pz' } },
+      { titolo: 'Analisi pre-raccolta', prod: 'Campione olive: maturazione, polifenoli, acidità.', cost: '150-300 €',
+        lav: { tipo: 'Analisi', desc: 'Analisi pre-raccolta su drupa', prod: '', qty: 1, unit: 'pz' } },
+      { titolo: 'Pulizia attrezzi raccolta', prod: 'Cassette, ali raccolta, abbacchiatori elettrici.', cost: '200-500 €',
+        lav: { tipo: 'Lavorazione', desc: 'Manutenzione attrezzi raccolta', prod: '', qty: 0, unit: 'pz' } },
+    ],
+  },
+  {
+    mese: 'Ottobre', num: 10, feno: '🍇 RACCOLTA inizio (cultivar early)',
+    note: '⭐ MESE PIENO. DodiciOre entro 12h al frantoio. Inerbimento: seminare dopo prime piogge autunnali.',
+    totale: '~4.500-10.000 € (inerbimento one-time)',
+    ops: [
+      { titolo: '🍇 Raccolta cultivar early (Mignola, Picholine, DodiciOre)', prod: 'Abbacchiatori elettrici, ali, cassette.', cost: 'Gestione separata',
+        lav: { tipo: 'Raccolta', desc: 'Raccolta cultivar early', prod: '', qty: 0, unit: 'q' } },
+      { titolo: 'Trasporto frantoio (DodiciOre entro 12h)', prod: 'Logistica trasporto.', cost: 'Gestione separata',
+        lav: { tipo: 'Logistica', desc: 'Trasporto olive al frantoio', prod: '', qty: 0, unit: 'q' } },
+      { titolo: 'Stoccaggio acciaio inox + azoto (DodiciOre)', prod: 'Sotto azoto inerte per preservare polifenoli.', cost: 'Già attivo',
+        lav: { tipo: 'Stoccaggio', desc: 'Stoccaggio olio nuovo sotto azoto', prod: '', qty: 0, unit: 'l' } },
+      { titolo: '🪰 Rimozione trappole mosca fine mese', prod: 'Smontaggio Tap Trap, pulizia.', cost: 'Tempo Luca',
+        lav: { tipo: 'Lavorazione', desc: 'Rimozione trappole mosca a fine stagione', prod: '', qty: 1440, unit: 'pz' } },
+      { titolo: '🌱 SEMINA INERBIMENTO (post-piogge)', prod: 'Miscuglio Trifolium subterraneum + Medicago polymorpha + Lolium + Festuca arundinacea. <b>40-60 kg/ha</b> (960-1.440 kg totali). Fornitori: Padana Sementi, Peragrosementi.', cost: '2.880-7.200 € (semente) + 1.680-3.600 € (lavorazione+semina)',
+        lav: { tipo: 'Semina', desc: 'Semina inerbimento permanente', prod: 'Miscuglio leguminose + graminacee', qty: 50, unit: 'kg/ha' } },
+    ],
+  },
+  {
+    mese: 'Novembre', num: 11, feno: 'Raccolta cultivar tardive',
+    note: 'Rame post-raccolta = preventivo per inverno (occhio di pavone). Inerbimento appena nato: monitorare.',
+    totale: '~200-430 €',
+    ops: [
+      { titolo: '🍇 Raccolta cultivar tardive (Leccino, Raggia, Piantone di Mogliano)', prod: 'Continua dalle parcelle non ancora raccolte.', cost: 'Gestione separata',
+        lav: { tipo: 'Raccolta', desc: 'Raccolta cultivar tardive', prod: '', qty: 0, unit: 'q' } },
+      { titolo: 'Imbottigliamento parziale prime cultivar', prod: 'Olio nuovo già decantato dall\'ottobre.', cost: 'Gestione separata',
+        lav: { tipo: 'Imbottigliamento', desc: 'Imbottigliamento prime cultivar', prod: '', qty: 0, unit: 'l' } },
+      { titolo: 'Trattamento rame post-raccolta', prod: 'Rame, <b>2-3 kg/ha</b> (preventivo invernale).', cost: '200-430 €',
+        lav: { tipo: 'Trattamento', desc: 'Rame post-raccolta preventivo', prod: 'Rame ossicloruro', qty: 2.5, unit: 'kg/ha' } },
+    ],
+  },
+  {
+    mese: 'Dicembre', num: 12, feno: 'Fine raccolta + inizio potatura + bilancio',
+    note: 'Bilancio stagione: resa €/q, qualità olio (analisi chimico-sensoriale), performance per cultivar. Concimazione autunnale fondamentale per anno successivo.',
+    totale: '~7.500-15.000 €',
+    ops: [
+      { titolo: '🍇 Fine raccolta (entro inizio dicembre)', prod: 'Ultime parcelle.', cost: 'Gestione separata',
+        lav: { tipo: 'Raccolta', desc: 'Fine raccolta', prod: '', qty: 0, unit: 'q' } },
+      { titolo: '🌳 INIZIO potatura secca (fine dicembre)', prod: 'Inizio nuovo ciclo annuale.', cost: 'Tempo Luca',
+        lav: { tipo: 'Potatura', desc: 'Inizio potatura a secco', prod: '', qty: 0, unit: 'h' } },
+      { titolo: '💩 Concimazione organica autunnale', prod: 'Compost o letame maturo, <b>20-30 t/ha</b> (200 t/anno ammortizzato).', cost: '6.000-12.000 €',
+        lav: { tipo: 'Concimazione', desc: 'Compost/letame maturo autunnale', prod: 'Compost maturo', qty: 25, unit: 't/ha' } },
+      { titolo: '🛠️ Manutenzione attrezzi', prod: 'Abbacchiatori, ali raccolta, cesoie, trinciatrice.', cost: '300-600 €',
+        lav: { tipo: 'Lavorazione', desc: 'Manutenzione attrezzi fine stagione', prod: '', qty: 0, unit: 'pz' } },
+      { titolo: '📊 Bilancio stagione', prod: 'Analisi €/q, qualità olio, performance cultivar.', cost: 'Tempo Luca',
+        lav: { tipo: 'Analisi', desc: 'Bilancio annuale produzione e qualità', prod: '', qty: 0, unit: 'pz' } },
+    ],
+  },
+];
+
+function loadPianoAgronomico() {
+  const container = document.getElementById('piano-cards');
+  if (!container) return;
+  const meseCorrente = new Date().getMonth() + 1; // 1-12
+  let html = '';
+  // Riordino: mese corrente in cima, poi successivi, poi precedenti
+  const meseOrdinati = [
+    ...PIANO_AGRONOMICO.filter(m => m.num >= meseCorrente),
+    ...PIANO_AGRONOMICO.filter(m => m.num < meseCorrente),
+  ];
+  meseOrdinati.forEach((m, idx) => {
+    const isCorrente = m.num === meseCorrente;
+    const aperto = isCorrente ? 'open' : '';
+    html += `<div class="piano-mese ${isCorrente ? 'current' : ''} ${aperto}" data-mese="${m.num}">
+      <div class="piano-mese-hd" onclick="this.parentNode.classList.toggle('open')">
+        <div class="piano-mese-titolo">
+          <div class="piano-mese-num">${m.num}</div>
+          <div>
+            <div class="piano-mese-nome">${m.mese}${isCorrente ? ' · OGGI' : ''}</div>
+            <div class="piano-mese-feno">${m.feno}</div>
+          </div>
+        </div>
+        <div class="piano-mese-chev">▶</div>
+      </div>
+      <div class="piano-mese-body">`;
+    m.ops.forEach((op, opIdx) => {
+      html += `<div class="piano-op">
+        <div class="piano-op-titolo"><span class="op-num">${opIdx+1}</span><span>${op.titolo}</span></div>
+        <div class="piano-op-prod">${op.prod}</div>
+        ${op.cost ? `<div class="piano-op-cost">💰 ${op.cost}</div>` : ''}
+        <div class="piano-op-btns">
+          <button class="piano-op-btn" onclick='pianoAddLav(${JSON.stringify(op.lav).replace(/'/g,"\\'")})'>📝 Lavorazione</button>
+          <button class="piano-op-btn alt" onclick='pianoAddAppunto(${JSON.stringify({tipo: m.mese + ' — ' + op.titolo}).replace(/'/g,"\\'")})'>📓 Appunto</button>
+        </div>
+      </div>`;
+    });
+    if (m.note) html += `<div class="piano-mese-note">⚠️ ${m.note}</div>`;
+    if (m.totale) html += `<div class="piano-mese-totale">Totale stimato mese: ${m.totale}</div>`;
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function pianoToggleAll() {
+  const meseEls = document.querySelectorAll('.piano-mese');
+  const allOpen = Array.from(meseEls).every(el => el.classList.contains('open'));
+  meseEls.forEach(el => allOpen ? el.classList.remove('open') : el.classList.add('open'));
+  const btn = document.getElementById('piano-toggle-btn');
+  if (btn) btn.textContent = allOpen ? 'Espandi tutti' : 'Comprimi tutti';
+}
+
+function pianoAddLav(precompilato) {
+  // Apre il modal Lavorazioni precompilando i campi
+  if (typeof openLavModal === 'function') {
+    openLavModal();
+    // Aspetta che il modal sia aperto e precompila
+    setTimeout(() => {
+      const today = new Date().toISOString().slice(0,10);
+      const setIf = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      setIf('lav-data', today);
+      setIf('lav-tipo', precompilato.tipo);
+      setIf('lav-desc', precompilato.desc);
+      setIf('lav-prod', precompilato.prod);
+      setIf('lav-qty', precompilato.qty);
+      setIf('lav-unit', precompilato.unit);
+    }, 80);
+  } else {
+    toast('Modal Lavorazione non disponibile');
+  }
+}
+
+function pianoAddAppunto(precompilato) {
+  // Apre modal Appunto (se esiste) o fallback su Lavorazione
+  if (typeof openAppuntoModal === 'function') {
+    openAppuntoModal();
+    setTimeout(() => {
+      const ta = document.getElementById('app-testo');
+      if (ta) ta.value = precompilato.tipo + ': ';
+      if (ta) ta.focus();
+    }, 80);
+  } else {
+    toast('Modal Appunto non disponibile — usa Lavorazione');
+  }
 }
 </script>
 </body>
