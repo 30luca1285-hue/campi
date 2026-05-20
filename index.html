@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.35</title>
+<title>Gestione Oliveto v11.36</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -258,10 +258,16 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 .piano-op-btn.alt{background:#fff;color:var(--green-dark);border:1px solid var(--green)}
 .piano-mese-note{margin-top:10px;padding:9px 11px;background:#fef7e0;border-left:3px solid #d97706;border-radius:6px;font-size:.74rem;color:#78350f;line-height:1.45}
 .piano-mese-totale{margin-top:10px;padding-top:9px;border-top:1px dashed var(--border);font-size:.78rem;color:var(--green-dark);font-weight:700;text-align:right}
-.piano-footer{margin-top:22px;background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border)}
-.piano-footer-title{font-size:.82rem;font-weight:700;margin-bottom:9px;color:var(--green-dark)}
-.piano-footer-link{display:block;padding:7px 0;font-size:.78rem;color:var(--green);font-weight:500}
-.piano-footer-link:hover{text-decoration:underline}
+.piano-footer{margin-top:22px;background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.piano-footer-title{font-size:.92rem;font-weight:700;margin-bottom:12px;color:var(--green-dark)}
+.piano-ref{padding:10px 0;border-bottom:1px solid var(--border)}
+.piano-ref:last-of-type{border-bottom:none}
+.piano-ref-titolo{font-size:.86rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.piano-ref-desc{font-size:.78rem;color:var(--muted);line-height:1.5}
+.piano-ref-desc em{font-style:italic;color:var(--text)}
+.piano-ref-note{margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:.74rem;color:var(--muted);line-height:1.5}
+.piano-ref-note code{background:#fff;padding:1px 5px;border-radius:3px;font-size:.72rem;color:var(--green-dark);border:1px solid var(--border)}
+.piano-op-ref{margin-left:30px;margin-top:5px;font-size:.7rem;color:var(--green-dark);font-style:italic;background:#eef7f0;padding:5px 8px;border-radius:5px;border-left:2px solid var(--green)}
 
 /* FOTO FATTURA (costo) */
 .foto-area{border:2px dashed var(--border);border-radius:10px;overflow:hidden;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:center;background:var(--bg);margin-bottom:6px;transition:border-color .15s}
@@ -640,10 +646,26 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     </div>
     <div id="piano-cards" class="piano-grid"></div>
     <div class="piano-footer">
-      <div class="piano-footer-title">📚 Risorse complete</div>
-      <a href="https://github.com/30luca1285-hue/hq-cervello/blob/main/docs/piano-agronomico-oliveto-bio.md" target="_blank" class="piano-footer-link">📖 Piano Agronomico completo (Markdown)</a>
-      <a href="https://github.com/30luca1285-hue/hq-cervello/blob/main/docs/oliveto-strategie-2026-05-20.md" target="_blank" class="piano-footer-link">🔬 Strategie 2026-2030 (300KB, 150 fonti Perplexity)</a>
-      <a href="https://github.com/30luca1285-hue/hq-cervello/blob/main/docs/studio-oliveto.md" target="_blank" class="piano-footer-link">🌿 Studio Oliveto — agronomia base</a>
+      <div class="piano-footer-title">📚 Riferimenti scientifici</div>
+      <div class="piano-ref">
+        <div class="piano-ref-titolo">📖 Alfei B. & Pannelli G. (CREA Pesaro)</div>
+        <div class="piano-ref-desc"><em>Catalogo Biodiversità Agraria Marche</em> (2001) e successivi studi. Riferimento autorevole per olivicoltura marchigiana, cultivar autoctone (Mignola riconosciuta come patrimonio genetico prioritario), ciclo fenologico zona Conero, gestione bio. Libri cartacei in archivio aziendale.</div>
+      </div>
+      <div class="piano-ref">
+        <div class="piano-ref-titolo">🏛️ CREA Olivicoltura Italia · AIAB Marche</div>
+        <div class="piano-ref-desc">Linee guida nazionali biologico (Reg. UE 2018/848), disciplinari produzione, protocolli rame/zolfo, gestione mosca olearia.</div>
+      </div>
+      <div class="piano-ref">
+        <div class="piano-ref-titolo">🔬 Perplexity Deep Research — 150 fonti scientifiche</div>
+        <div class="piano-ref-desc">Ricerca multilingue (IT/EN/ES) su biostimolanti microbici, cambiamento climatico, cattura massale mosca, inerbimento permanente. Maggio 2026.</div>
+      </div>
+      <div class="piano-ref">
+        <div class="piano-ref-titolo">📰 teatronaturale.it · AMAP Marche</div>
+        <div class="piano-ref-desc">Aggiornamenti settimanali su novità scientifiche, bollettini fitosanitari regionali, monitoraggio mosca rete trappole.</div>
+      </div>
+      <div class="piano-ref-note">
+        💾 Documenti completi nel sistema HQ aziendale (privato): <code>HQ/docs/piano-agronomico-oliveto-bio.md</code>, <code>HQ/docs/studio-oliveto.md</code>, <code>HQ/docs/oliveto-strategie-2026-05-20.md</code>
+      </div>
     </div>
   </div>
 </div>
@@ -885,8 +907,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.35';
-if (!location.search.includes('v=11.35')) { location.replace(location.pathname + '?v=11.35'); }
+const VERSION      = 'v11.36';
+if (!location.search.includes('v=11.36')) { location.replace(location.pathname + '?v=11.36'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2470,10 +2492,13 @@ const PIANO_AGRONOMICO = [
     totale: '~5.000 €/anno (compost ammortizzato + rame)',
     ops: [
       { titolo: 'Potatura a secco (continua)', prod: 'Cesoie elettriche, scala. Fatta direttamente da Luca.', cost: 'Tempo Luca, no costo monetario',
+        ref: '📖 Alfei/Pannelli: in zona Conero la potatura va completata entro fine febbraio, prima della ripresa vegetativa.',
         lav: { tipo: 'Potatura', desc: 'Potatura a secco di produzione', prod: '', qty: 0, unit: 'h' } },
       { titolo: 'Trattamento rame post-potatura', prod: 'Rame ossicloruro o poltiglia bordolese, <b>3 kg/ha</b> (72 kg totali). Entro 7 gg dalla potatura per cicatrizzare le ferite.', cost: '290-430 €/anno',
+        ref: '📖 CREA: il rame oltre 4 kg/ha/anno cumula nel suolo come metallo pesante. Dose minima efficace.',
         lav: { tipo: 'Trattamento', desc: 'Rame post-potatura (cicatrizzazione ferite)', prod: 'Rame ossicloruro', qty: 3, unit: 'kg/ha' } },
       { titolo: 'Concimazione organica autunnale', prod: 'Compost maturo o letame, <b>20-30 t/ha</b> (480-720 t totali, distribuiti 3 anni).', cost: '3.200-4.800 €/anno (ammortizzato)',
+        ref: '📖 Pannelli: per oliveti collinari marchigiani, compost vegetale preferibile a letame puro (rischio salinità).',
         lav: { tipo: 'Concimazione', desc: 'Compost/letame autunnale', prod: 'Compost maturo', qty: 25, unit: 't/ha' } },
     ],
   },
@@ -2507,14 +2532,16 @@ const PIANO_AGRONOMICO = [
   },
   {
     mese: 'Aprile', num: 4, feno: '🌱 MIGNOLATURA (infiorescenze chiuse)',
-    note: 'Bt va applicato la sera (UV lo degrada). Solo se infestazione conclamata su foglie.',
+    note: 'Bt va applicato la sera (UV lo degrada). Solo se infestazione conclamata su foglie. ⚠️ Attenzione terminologia: le mignole NON sono fiori, sono infiorescenze chiuse PRIMA della fioritura.',
     totale: '~1.700-2.400 €',
     ops: [
       { titolo: 'Trattamento Bt tignola fillofaga', prod: 'Bacillus thuringiensis, <b>0,5-1 kg/ha</b> (12-24 kg).', cost: '300-960 €',
+        ref: '📖 Pannelli: la tignola fillofaga ha 3 cicli/anno, il primo a marzo-aprile sulle foglie giovani.',
         lav: { tipo: 'Trattamento', desc: 'Bt anti-tignola fillofaga', prod: 'Bacillus thuringiensis', qty: 0.75, unit: 'kg/ha' } },
       { titolo: '1° sfalcio inerbimento (leggero)', prod: 'Altezza taglio min. 7-8 cm.', cost: '1.440 €',
         lav: { tipo: 'Lavorazione', desc: '1° sfalcio inerbimento', prod: '', qty: 24, unit: 'ha' } },
       { titolo: 'Monitoraggio mignolatura', prod: 'Conta infiorescenze su piante campione = potenziale produttivo.', cost: 'Tempo Luca',
+        ref: '📖 Alfei: nelle Marche la mignolatura cade aprile-maggio, fioritura entro fine maggio-inizio giugno. Anticipo di 7-10 gg negli ultimi anni per riscaldamento.',
         lav: { tipo: 'Monitoraggio', desc: 'Conta mignole su piante campione', prod: '', qty: 0, unit: 'pz' } },
     ],
   },
@@ -2576,10 +2603,11 @@ const PIANO_AGRONOMICO = [
   },
   {
     mese: 'Settembre', num: 9, feno: '⭐ INVAIATURA (cambio colore drupa)',
-    note: '⭐ DECISIONE: raccolta anticipata (DodiciOre, Mignola early) o continuare. Analisi pre-raccolta utile per polifenoli.',
+    note: '⭐ DECISIONE: raccolta anticipata (DodiciOre, Mignola early) o continuare. Analisi pre-raccolta utile per polifenoli. 📖 Alfei: a Castelfidardo invaiatura inizia a SETTEMBRE (non ottobre come in altre zone).',
     totale: '~1.800-2.300 €',
     ops: [
       { titolo: 'Decisione raccolta anticipata', prod: 'Valutazione cultivar early: DodiciOre, Mignola, parte Picholine.', cost: 'Tempo Luca',
+        ref: '📖 Alfei/Pannelli: il rapporto polifenoli/resa olio è ottimale alla fine dell\'invaiatura (50% drupe colorate). Anticipare = più polifenoli, posticipare = più olio.',
         lav: { tipo: 'Monitoraggio', desc: 'Valutazione maturazione drupa', prod: '', qty: 0, unit: 'pz' } },
       { titolo: '3° caolino se mosca ancora attiva', prod: 'Solo se monitoraggio dice sì.', cost: '1.560 € (se serve)',
         lav: { tipo: 'Trattamento', desc: '3° caolino di sicurezza', prod: 'Caolino', qty: 25, unit: 'kg/ha' } },
@@ -2593,10 +2621,11 @@ const PIANO_AGRONOMICO = [
   },
   {
     mese: 'Ottobre', num: 10, feno: '🍇 RACCOLTA inizio (cultivar early)',
-    note: '⭐ MESE PIENO. DodiciOre entro 12h al frantoio. Inerbimento: seminare dopo prime piogge autunnali.',
+    note: '⭐ MESE PIENO. DodiciOre entro 12h al frantoio. Inerbimento: seminare dopo prime piogge autunnali. 📖 Alfei: raccolta marchigiana va da ottobre (Mignola precoce) a dicembre (Leccino tardivo) — finestra di 2 mesi.',
     totale: '~4.500-10.000 € (inerbimento one-time)',
     ops: [
       { titolo: '🍇 Raccolta cultivar early (Mignola, Picholine, DodiciOre)', prod: 'Abbacchiatori elettrici, ali, cassette.', cost: 'Gestione separata',
+        ref: '📖 Alfei: la Mignola è cultivar autoctona marchigiana del 1807 (Gallesio), riconosciuta da Catalogo Biodiversità Marche 2001 come patrimonio genetico prioritario.',
         lav: { tipo: 'Raccolta', desc: 'Raccolta cultivar early', prod: '', qty: 0, unit: 'q' } },
       { titolo: 'Trasporto frantoio (DodiciOre entro 12h)', prod: 'Logistica trasporto.', cost: 'Gestione separata',
         lav: { tipo: 'Logistica', desc: 'Trasporto olive al frantoio', prod: '', qty: 0, unit: 'q' } },
@@ -2670,6 +2699,7 @@ function loadPianoAgronomico() {
         <div class="piano-op-titolo"><span class="op-num">${opIdx+1}</span><span>${op.titolo}</span></div>
         <div class="piano-op-prod">${op.prod}</div>
         ${op.cost ? `<div class="piano-op-cost">💰 ${op.cost}</div>` : ''}
+        ${op.ref ? `<div class="piano-op-ref">${op.ref}</div>` : ''}
         <div class="piano-op-btns">
           <button class="piano-op-btn" onclick='pianoAddLav(${JSON.stringify(op.lav).replace(/'/g,"\\'")})'>📝 Lavorazione</button>
           <button class="piano-op-btn alt" onclick='pianoAddAppunto(${JSON.stringify({tipo: m.mese + ' — ' + op.titolo}).replace(/'/g,"\\'")})'>📓 Appunto</button>
