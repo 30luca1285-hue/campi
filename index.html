@@ -105,7 +105,13 @@ input[readonly]{background:var(--bg)}
 /* MODAL */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:100}
 .ov.open{display:flex}
-.modal{background:#fff;border-radius:14px;width:500px;max-width:96vw;max-height:93vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal{background:#fff;border-radius:14px;width:500px;max-width:96vw;max-height:93vh;overflow-y:auto;overflow-x:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);box-sizing:border-box}
+.modal *{box-sizing:border-box;max-width:100%}
+.modal input,.modal select,.modal textarea{max-width:100%}
+.rh-campo-row{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--border);font-size:.88rem;min-width:0}
+.rh-campo-row>input[type=checkbox]{flex-shrink:0;width:20px;height:20px;margin:0}
+.rh-campo-row>.name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-campo-row>.ha{flex-shrink:0;color:var(--muted);font-variant-numeric:tabular-nums}
 .mh{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
 .mh h3{font-size:.9rem;font-weight:700}
 .mb{padding:20px}
@@ -810,9 +816,10 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fg">
         <label>Tipo registrazione *</label>
         <select id="rh-tipo-reg" onchange="updateRipartHaForm()">
-          <option value="lavorazione">Lavorazione terzista (servizio agronomico, es. trattamento)</option>
-          <option value="costo">Costo diretto (fatture, manodopera diretta)</option>
+          <option value="lavorazione">Lavorazione terzista</option>
+          <option value="costo">Costo diretto</option>
         </select>
+        <small style="display:block;color:var(--muted);font-size:.72rem;margin-top:3px" id="rh-tipo-help">Servizio agronomico fatto da terzista (es. trattamento, potatura)</small>
       </div>
       <div class="fr"><div class="fg"><label>Data *</label><input id="rh-data" type="date"></div>
       <div class="fg">
@@ -981,7 +988,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.41';
+const VERSION      = 'v11.42';
 if (!location.search.includes('v=11.39')) { location.replace(location.pathname + '?v=11.39'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1715,6 +1722,9 @@ function updateRipartHaForm() {
   document.getElementById('rh-cat-cos').style.display = isLav ? 'none' : '';
   document.getElementById('rh-forn-label').textContent = isLav ? 'Operatore/Terzista' : 'Fornitore';
   document.getElementById('rh-prod-wrap').style.display = isLav ? '' : 'none';
+  document.getElementById('rh-tipo-help').textContent = isLav
+    ? 'Servizio agronomico fatto da terzista (es. trattamento, potatura)'
+    : 'Fattura o manodopera diretta non legata a una lavorazione specifica';
 }
 
 function openRipartHaModal() {
@@ -1735,10 +1745,10 @@ function openRipartHaModal() {
       const ha = parseFloat(c.ettari) || 0;
       const checked = ha > 0 ? 'checked' : '';
       const disabled = ha > 0 ? '' : 'disabled';
-      return `<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--border);font-size:.88rem;${ha>0?'':'opacity:.4'}">
+      return `<label class="rh-campo-row" style="${ha>0?'':'opacity:.4'}">
         <input type="checkbox" class="rh-cb" data-nome="${c.nome.replace(/"/g,'&quot;')}" data-ha="${ha}" ${checked} ${disabled} onchange="renderRipartHaPreview()">
-        <span style="flex:1"><strong>${c.nome}</strong></span>
-        <span style="color:var(--muted)">${ha ? ha+' ha' : '— no ettari'}</span>
+        <span class="name"><strong>${c.nome}</strong></span>
+        <span class="ha">${ha ? ha+' ha' : '— no ettari'}</span>
       </label>`;
     }).join('');
   }
