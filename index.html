@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.37</title>
+<title>Gestione Oliveto v11.40</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -425,7 +425,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 <nav class="sidebar">
   <div class="logo">
     <div class="logo-title">Gestione Oliveto</div>
-    <div class="logo-sub" style="margin-top:3px">Pannello di controllo</div>
+    <div class="logo-sub" style="margin-top:3px">Pannello di controllo · <span id="version-tag">v11.40</span></div>
   </div>
   <div class="nav">
     <div class="nav-item active" data-view="overview"><span class="nav-ic">📊</span>Overview</div>
@@ -525,7 +525,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 
 <!-- COSTI -->
 <div id="view-costi" class="view">
-  <div class="ph"><h2>Costi</h2><div style="display:flex;gap:8px"><button class="btn btn-s" onclick="openRipartModal()">⚖️ Ripartisci Prodotto</button><button class="btn btn-p" onclick="openCostoModal()">+ Nuovo Costo</button></div></div>
+  <div class="ph"><h2>Costi</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-s" onclick="openRipartModal()">⚖️ Ripartisci Prodotto</button><button class="btn btn-s" onclick="openRipartHaModal()">📐 Ripartisci per Ettari</button><button class="btn btn-p" onclick="openCostoModal()">+ Nuovo Costo</button></div></div>
   <div class="pb"><div class="tw">
     <div class="tb-bar">
       <div class="fb">
@@ -763,7 +763,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
           <img id="costo-foto-preview" style="display:none" alt="anteprima fattura">
           <div id="costo-foto-ph" class="foto-ph">📎 Tocca per allegare foto fattura</div>
         </div>
-        <input type="file" id="costo-foto-file" accept="image/*" capture="environment" style="display:none" onchange="onCostoFotoSelected(this)">
+        <input type="file" id="costo-foto-file" accept="image/*" style="display:none" onchange="onCostoFotoSelected(this)">
         <div id="costo-foto-link" style="display:none;font-size:.74rem;margin-top:3px">
           <a id="costo-foto-link-a" href="" target="_blank" style="color:var(--green);font-weight:600">📎 Visualizza fattura esistente ↗</a>
           <span style="color:var(--muted)"> · seleziona nuova immagine per sostituirla</span>
@@ -793,7 +793,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
           <img id="ripart-foto-preview" style="display:none" alt="anteprima fattura">
           <div id="ripart-foto-ph" class="foto-ph">📎 Tocca per allegare foto fattura</div>
         </div>
-        <input type="file" id="ripart-foto-file" accept="image/*" capture="environment" style="display:none" onchange="onRipartFotoSelected(this)">
+        <input type="file" id="ripart-foto-file" accept="image/*" style="display:none" onchange="onRipartFotoSelected(this)">
       </div>
       <div id="ripart-preview"></div>
     </div>
@@ -802,6 +802,37 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 </div>
 
 <!-- MODAL RIPARTISCI SU LAVORAZIONI -->
+<!-- MODAL RIPARTIZIONE PER ETTARI -->
+<div id="m-ripart-ha" class="ov">
+  <div class="modal">
+    <div class="mh"><h3>Ripartisci Costo per Ettari</h3><button class="btn-ic" onclick="cm('m-ripart-ha')">✕</button></div>
+    <div class="mb">
+      <div class="fr"><div class="fg"><label>Data *</label><input id="rh-data" type="date"></div>
+      <div class="fg"><label>Categoria *</label>
+        <select id="rh-cat">
+          <option>Manodopera</option><option>Carburante</option><option>Macchinari / Attrezzature</option>
+          <option>Concimi / Fertilizzanti</option><option>Prodotti Fitosanitari</option>
+          <option>Affitto</option><option>Altro</option>
+        </select></div></div>
+      <div class="fg"><label>Descrizione *</label><input id="rh-desc" placeholder="es. Potatura primavera 2026"></div>
+      <div class="fr"><div class="fg"><label>Fornitore</label><input id="rh-forn" placeholder="es. Cooperativa X"></div>
+      <div class="fg"><label>Costo Totale € *</label><input id="rh-tot" type="number" step="0.01" placeholder="0.00" oninput="renderRipartHaPreview()"></div></div>
+      <label style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block">Campi da coinvolgere (preselezionati quelli con ettari)</label>
+      <div id="rh-campi-list"></div>
+      <div class="fg" style="margin-top:14px">
+        <label>Foto ricevuta (opzionale)</label>
+        <div class="foto-area" onclick="document.getElementById('rh-foto-file').click()">
+          <img id="rh-foto-preview" style="display:none" alt="anteprima ricevuta">
+          <div id="rh-foto-ph" class="foto-ph">📎 Tocca per allegare foto ricevuta</div>
+        </div>
+        <input type="file" id="rh-foto-file" accept="image/*" style="display:none" onchange="onRipartHaFotoSelected(this)">
+      </div>
+      <div id="rh-preview"></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-ripart-ha')">Annulla</button><button class="btn btn-p" id="rh-save-btn" onclick="saveRipartHa()">Salva per campi selezionati</button></div>
+  </div>
+</div>
+
 <div id="m-ripartisci-lav" class="ov">
   <div class="modal">
     <div class="mh"><h3>Ripartisci su Lavorazioni</h3><button class="btn-ic" onclick="cm('m-ripartisci-lav')">✕</button></div>
@@ -847,7 +878,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
         <img id="ap-photo-preview" style="display:none" alt="anteprima">
         <div id="ap-photo-placeholder" class="cap-photo-ph"><span>📷</span><p>Tocca per scattare / scegliere foto</p></div>
       </div>
-      <input type="file" id="ap-file" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(this)">
+      <input type="file" id="ap-file" accept="image/*" style="display:none" onchange="onPhotoSelected(this)">
       <div class="cap-gps-row" id="ap-gps-info" style="color:var(--muted)">📍 Acquisendo posizione...</div>
       <label style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block">Voce → Testo</label>
       <button type="button" class="mic-btn" id="mic-btn" onclick="toggleVoice()">🎙️ Tocca per dettare</button>
@@ -935,7 +966,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.39';
+const VERSION      = 'v11.40';
 if (!location.search.includes('v=11.39')) { location.replace(location.pathname + '?v=11.39'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1082,6 +1113,10 @@ const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[], mosca:[
 // INIT & NAV
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
+  // Sync version display + title da costante VERSION (single source of truth)
+  const vTag = document.getElementById('version-tag');
+  if (vTag) vTag.textContent = VERSION;
+  document.title = 'Gestione Oliveto ' + VERSION;
   checkAuth();
   window.addEventListener('online',  () => { _updateOfflineBanner(); _flushQueue(); });
   window.addEventListener('offline', () => { _updateOfflineBanner(); });
@@ -1650,6 +1685,132 @@ async function saveRipart() {
     cm('m-ripart'); loadCosti(); toast('✅ Costi ripartiti su ' + entries.length + ' campi!');
   } catch(e) { toast('Errore nel salvataggio'); }
   finally { btn.disabled = false; btn.textContent = 'Salva per tutti i campi'; }
+}
+
+// ============================================================
+// RIPARTIZIONE PER ETTARI
+// ============================================================
+let _ripartHaFotoData = null;
+
+function openRipartHaModal() {
+  _ripartHaFotoData = null;
+  document.getElementById('rh-foto-preview').style.display = 'none';
+  document.getElementById('rh-foto-ph').style.display = '';
+  document.getElementById('rh-foto-file').value = '';
+  document.getElementById('rh-preview').innerHTML = '';
+  sv({'rh-data': today(), 'rh-desc': '', 'rh-forn': '', 'rh-tot': '', 'rh-cat': 'Manodopera'});
+
+  // Render lista campi con checkbox (preselezionati se ettari > 0)
+  const campi = (S.campi || []).filter(c => c.nome);
+  if (!campi.length) {
+    document.getElementById('rh-campi-list').innerHTML = '<p style="color:var(--muted);font-size:.85rem">Nessun campo registrato.</p>';
+  } else {
+    document.getElementById('rh-campi-list').innerHTML = campi.map(c => {
+      const ha = parseFloat(c.ettari) || 0;
+      const checked = ha > 0 ? 'checked' : '';
+      const disabled = ha > 0 ? '' : 'disabled';
+      return `<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--border);font-size:.88rem;${ha>0?'':'opacity:.4'}">
+        <input type="checkbox" class="rh-cb" data-nome="${c.nome.replace(/"/g,'&quot;')}" data-ha="${ha}" ${checked} ${disabled} onchange="renderRipartHaPreview()">
+        <span style="flex:1"><strong>${c.nome}</strong></span>
+        <span style="color:var(--muted)">${ha ? ha+' ha' : '— no ettari'}</span>
+      </label>`;
+    }).join('');
+  }
+
+  renderRipartHaPreview();
+  om('m-ripart-ha');
+}
+
+function onRipartHaFotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  resizeImage(file).then(b64 => {
+    _ripartHaFotoData = b64;
+    const prev = document.getElementById('rh-foto-preview');
+    prev.src = b64; prev.style.display = 'block';
+    document.getElementById('rh-foto-ph').style.display = 'none';
+  }).catch(() => toast('Errore caricamento foto'));
+}
+
+function renderRipartHaPreview() {
+  const div = document.getElementById('rh-preview');
+  const tot = parseFloat(gv('rh-tot')) || 0;
+  const cbs = Array.from(document.querySelectorAll('.rh-cb:checked'));
+  if (!cbs.length) {
+    div.innerHTML = '<p style="color:var(--orange);font-size:.85rem;margin-top:10px">Seleziona almeno un campo</p>';
+    return;
+  }
+  const totHa = cbs.reduce((s, cb) => s + (parseFloat(cb.dataset.ha) || 0), 0);
+  if (totHa === 0) {
+    div.innerHTML = '<p style="color:var(--orange);font-size:.85rem;margin-top:10px">I campi selezionati non hanno ettari registrati</p>';
+    return;
+  }
+  const costoHa = tot ? (tot / totHa) : 0;
+  div.innerHTML = `
+    <div style="margin-top:14px;font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.04em">RIPARTIZIONE — ${totHa.toFixed(2)} ha totali · ${tot?fe(costoHa.toFixed(2))+'/ha':'—'}</div>
+    <table style="width:100%;font-size:.82rem;margin-top:6px;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:4px 0;border-bottom:1px solid var(--border)">Campo</th>
+        <th style="text-align:right;padding:4px 0;border-bottom:1px solid var(--border)">Ha</th>
+        <th style="text-align:right;padding:4px 0;border-bottom:1px solid var(--border)">%</th>
+        <th style="text-align:right;padding:4px 0;border-bottom:1px solid var(--border)">Importo</th>
+      </tr></thead>
+      <tbody>${cbs.map(cb => {
+        const ha = parseFloat(cb.dataset.ha) || 0;
+        const pct = (ha / totHa * 100).toFixed(1);
+        const importo = tot ? fe((ha / totHa * tot).toFixed(2)) : '—';
+        return `<tr>
+          <td style="padding:4px 0">${cb.dataset.nome}</td>
+          <td style="text-align:right;padding:4px 0">${ha} ha</td>
+          <td style="text-align:right;padding:4px 0;color:var(--muted)">${pct}%</td>
+          <td style="text-align:right;padding:4px 0;font-weight:600">${importo}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+async function saveRipartHa() {
+  if (!gv('rh-data') || !gv('rh-desc') || !parseFloat(gv('rh-tot'))) {
+    toast('Compila data, descrizione e costo totale'); return;
+  }
+  const cbs = Array.from(document.querySelectorAll('.rh-cb:checked'));
+  if (!cbs.length) { toast('Seleziona almeno un campo'); return; }
+  const totHa = cbs.reduce((s, cb) => s + (parseFloat(cb.dataset.ha) || 0), 0);
+  if (totHa === 0) { toast('I campi selezionati non hanno ettari'); return; }
+
+  const btn = document.getElementById('rh-save-btn');
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    let fotoUrl = '';
+    if (_ripartHaFotoData) {
+      const res = await apiPost({ action: 'uploadFattura', data: { foto: _ripartHaFotoData } });
+      fotoUrl = res.url || '';
+    }
+    const totEur = parseFloat(gv('rh-tot'));
+    const costoUnitario = (totEur / totHa).toFixed(4);
+    const descBase = gv('rh-desc');
+    for (const cb of cbs) {
+      const ha = parseFloat(cb.dataset.ha) || 0;
+      const totCampo = (ha / totHa * totEur).toFixed(2);
+      await api('saveCosto', { data: {
+        id: null,
+        data: gv('rh-data'),
+        campo: cb.dataset.nome,
+        categoria: gv('rh-cat'),
+        descrizione: descBase + ' — ' + ha + ' ha su ' + totHa.toFixed(2) + ' ha tot',
+        quantita: ha,
+        unita: 'ha',
+        costoUnitario,
+        totale: totCampo,
+        fornitore: gv('rh-forn'),
+        note: 'Ripartizione per ettari',
+        fotoUrl
+      }});
+    }
+    cm('m-ripart-ha'); loadCosti();
+    toast('✅ Costo ripartito su ' + cbs.length + ' campi!');
+  } catch(e) { toast('Errore nel salvataggio'); }
+  finally { btn.disabled = false; btn.textContent = 'Salva per campi selezionati'; }
 }
 
 // ============================================================
