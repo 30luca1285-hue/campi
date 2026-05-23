@@ -805,18 +805,33 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 <!-- MODAL RIPARTIZIONE PER ETTARI -->
 <div id="m-ripart-ha" class="ov">
   <div class="modal">
-    <div class="mh"><h3>Ripartisci Costo per Ettari</h3><button class="btn-ic" onclick="cm('m-ripart-ha')">✕</button></div>
+    <div class="mh"><h3>Ripartisci per Ettari</h3><button class="btn-ic" onclick="cm('m-ripart-ha')">✕</button></div>
     <div class="mb">
+      <div class="fg">
+        <label>Tipo registrazione *</label>
+        <select id="rh-tipo-reg" onchange="updateRipartHaForm()">
+          <option value="lavorazione">Lavorazione terzista (servizio agronomico, es. trattamento)</option>
+          <option value="costo">Costo diretto (fatture, manodopera diretta)</option>
+        </select>
+      </div>
       <div class="fr"><div class="fg"><label>Data *</label><input id="rh-data" type="date"></div>
-      <div class="fg"><label>Categoria *</label>
-        <select id="rh-cat">
+      <div class="fg">
+        <label id="rh-cat-label">Tipo lavorazione *</label>
+        <select id="rh-cat-lav">
+          <option>Concimazione</option><option>Potatura</option><option>Trattamento</option>
+          <option>Trinciatura</option><option>Raccolta</option><option>Irrigazione</option><option>Altro</option>
+        </select>
+        <select id="rh-cat-cos" style="display:none">
           <option>Manodopera</option><option>Carburante</option><option>Macchinari / Attrezzature</option>
           <option>Concimi / Fertilizzanti</option><option>Prodotti Fitosanitari</option>
           <option>Affitto</option><option>Altro</option>
         </select></div></div>
-      <div class="fg"><label>Descrizione *</label><input id="rh-desc" placeholder="es. Potatura primavera 2026"></div>
-      <div class="fr"><div class="fg"><label>Fornitore</label><input id="rh-forn" placeholder="es. Cooperativa X"></div>
-      <div class="fg"><label>Costo Totale € *</label><input id="rh-tot" type="number" step="0.01" placeholder="0.00" oninput="renderRipartHaPreview()"></div></div>
+      <div class="fg"><label>Descrizione *</label><input id="rh-desc" placeholder="es. Trattamento boro fogliare"></div>
+      <div class="fr">
+        <div class="fg" id="rh-prod-wrap"><label>Prodotto/Servizio</label><input id="rh-prod" placeholder="es. Boro"></div>
+        <div class="fg"><label id="rh-forn-label">Operatore/Terzista</label><input id="rh-forn" placeholder="es. Compagnucci"></div>
+      </div>
+      <div class="fg"><label>Costo Totale € *</label><input id="rh-tot" type="number" step="0.01" placeholder="0.00" oninput="renderRipartHaPreview()"></div>
       <label style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block">Campi da coinvolgere (preselezionati quelli con ettari)</label>
       <div id="rh-campi-list"></div>
       <div class="fg" style="margin-top:14px">
@@ -966,7 +981,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.40';
+const VERSION      = 'v11.41';
 if (!location.search.includes('v=11.39')) { location.replace(location.pathname + '?v=11.39'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
@@ -1692,13 +1707,24 @@ async function saveRipart() {
 // ============================================================
 let _ripartHaFotoData = null;
 
+function updateRipartHaForm() {
+  const tipo = document.getElementById('rh-tipo-reg').value;
+  const isLav = tipo === 'lavorazione';
+  document.getElementById('rh-cat-label').textContent = isLav ? 'Tipo lavorazione *' : 'Categoria *';
+  document.getElementById('rh-cat-lav').style.display = isLav ? '' : 'none';
+  document.getElementById('rh-cat-cos').style.display = isLav ? 'none' : '';
+  document.getElementById('rh-forn-label').textContent = isLav ? 'Operatore/Terzista' : 'Fornitore';
+  document.getElementById('rh-prod-wrap').style.display = isLav ? '' : 'none';
+}
+
 function openRipartHaModal() {
   _ripartHaFotoData = null;
   document.getElementById('rh-foto-preview').style.display = 'none';
   document.getElementById('rh-foto-ph').style.display = '';
   document.getElementById('rh-foto-file').value = '';
   document.getElementById('rh-preview').innerHTML = '';
-  sv({'rh-data': today(), 'rh-desc': '', 'rh-forn': '', 'rh-tot': '', 'rh-cat': 'Manodopera'});
+  sv({'rh-tipo-reg': 'lavorazione', 'rh-data': today(), 'rh-desc': '', 'rh-forn': '', 'rh-prod': '', 'rh-tot': '', 'rh-cat-lav': 'Concimazione', 'rh-cat-cos': 'Manodopera'});
+  updateRipartHaForm();
 
   // Render lista campi con checkbox (preselezionati se ettari > 0)
   const campi = (S.campi || []).filter(c => c.nome);
@@ -1778,37 +1804,53 @@ async function saveRipartHa() {
   const totHa = cbs.reduce((s, cb) => s + (parseFloat(cb.dataset.ha) || 0), 0);
   if (totHa === 0) { toast('I campi selezionati non hanno ettari'); return; }
 
+  const tipoReg = gv('rh-tipo-reg');
+  const isLav = tipoReg === 'lavorazione';
   const btn = document.getElementById('rh-save-btn');
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
     let fotoUrl = '';
-    if (_ripartHaFotoData) {
+    if (_ripartHaFotoData && !isLav) {
+      // Foto fattura: solo per costi diretti (lavorazioni non hanno campo foto nello sheet)
       const res = await apiPost({ action: 'uploadFattura', data: { foto: _ripartHaFotoData } });
       fotoUrl = res.url || '';
     }
     const totEur = parseFloat(gv('rh-tot'));
-    const costoUnitario = (totEur / totHa).toFixed(4);
     const descBase = gv('rh-desc');
+    const data = gv('rh-data');
+    const forn = gv('rh-forn');
     for (const cb of cbs) {
       const ha = parseFloat(cb.dataset.ha) || 0;
-      const totCampo = (ha / totHa * totEur).toFixed(2);
-      await api('saveCosto', { data: {
-        id: null,
-        data: gv('rh-data'),
-        campo: cb.dataset.nome,
-        categoria: gv('rh-cat'),
-        descrizione: descBase + ' — ' + ha + ' ha su ' + totHa.toFixed(2) + ' ha tot',
-        quantita: ha,
-        unita: 'ha',
-        costoUnitario,
-        totale: totCampo,
-        fornitore: gv('rh-forn'),
-        note: 'Ripartizione per ettari',
-        fotoUrl
-      }});
+      const totCampo = parseFloat((ha / totHa * totEur).toFixed(2));
+      if (isLav) {
+        await api('saveLavorazione', { data: {
+          id: null, data, campo: cb.dataset.nome,
+          tipo: gv('rh-cat-lav'),
+          descrizione: descBase + ' — ' + ha + ' ha su ' + totHa.toFixed(2) + ' ha tot',
+          prodotto: gv('rh-prod'),
+          quantita: ha, unita: 'ha',
+          operatore: forn,
+          costo: totCampo,
+          costoProdotto: 0
+        }});
+      } else {
+        const costoUnitario = (totEur / totHa).toFixed(4);
+        await api('saveCosto', { data: {
+          id: null, data, campo: cb.dataset.nome,
+          categoria: gv('rh-cat-cos'),
+          descrizione: descBase + ' — ' + ha + ' ha su ' + totHa.toFixed(2) + ' ha tot',
+          quantita: ha, unita: 'ha',
+          costoUnitario, totale: totCampo,
+          fornitore: forn,
+          note: 'Ripartizione per ettari',
+          fotoUrl
+        }});
+      }
     }
-    cm('m-ripart-ha'); loadCosti();
-    toast('✅ Costo ripartito su ' + cbs.length + ' campi!');
+    cm('m-ripart-ha');
+    if (isLav) { S.lav = null; await loadLavorazioni(); loadCosti(); }
+    else { loadCosti(); }
+    toast('✅ ' + (isLav ? 'Lavorazioni create' : 'Costo ripartito') + ' su ' + cbs.length + ' campi!');
   } catch(e) { toast('Errore nel salvataggio'); }
   finally { btn.disabled = false; btn.textContent = 'Salva per campi selezionati'; }
 }
