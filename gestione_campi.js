@@ -105,7 +105,7 @@ function setupSheets() {
     { name: SHEETS.CAMPI,       headers: ['Nome Campo','Ettari','N. Piante','Varieta Olivo','(non usato)','Comune / Localita','Note','Latitudine','Longitudine','Costo Affitto €','Scadenza Affitto','Data Pagamento Affitto'], color:'#2E7D32' },
     { name: SHEETS.LAVORAZIONI, headers: ['Data','Campo','Tipo Operazione','Descrizione / Note','Prodotto Usato','Quantita','Unita','Operatore','Costo €'],                                                         color:'#1565C0' },
     { name: SHEETS.COSTI,       headers: ['Data','Campo','Categoria','Descrizione','Quantita','Unita','Costo Unitario €','Totale €','Fornitore','Note','Foto URL'],                                                 color:'#6A1B9A' },
-    { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Data Inizio','Data Fine','KG Raccolti','KG / Ha','Destinazione','Note'],                                                                                  color:'#E65100' },
+    { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Kg Olive','Kg Olio','Resa %','Kg / Ha','Note'],                                                                                                              color:'#E65100' },
     { name: SHEETS.ENTRATE,     headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                                                  color:'#0D47A1' },
     { name: SHEETS.APPUNTI,     headers: ['Data / Ora','Campo','Testo / Appunto','Foto URL','Latitudine','Longitudine'],                                                                                           color:'#37474F' },
     { name: SHEETS.MOSCA,       headers: ['Data','Campo','Settimana','N. Catture','Tipo Trappola','Note Bollettino'],                                                                                              color:'#BF360C' }
@@ -321,20 +321,17 @@ function uploadFattura(data) {
 // ============================================================
 
 function getRaccolte() {
-  return sheetRows(SHEETS.RACCOLTA, 8)
+  return sheetRows(SHEETS.RACCOLTA, 7)
     .filter(r => r[0] !== '')
-    .map((r, i) => ({ id:i+2, anno:r[0], campo:r[1], dataInizio:fmtDate(r[2]), dataFine:fmtDate(r[3]), kg:r[4], kgHa:r[5], destinazione:r[6], note:r[7] }));
+    .map((r, i) => ({ id:i+2, anno:r[0], campo:r[1], kgOlive:r[2], kgOlio:r[3], resa:r[4], kgHa:r[5], note:r[6] }));
 }
 
 function saveRaccolta(r) {
   const s   = getSheet(SHEETS.RACCOLTA);
-  const row = [r.anno||new Date().getFullYear(), r.campo, toDate(r.dataInizio), toDate(r.dataFine), r.kg||'', r.kgHa||'', r.destinazione||'', r.note||''];
-  if (r.id) { s.getRange(r.id, 1, 1, row.length).setValues([row]); }
-  else {
-    const nr = s.getLastRow()+1;
-    s.getRange(nr, 1, 1, row.length).setValues([row]);
-    s.getRange(nr, 3, 1, 2).setNumberFormat('dd/mm/yyyy');
-  }
+  const row = [r.anno||new Date().getFullYear(), r.campo, r.kgOlive||'', r.kgOlio||'', r.resa||'', r.kgHa||'', r.note||''];
+  const nr  = r.id || s.getLastRow()+1;
+  s.getRange(nr, 1, 1, 6).setNumberFormat('0.##'); // Anno + kg olive/olio/resa/kg-ha = numeri (no eredità formato data dalle vecchie colonne)
+  s.getRange(nr, 1, 1, row.length).setValues([row]);
   return { success: true };
 }
 
