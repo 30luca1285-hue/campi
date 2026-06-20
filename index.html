@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.47</title>
+<title>Gestione Oliveto v11.48</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -577,14 +577,14 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="ov-stat-bar" id="rd-kpis"></div>
     <div class="ov-charts-wrap">
       <div class="ov-chart-box"><div class="ov-chart-title">Produzione per anno (kg olive · resa)</div><div id="rd-anni" class="rd-chart"></div></div>
-      <div class="ov-chart-box"><div class="ov-chart-title">Produttività media per campo · kg/ha</div><div id="rd-campi" class="rd-chart"></div></div>
+      <div class="ov-chart-box"><div class="ov-chart-title">Produttività media per campo · kg/pianta</div><div id="rd-campi" class="rd-chart"></div></div>
     </div>
     <div class="tw">
     <div class="tb-bar"><div class="fb">
       <select id="rf-anno" onchange="renderRacc()"><option value="">Tutti gli anni</option></select>
       <select id="rf-campo" onchange="renderRacc()"><option value="">Tutti i campi</option></select>
     </div></div>
-    <table><thead><tr><th>Anno</th><th>Campo</th><th>Kg olive</th><th>Kg olio</th><th>Resa %</th><th>Kg/ha</th><th>Note</th><th></th></tr></thead>
+    <table><thead><tr><th>Anno</th><th>Campo</th><th>Kg olive</th><th>Kg olio</th><th>Resa %</th><th>Kg/pianta</th><th>Note</th><th></th></tr></thead>
     <tbody id="racc-tb"></tbody></table>
   </div></div>
 </div>
@@ -922,7 +922,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
       <div class="fr"><div class="fg"><label>Kg olive</label><input id="r-kgolive" type="number" step="1" placeholder="es. 3855"></div>
       <div class="fg"><label>Kg olio</label><input id="r-kgolio" type="number" step="1" placeholder="es. 583"></div></div>
       <div class="fg"><label>Note</label><textarea id="r-note" rows="2" placeholder="Note..."></textarea></div>
-      <div class="fg" style="color:var(--muted);font-size:.8rem">↳ Resa % e kg/ha si calcolano da soli da olive, olio ed ettari del campo.</div>
+      <div class="fg" style="color:var(--muted);font-size:.8rem">↳ Resa % e kg/pianta si calcolano da soli da olive, olio e n° piante del campo.</div>
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-racc')">Annulla</button><button class="btn btn-p" onclick="saveRacc()">Salva</button></div>
   </div>
@@ -934,7 +934,7 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="mh"><h3 id="cd-title">Campo</h3><button class="btn-ic" onclick="cm('m-campo-detail')">✕</button></div>
     <div class="mb">
       <div id="cd-summary" class="ov-stat-bar" style="margin-bottom:16px"></div>
-      <div class="ov-chart-title" style="margin-bottom:10px">Produzione per anno (kg olive · resa · kg/ha)</div>
+      <div class="ov-chart-title" style="margin-bottom:10px">Produzione per anno (kg olive · resa · kg/pianta)</div>
       <div id="cd-body" class="rd-chart"></div>
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-campo-detail')">Chiudi</button></div>
@@ -1053,8 +1053,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.47';
-if (!location.search.includes('v=11.47')) { location.replace(location.pathname + '?v=11.47'); }
+const VERSION      = 'v11.48';
+if (!location.search.includes('v=11.48')) { location.replace(location.pathname + '?v=11.48'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2083,7 +2083,7 @@ function renderRaccDashboard() {
   const kpis=document.getElementById('rd-kpis'), cA=document.getElementById('rd-anni'), cB=document.getElementById('rd-campi');
   if (!kpis) return;
   const fmt = x => String(Math.round(Number(x)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-  const ettariOf = n => { const c=(S.campi||[]).find(x=>x.nome===n); return c?parseFloat(c.ettari)||0:0; };
+  const piantaOf = n => { const c=(S.campi||[]).find(x=>x.nome===n); return c?parseFloat(c.numPiante)||0:0; };
   const d = S.racc||[];
   if (!d.length) { kpis.innerHTML=''; cA.innerHTML=''; cB.innerHTML=''; return; }
   // aggregati per anno
@@ -2091,50 +2091,50 @@ function renderRaccDashboard() {
   d.forEach(r=>{ const a=String(r.anno); (anni[a]=anni[a]||{olive:0,olio:0}); anni[a].olive+=parseFloat(r.kgOlive)||0; anni[a].olio+=parseFloat(r.kgOlio)||0; });
   const anniArr=Object.entries(anni).map(([a,v])=>({a,olive:v.olive,olio:v.olio,resa:v.olive?v.olio/v.olive*100:0})).sort((x,y)=>x.a-y.a);
   const maxOlive=Math.max(...anniArr.map(x=>x.olive),1);
-  // aggregati per campo (kg/ha medio sugli anni con dato)
+  // aggregati per campo (kg/pianta medio sugli anni con dato)
   const cAgg={};
-  d.forEach(r=>{ const ha=ettariOf(r.campo); if(!ha) return; (cAgg[r.campo]=cAgg[r.campo]||[]).push((parseFloat(r.kgOlive)||0)/ha); });
-  const campoArr=Object.entries(cAgg).map(([c,a])=>({c,kgha:a.reduce((s,x)=>s+x,0)/a.length,n:a.length})).sort((x,y)=>y.kgha-x.kgha);
-  const maxKgha=Math.max(...campoArr.map(x=>x.kgha),1);
+  d.forEach(r=>{ const piante=piantaOf(r.campo); if(!piante) return; (cAgg[r.campo]=cAgg[r.campo]||[]).push((parseFloat(r.kgOlive)||0)/piante); });
+  const campoArr=Object.entries(cAgg).map(([c,a])=>({c,kgp:a.reduce((s,x)=>s+x,0)/a.length,n:a.length})).sort((x,y)=>y.kgp-x.kgp);
+  const maxKgp=Math.max(...campoArr.map(x=>x.kgp),1);
   // KPI
   const totOlive=anniArr.reduce((s,x)=>s+x.olive,0), totOlio=anniArr.reduce((s,x)=>s+x.olio,0);
   const best=[...anniArr].sort((a,b)=>b.olive-a.olive)[0];
   kpis.innerHTML=`
     <div class="ov-stat"><div class="ov-stat-lbl">Olio ${anniArr.length} anni</div><div class="ov-stat-val">${fmt(totOlio)} kg</div><div class="ov-stat-foot">olive ${fmt(totOlive)} kg</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">Migliore annata</div><div class="ov-stat-val">${best.a}</div><div class="ov-stat-foot">${fmt(best.olive)} kg olive</div></div>
-    <div class="ov-stat"><div class="ov-stat-lbl">Campo + produttivo</div><div class="ov-stat-val">${campoArr[0]?campoArr[0].c:'—'}</div><div class="ov-stat-foot">${campoArr[0]?fmt(campoArr[0].kgha)+' kg/ha medi':''}</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">Campo + produttivo</div><div class="ov-stat-val">${campoArr[0]?campoArr[0].c:'—'}</div><div class="ov-stat-foot">${campoArr[0]?campoArr[0].kgp.toFixed(1)+' kg/pianta medi':''}</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">Resa media</div><div class="ov-stat-val">${totOlive?(totOlio/totOlive*100).toFixed(1):'—'}%</div><div class="ov-stat-foot">olio / olive</div></div>`;
   cA.innerHTML=anniArr.map(x=>`<div class="rd-row"><span class="rd-lbl">${x.a}</span>
     <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,x.olive/maxOlive*100)}%"></div></div>
     <span class="rd-val">${fmt(x.olive)} kg · ${x.resa.toFixed(1)}%</span></div>`).join('');
-  cB.innerHTML=campoArr.map(x=>{ const col=x.kgha>=3000?'#3a6b1e':x.kgha>=1500?'#8b6914':'#a0522d';
+  cB.innerHTML=campoArr.map(x=>{ const col=x.kgp>=15?'#3a6b1e':x.kgp>=8?'#8b6914':'#a0522d';
     return `<div class="rd-row rd-click" onclick="openCampoDetail('${x.c}')"><span class="rd-lbl" title="${x.c}">${x.c}</span>
-    <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,x.kgha/maxKgha*100)}%;background:${col}"></div></div>
-    <span class="rd-val">${fmt(x.kgha)} kg/ha · ${x.n} ann.</span></div>`; }).join('');
+    <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,x.kgp/maxKgp*100)}%;background:${col}"></div></div>
+    <span class="rd-val">${x.kgp.toFixed(1)} kg/pianta · ${x.n} ann.</span></div>`; }).join('');
 }
 
 function openCampoDetail(campo) {
   const fmt = x => String(Math.round(Number(x)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-  const c = (S.campi||[]).find(x=>x.nome===campo); const ha = c?parseFloat(c.ettari)||0:0;
+  const c = (S.campi||[]).find(x=>x.nome===campo); const piante = c?parseFloat(c.numPiante)||0:0;
   const rows = (S.racc||[]).filter(r=>r.campo===campo)
     .map(r=>({anno:String(r.anno), olive:parseFloat(r.kgOlive)||0, olio:parseFloat(r.kgOlio)||0}))
     .sort((a,b)=>b.anno-a.anno);
-  document.getElementById('cd-title').textContent = '🫒 ' + campo + (ha?` · ${ha} ha`:'');
+  document.getElementById('cd-title').textContent = '🫒 ' + campo + (piante?` · ${piante} piante`:'');
   const body = document.getElementById('cd-body'), sum = document.getElementById('cd-summary');
   if (!rows.length) { body.innerHTML='<div class="empty" style="padding:14px">Nessuna raccolta registrata.</div>'; sum.innerHTML=''; om('m-campo-detail'); return; }
   const maxOlive = Math.max(...rows.map(r=>r.olive),1);
   const tOlive = rows.reduce((s,r)=>s+r.olive,0), tOlio = rows.reduce((s,r)=>s+r.olio,0);
-  const kghaMed = ha ? tOlive/rows.length/ha : 0;
+  const kgpMed = piante ? tOlive/rows.length/piante : 0;
   sum.innerHTML = `
     <div class="ov-stat"><div class="ov-stat-lbl">Annate</div><div class="ov-stat-val">${rows.length}</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">Olive totali</div><div class="ov-stat-val">${fmt(tOlive)} kg</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">Resa media</div><div class="ov-stat-val">${tOlive?(tOlio/tOlive*100).toFixed(1):'—'}%</div></div>
-    <div class="ov-stat"><div class="ov-stat-lbl">kg/ha medio</div><div class="ov-stat-val">${kghaMed?fmt(kghaMed):'—'}</div></div>`;
+    <div class="ov-stat"><div class="ov-stat-lbl">kg/pianta medio</div><div class="ov-stat-val">${kgpMed?kgpMed.toFixed(1):'—'}</div></div>`;
   body.innerHTML = rows.map(r=>{
-    const resa = r.olive? r.olio/r.olive*100 : 0, kgha = ha? r.olive/ha : 0;
+    const resa = r.olive? r.olio/r.olive*100 : 0, kgp = piante? r.olive/piante : 0;
     return `<div class="rd-row"><span class="rd-lbl">${r.anno}</span>
       <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,r.olive/maxOlive*100)}%"></div></div>
-      <span class="rd-val">${fmt(r.olive)} kg · ${resa.toFixed(1)}%${kgha?' · '+fmt(kgha)+' kg/ha':''}</span></div>`;
+      <span class="rd-val">${fmt(r.olive)} kg · ${resa.toFixed(1)}%${kgp?' · '+kgp.toFixed(1)+' kg/pianta':''}</span></div>`;
   }).join('');
   om('m-campo-detail');
 }
@@ -2149,19 +2149,19 @@ function renderRacc() {
   let d = S.racc.filter(r=>(!fc||r.campo===fc)&&(!fa||String(r.anno)===fa))
     .sort((a,b)=>(b.anno-a.anno)||((parseFloat(b.kgOlive)||0)-(parseFloat(a.kgOlive)||0)));
   if (!d.length) { tb.innerHTML = er(8,'🫙','Nessuna raccolta registrata.'); return; }
-  const ettariOf = n => { const c=(S.campi||[]).find(x=>x.nome===n); return c?parseFloat(c.ettari)||0:0; };
+  const piantaOf = n => { const c=(S.campi||[]).find(x=>x.nome===n); return c?parseFloat(c.numPiante)||0:0; };
   const fmt = x => (x||x===0)?String(Math.round(Number(x))).replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'—';
   let tOlive=0, tOlio=0;
   const rows = d.map(r=>{
     const olive=parseFloat(r.kgOlive)||0, olio=parseFloat(r.kgOlio)||0;
     const resa = (r.resa!==''&&r.resa!=null) ? parseFloat(r.resa) : (olive?olio/olive*100:0);
-    const ha = ettariOf(r.campo), kgha = (r.kgHa!==''&&r.kgHa!=null) ? parseFloat(r.kgHa) : (ha?olive/ha:0);
+    const piante = piantaOf(r.campo), kgp = piante ? olive/piante : 0;
     tOlive+=olive; tOlio+=olio;
     return `<tr>
       <td><strong>${r.anno}</strong></td><td>${r.campo}</td>
       <td>${fmt(olive)} kg</td><td>${fmt(olio)} kg</td>
       <td>${resa?resa.toFixed(1)+'%':'—'}</td>
-      <td>${kgha?fmt(kgha)+' kg/ha':'—'}</td>
+      <td>${kgp?kgp.toFixed(1)+' kg/pianta':'—'}</td>
       <td style="max-width:160px">${r.note||'—'}</td>
       <td><div class="act"><button class="btn-ic" onclick="editRacc(${r.id})">✏️</button><button class="btn-ic" onclick="delRacc(${r.id})">🗑️</button></div></td></tr>`;
   }).join('');
