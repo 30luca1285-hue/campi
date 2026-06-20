@@ -51,6 +51,7 @@ function doGet(e) {
       case 'saveEntrata':       result = saveEntrata(JSON.parse(e.parameter.data)); break;
       case 'deleteEntrata':     result = deleteEntrata(+e.parameter.rowId); break;
       case 'getAppunti':        result = getAppunti(); break;
+      case 'updateAppunto':     result = updateAppunto(JSON.parse(e.parameter.data)); break;
       case 'deleteAppunto':     result = deleteAppunto(+e.parameter.rowId); break;
       case 'getMosca':          result = getMosca(); break;
       case 'saveMosca':         result = saveMoscaEntry(JSON.parse(e.parameter.data)); break;
@@ -177,7 +178,7 @@ function uploadFileToDrive(base64Data, filename, folderName) {
 // ============================================================
 
 function getCampi() {
-  return sheetRows(SHEETS.CAMPI, 12)
+  return sheetRows(SHEETS.CAMPI, 15)
     .filter(r => r[0] !== '')
     .map((r, i) => ({
       id: i+2, nome:r[0], ettari:(r[1] instanceof Date || r[1]==='') ? '' : (parseFloat(r[1])||''), numPiante:r[2], varieta:r[3], annoImpianto:r[4], comune:r[5], note:r[6],
@@ -185,7 +186,10 @@ function getCampi() {
       lon: (r[8] instanceof Date || !r[8]) ? '' : String(r[8]),
       affitto: (r[9] !== '' && r[9] != null) ? (parseFloat(r[9])||'') : '',
       scadenzaAffitto:  r[10] ? fmtDate(r[10]) : '',
-      pagamentoAffitto: r[11] ? fmtDate(r[11]) : ''
+      pagamentoAffitto: r[11] ? fmtDate(r[11]) : '',
+      statoBio: r[12] || '',
+      dataFineConversione: r[13] ? fmtDate(r[13]) : '',
+      unitaProduttivaId: r[14] || ''
     }));
 }
 
@@ -197,7 +201,8 @@ function saveCampo(c) {
   const affittoVal = (c.affitto !== '' && c.affitto != null) ? parseFloat(c.affitto) : '';
   const scadVal  = c.scadenzaAffitto   ? toDate(c.scadenzaAffitto)   : '';
   const pagVal   = c.pagamentoAffitto  ? toDate(c.pagamentoAffitto)  : '';
-  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal, affittoVal, scadVal, pagVal];
+  const finConvVal = c.dataFineConversione ? toDate(c.dataFineConversione) : '';
+  const row    = [c.nome, ettVal, c.numPiante||'', c.varieta||'', c.annoImpianto||'', c.comune||'', c.note||'', latVal, lonVal, affittoVal, scadVal, pagVal, c.statoBio||'', finConvVal, c.unitaProduttivaId||''];
   const rowNum = c.id ? c.id : s.getLastRow() + 1;
   s.getRange(rowNum, 1, 1, row.length).setValues([row]);
   if (ettVal !== '') s.getRange(rowNum, 2, 1, 1).setNumberFormat('0.00');
@@ -210,6 +215,10 @@ function saveCampo(c) {
   const pagCell = s.getRange(rowNum, 12);
   pagCell.setNumberFormat('dd/mm/yyyy');
   pagCell.setValue(pagVal || '');
+  // dataFineConversione col. 14
+  const finConvCell = s.getRange(rowNum, 14);
+  finConvCell.setNumberFormat('dd/mm/yyyy');
+  finConvCell.setValue(finConvVal || '');
   SpreadsheetApp.flush();
   return { success: true };
 }
@@ -387,6 +396,15 @@ function saveAppunto(data) {
 }
 
 function deleteAppunto(rowId) { getSheet(SHEETS.APPUNTI).deleteRow(rowId); return { success: true }; }
+
+// Modifica testo/campo di un appunto esistente (preserva foto/GPS)
+function updateAppunto(d) {
+  if (!d || !d.id) return { error: 'id mancante' };
+  const s = getSheet(SHEETS.APPUNTI);
+  if (d.campo !== undefined) s.getRange(d.id, 2).setValue(d.campo);
+  if (d.testo !== undefined) s.getRange(d.id, 3).setValue(d.testo);
+  return { success: true };
+}
 
 // ============================================================
 // MONITORAGGIO MOSCA OLIVO
