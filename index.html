@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.48</title>
+<title>Gestione Oliveto v11.49</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -933,8 +933,10 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   <div class="modal">
     <div class="mh"><h3 id="cd-title">Campo</h3><button class="btn-ic" onclick="cm('m-campo-detail')">✕</button></div>
     <div class="mb">
-      <div id="cd-summary" class="ov-stat-bar" style="margin-bottom:16px"></div>
-      <div class="ov-chart-title" style="margin-bottom:10px">Produzione per anno (kg olive · resa · kg/pianta)</div>
+      <div id="cd-sub" style="color:var(--muted);font-size:.85rem;font-weight:600;margin-bottom:14px"></div>
+      <div id="cd-summary" class="ov-stat-bar" style="margin-bottom:10px"></div>
+      <div id="cd-extra" style="font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.5"></div>
+      <div class="ov-chart-title" style="margin-bottom:10px">Produzione per anno (kg olive · resa · kg/pianta · kg/ha)</div>
       <div id="cd-body" class="rd-chart"></div>
     </div>
     <div class="mf"><button class="btn btn-s" onclick="cm('m-campo-detail')">Chiudi</button></div>
@@ -1053,8 +1055,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.48';
-if (!location.search.includes('v=11.48')) { location.replace(location.pathname + '?v=11.48'); }
+const VERSION      = 'v11.49';
+if (!location.search.includes('v=11.49')) { location.replace(location.pathname + '?v=11.49'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -1324,7 +1326,7 @@ function renderCampi() {
   const tb = document.getElementById('campi-tb');
   if (!S.campi.length) { tb.innerHTML = er(10,'🗺️','Nessun campo. Aggiungine uno!'); return; }
   tb.innerHTML = S.campi.map((c,i)=>`<tr>
-    <td><strong>${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
+    <td><strong onclick="openCampoDetail('${esc(c.nome)}')" style="cursor:pointer;color:var(--green)">${c.nome}</strong></td><td>${c.ettari||'—'}</td><td>${c.numPiante||'—'}</td>
     <td>${bioBadge(c)}</td>
     <td>${c.comune||'—'}${!_sortMode&&c.lat&&c.lon?' <a href="https://maps.google.com/?q='+c.lat+','+c.lon+'" target="_blank" style="color:var(--green)">📍</a>':''}</td>
     <td>${fd(c.scadenzaAffitto)}</td><td>${fd(c.pagamentoAffitto)}</td><td>${c.affitto?'€'+c.affitto:'—'}</td>
@@ -1333,7 +1335,8 @@ function renderCampi() {
       ${_sortMode
         ? `<button class="btn-ic" ${i===0?'disabled':''} onclick="moveCampo(${i},-1)">↑</button>
            <button class="btn-ic" ${i===S.campi.length-1?'disabled':''} onclick="moveCampo(${i},1)">↓</button>`
-        : `<button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
+        : `<button class="btn-ic" onclick="openCampoDetail('${esc(c.nome)}')" title="Statistiche raccolta">📊</button>
+           <button class="btn-ic" onclick="editCampo(${c.id})">✏️</button>
            <button class="btn-ic" onclick="delCampo(${c.id},'${esc(c.nome)}')">🗑️</button>`}
     </div></td></tr>`).join('');
 }
@@ -2113,28 +2116,34 @@ function renderRaccDashboard() {
     <span class="rd-val">${x.kgp.toFixed(1)} kg/pianta · ${x.n} ann.</span></div>`; }).join('');
 }
 
-function openCampoDetail(campo) {
+async function openCampoDetail(campo) {
+  if (!(S.racc && S.racc.length)) { try { S.racc = await api('getRaccolte'); } catch(e){} }
+  if (!(S.campi && S.campi.length)) { try { S.campi = await api('getCampi'); } catch(e){} }
   const fmt = x => String(Math.round(Number(x)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-  const c = (S.campi||[]).find(x=>x.nome===campo); const piante = c?parseFloat(c.numPiante)||0:0;
+  const c = (S.campi||[]).find(x=>x.nome===campo);
+  const piante = c?parseFloat(c.numPiante)||0:0, ha = c?parseFloat(c.ettari)||0:0;
   const rows = (S.racc||[]).filter(r=>r.campo===campo)
     .map(r=>({anno:String(r.anno), olive:parseFloat(r.kgOlive)||0, olio:parseFloat(r.kgOlio)||0}))
     .sort((a,b)=>b.anno-a.anno);
-  document.getElementById('cd-title').textContent = '🫒 ' + campo + (piante?` · ${piante} piante`:'');
-  const body = document.getElementById('cd-body'), sum = document.getElementById('cd-summary');
-  if (!rows.length) { body.innerHTML='<div class="empty" style="padding:14px">Nessuna raccolta registrata.</div>'; sum.innerHTML=''; om('m-campo-detail'); return; }
-  const maxOlive = Math.max(...rows.map(r=>r.olive),1);
-  const tOlive = rows.reduce((s,r)=>s+r.olive,0), tOlio = rows.reduce((s,r)=>s+r.olio,0);
-  const kgpMed = piante ? tOlive/rows.length/piante : 0;
+  document.getElementById('cd-title').textContent = '🫒 ' + campo;
+  document.getElementById('cd-sub').textContent = [c&&c.comune, ha?ha+' ha':'', piante?piante+' piante':'', c&&c.varieta].filter(Boolean).join('  ·  ');
+  const body=document.getElementById('cd-body'), sum=document.getElementById('cd-summary'), extra=document.getElementById('cd-extra');
+  if (!rows.length) { body.innerHTML='<div class="empty" style="padding:14px">Nessuna raccolta registrata per questo campo.</div>'; sum.innerHTML=''; extra.innerHTML=''; om('m-campo-detail'); return; }
+  const maxOlive=Math.max(...rows.map(r=>r.olive),1);
+  const tOlive=rows.reduce((s,r)=>s+r.olive,0), tOlio=rows.reduce((s,r)=>s+r.olio,0);
+  const kgpMed = piante? tOlive/rows.length/piante : 0, kghaMed = ha? tOlive/rows.length/ha : 0;
+  const best=[...rows].sort((a,b)=>b.olive-a.olive)[0];
   sum.innerHTML = `
     <div class="ov-stat"><div class="ov-stat-lbl">Annate</div><div class="ov-stat-val">${rows.length}</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">Olive totali</div><div class="ov-stat-val">${fmt(tOlive)} kg</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">Resa media</div><div class="ov-stat-val">${tOlive?(tOlio/tOlive*100).toFixed(1):'—'}%</div></div>
     <div class="ov-stat"><div class="ov-stat-lbl">kg/pianta medio</div><div class="ov-stat-val">${kgpMed?kgpMed.toFixed(1):'—'}</div></div>`;
+  extra.innerHTML = `Olio totale <b>${fmt(tOlio)} kg</b>${kghaMed?` · kg/ha medio <b>${fmt(kghaMed)}</b>`:''} · miglior annata <b>${best.anno}</b> (${fmt(best.olive)} kg) · media <b>${fmt(tOlive/rows.length)} kg/anno</b>`;
   body.innerHTML = rows.map(r=>{
-    const resa = r.olive? r.olio/r.olive*100 : 0, kgp = piante? r.olive/piante : 0;
+    const resa=r.olive?r.olio/r.olive*100:0, kgp=piante?r.olive/piante:0, kgha=ha?r.olive/ha:0;
     return `<div class="rd-row"><span class="rd-lbl">${r.anno}</span>
       <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,r.olive/maxOlive*100)}%"></div></div>
-      <span class="rd-val">${fmt(r.olive)} kg · ${resa.toFixed(1)}%${kgp?' · '+kgp.toFixed(1)+' kg/pianta':''}</span></div>`;
+      <span class="rd-val">${fmt(r.olive)} kg · ${resa.toFixed(1)}%${kgp?' · '+kgp.toFixed(1)+'/pianta':''}${kgha?' · '+fmt(kgha)+'/ha':''}</span></div>`;
   }).join('');
   om('m-campo-detail');
 }
