@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.45</title>
+<title>Gestione Oliveto v11.46</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -377,6 +377,12 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 .ov-charts-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;animation:ov-rise .55s .28s ease both}
 .ov-chart-box{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 14px rgba(0,0,0,.07);border:1px solid #e8e0d0}
 .ov-chart-title{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#8a7a5a;margin-bottom:16px}
+.rd-chart{display:flex;flex-direction:column;gap:7px}
+.rd-row{display:grid;grid-template-columns:84px 1fr auto;align-items:center;gap:8px;font-size:.82rem}
+.rd-lbl{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rd-track{background:#f0ece2;border-radius:6px;height:22px;overflow:hidden}
+.rd-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#3a6b1e,#6aa03e);display:flex;align-items:center;justify-content:flex-end;padding-right:7px;color:#fff;font-size:.72rem;font-weight:700;min-width:8px;white-space:nowrap}
+.rd-val{color:#7a6a4a;font-size:.74rem;white-space:nowrap}
 /* Campo cards */
 .ov-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
 .ov-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.07);border:1px solid #e8e0d0;display:flex;flex-direction:column;animation:ov-rise .55s ease both}
@@ -564,7 +570,13 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 <!-- RACCOLTA -->
 <div id="view-raccolta" class="view">
   <div class="ph"><h2>Raccolta</h2><button class="btn btn-p" onclick="openRaccModal()">+ Nuova Raccolta</button></div>
-  <div class="pb"><div class="tw">
+  <div class="pb">
+    <div class="ov-stat-bar" id="rd-kpis"></div>
+    <div class="ov-charts-wrap">
+      <div class="ov-chart-box"><div class="ov-chart-title">Produzione per anno (kg olive · resa)</div><div id="rd-anni" class="rd-chart"></div></div>
+      <div class="ov-chart-box"><div class="ov-chart-title">Produttività media per campo · kg/ha</div><div id="rd-campi" class="rd-chart"></div></div>
+    </div>
+    <div class="tw">
     <div class="tb-bar"><div class="fb">
       <select id="rf-anno" onchange="renderRacc()"><option value="">Tutti gli anni</option></select>
       <select id="rf-campo" onchange="renderRacc()"><option value="">Tutti i campi</option></select>
@@ -1025,8 +1037,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.45';
-if (!location.search.includes('v=11.45')) { location.replace(location.pathname + '?v=11.45'); }
+const VERSION      = 'v11.46';
+if (!location.search.includes('v=11.46')) { location.replace(location.pathname + '?v=11.46'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2048,6 +2060,41 @@ async function loadRacc() {
   if (!S.campi.length) S.campi = await api('getCampi');
   S.racc = await api('getRaccolte');
   renderRacc();
+  renderRaccDashboard();
+}
+
+function renderRaccDashboard() {
+  const kpis=document.getElementById('rd-kpis'), cA=document.getElementById('rd-anni'), cB=document.getElementById('rd-campi');
+  if (!kpis) return;
+  const fmt = x => String(Math.round(Number(x)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  const ettariOf = n => { const c=(S.campi||[]).find(x=>x.nome===n); return c?parseFloat(c.ettari)||0:0; };
+  const d = S.racc||[];
+  if (!d.length) { kpis.innerHTML=''; cA.innerHTML=''; cB.innerHTML=''; return; }
+  // aggregati per anno
+  const anni={};
+  d.forEach(r=>{ const a=String(r.anno); (anni[a]=anni[a]||{olive:0,olio:0}); anni[a].olive+=parseFloat(r.kgOlive)||0; anni[a].olio+=parseFloat(r.kgOlio)||0; });
+  const anniArr=Object.entries(anni).map(([a,v])=>({a,olive:v.olive,olio:v.olio,resa:v.olive?v.olio/v.olive*100:0})).sort((x,y)=>x.a-y.a);
+  const maxOlive=Math.max(...anniArr.map(x=>x.olive),1);
+  // aggregati per campo (kg/ha medio sugli anni con dato)
+  const cAgg={};
+  d.forEach(r=>{ const ha=ettariOf(r.campo); if(!ha) return; (cAgg[r.campo]=cAgg[r.campo]||[]).push((parseFloat(r.kgOlive)||0)/ha); });
+  const campoArr=Object.entries(cAgg).map(([c,a])=>({c,kgha:a.reduce((s,x)=>s+x,0)/a.length,n:a.length})).sort((x,y)=>y.kgha-x.kgha);
+  const maxKgha=Math.max(...campoArr.map(x=>x.kgha),1);
+  // KPI
+  const totOlive=anniArr.reduce((s,x)=>s+x.olive,0), totOlio=anniArr.reduce((s,x)=>s+x.olio,0);
+  const best=[...anniArr].sort((a,b)=>b.olive-a.olive)[0];
+  kpis.innerHTML=`
+    <div class="ov-stat"><div class="ov-stat-lbl">Olio ${anniArr.length} anni</div><div class="ov-stat-val">${fmt(totOlio)} kg</div><div class="ov-stat-foot">olive ${fmt(totOlive)} kg</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">Migliore annata</div><div class="ov-stat-val">${best.a}</div><div class="ov-stat-foot">${fmt(best.olive)} kg olive</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">Campo + produttivo</div><div class="ov-stat-val">${campoArr[0]?campoArr[0].c:'—'}</div><div class="ov-stat-foot">${campoArr[0]?fmt(campoArr[0].kgha)+' kg/ha medi':''}</div></div>
+    <div class="ov-stat"><div class="ov-stat-lbl">Resa media</div><div class="ov-stat-val">${totOlive?(totOlio/totOlive*100).toFixed(1):'—'}%</div><div class="ov-stat-foot">olio / olive</div></div>`;
+  cA.innerHTML=anniArr.map(x=>`<div class="rd-row"><span class="rd-lbl">${x.a}</span>
+    <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,x.olive/maxOlive*100)}%">${fmt(x.olive)}</div></div>
+    <span class="rd-val">${x.resa.toFixed(1)}%</span></div>`).join('');
+  cB.innerHTML=campoArr.map(x=>{ const col=x.kgha>=3000?'#3a6b1e':x.kgha>=1500?'#8b6914':'#a0522d';
+    return `<div class="rd-row"><span class="rd-lbl" title="${x.c}">${x.c}</span>
+    <div class="rd-track"><div class="rd-fill" style="width:${Math.max(2,x.kgha/maxKgha*100)}%;background:${col}">${fmt(x.kgha)}</div></div>
+    <span class="rd-val">${x.n} ann.</span></div>`; }).join('');
 }
 
 function renderRacc() {
