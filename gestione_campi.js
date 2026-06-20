@@ -445,7 +445,7 @@ function getOverviewData(annoParam) {
       ultimoTrattamento: ultimaData(lc,'Trattamento Fitosanitario'),
       ultimaConcimazione:ultimaData(lc,'Concimazione'),
       costiAnno,
-      ultimaRaccolta: ur ? { anno:ur.anno, kg:ur.kg } : null
+      ultimaRaccolta: ur ? { anno:ur.anno, kg:ur.kgOlive, olio:ur.kgOlio } : null
     };
   });
 
@@ -465,11 +465,11 @@ function getOverviewData(annoParam) {
   if (anniRacc.length) {
     const ultimoAnno = Math.max(...anniRacc);
     const raccUltime = racc.filter(r => +r.anno === ultimoAnno);
-    const totKg      = raccUltime.reduce((s,r) => s+(parseFloat(r.kg)||0), 0);
+    const totKg      = raccUltime.reduce((s,r) => s+(parseFloat(r.kgOlive)||0), 0);
+    const totOlioR   = raccUltime.reduce((s,r) => s+(parseFloat(r.kgOlio)||0), 0);
     raccoltaRiepilogo = {
-      anno: ultimoAnno, totKg,
-      stimaOlio: Math.round(totKg * 0.15),
-      perCampo: raccUltime.map(r => ({ campo: r.campo, kg: parseFloat(r.kg)||0 }))
+      anno: ultimoAnno, totKg, totOlio: totOlioR,
+      perCampo: raccUltime.map(r => ({ campo: r.campo, kg: parseFloat(r.kgOlive)||0, olio: parseFloat(r.kgOlio)||0 }))
     };
   }
 

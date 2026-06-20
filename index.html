@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.49</title>
+<title>Gestione Oliveto v11.50</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -1055,8 +1055,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.49';
-if (!location.search.includes('v=11.49')) { location.replace(location.pathname + '?v=11.49'); }
+const VERSION      = 'v11.50';
+if (!location.search.includes('v=11.50')) { location.replace(location.pathname + '?v=11.50'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2272,7 +2272,7 @@ function renderOverview(data) {
     <div class="harv-box">
       <div class="harv-totals">
         <div class="harv-stat"><div class="harv-lbl">Totale KG Olive</div><div class="harv-val">${rr.totKg.toLocaleString('it-IT')} kg</div></div>
-        <div class="harv-stat"><div class="harv-lbl">Stima Olio (resa 15%)</div><div class="harv-val">~ ${rr.stimaOlio.toLocaleString('it-IT')} L</div></div>
+        <div class="harv-stat"><div class="harv-lbl">Olio prodotto</div><div class="harv-val">${(rr.totOlio||0).toLocaleString('it-IT')} kg</div></div>
       </div>
       <div class="harv-mini">
         ${rr.perCampo.sort((a,b)=>b.kg-a.kg).map((r,i)=>`
