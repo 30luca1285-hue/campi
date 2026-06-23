@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.53</title>
+<title>Gestione Oliveto v11.54</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -1064,8 +1064,8 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.53';
-if (!location.search.includes('v=11.53')) { location.replace(location.pathname + '?v=11.53'); }
+const VERSION      = 'v11.54';
+if (!location.search.includes('v=11.54')) { location.replace(location.pathname + '?v=11.54'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -1184,8 +1184,19 @@ async function api(action, params = {}, _sync = false) {
     }
   }
   try {
-    const res = await fetch(url.toString());
-    const data = await res.json();
+    let data;
+    {
+      const res = await fetch(url.toString());
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // GAS web app a volte risponde HTML (redirect googleusercontent) al primo colpo.
+        // Ritenta UNA sola volta e SOLO in lettura (le scritture non si ripetono, per non duplicare dati).
+        if (!isRead) throw parseErr;
+        await new Promise(r => setTimeout(r, 400));
+        data = await (await fetch(url.toString())).json();
+      }
+    }
     if (data.error) throw new Error(data.error);
     if (isRead) try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
     return data;
