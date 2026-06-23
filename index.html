@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.52</title>
+<title>Gestione Oliveto v11.53</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -222,12 +222,17 @@ input[readonly]{background:var(--bg)}
 .amap-link-desc{font-size:.74rem;color:var(--muted);flex:1;line-height:1.45}
 .amap-link-btn{display:inline-block;margin-top:8px;padding:6px 12px;background:var(--green);color:#fff;border-radius:7px;font-size:.78rem;font-weight:600;text-align:center;transition:background .15s}
 .amap-link-btn:hover{background:var(--green-dark)}
-.iframe-box{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
-.iframe-box-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.iframe-box-hd h4{font-size:.82rem;font-weight:700}
-.iframe-box-hd a{font-size:.78rem;color:var(--green);font-weight:600}
-.iframe-box-hd a:hover{text-decoration:underline}
-iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:var(--bg)}
+.amap-noti-card{background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.amap-noti-card.primary{border-left:4px solid var(--green)}
+.amap-noti-ic{font-size:1.7rem;flex-shrink:0}
+.amap-noti-info{flex:1;min-width:0}
+.amap-noti-prov{font-size:.92rem;font-weight:700;color:var(--text)}
+.amap-noti-meta{font-size:.74rem;color:var(--muted);margin-top:2px}
+.amap-noti-btn{flex-shrink:0;background:var(--green);color:#fff;border-radius:9px;padding:11px 16px;font-size:.82rem;font-weight:700;text-align:center;min-height:44px;display:inline-flex;align-items:center;gap:6px}
+.amap-noti-btn:active{background:var(--green-dark)}
+.amap-loading,.amap-empty{font-size:.82rem;color:var(--muted);padding:16px;text-align:center;background:var(--card);border-radius:12px;border:1px solid var(--border);line-height:1.5}
+.amap-empty a{color:var(--green);font-weight:600}
+.amap-upd{font-size:.68rem;color:var(--muted);margin:2px 2px 18px;text-align:right}
 
 /* PIANO AGRONOMICO */
 .piano-intro{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:center;box-shadow:var(--shadow);border:1px solid var(--border)}
@@ -323,7 +328,6 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
   .ov-charts-wrap{grid-template-columns:1fr}
   .mosca-status-grid{grid-template-columns:repeat(2,1fr)}
   .amap-links-grid{grid-template-columns:1fr}
-  iframe.amap-frame{height:380px}
   /* Pie: verticale */
   .pie-wrap{flex-direction:column;align-items:center;gap:14px}
   /* Harvest totals: 1 colonna */
@@ -620,48 +624,47 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
     <div class="amap-header-card">
       <div class="amap-header-ic">🌿</div>
       <div>
-        <div class="amap-header-title">Agenzia per i Servizi nel Settore Agroalimentare delle Marche</div>
-        <div class="amap-header-sub">Bollettini fitosanitari, monitoraggio mosca olivo, dati agro-meteo per la Regione Marche</div>
+        <div class="amap-header-title">Servizio Agrometeo Regionale — AMAP Marche</div>
+        <div class="amap-header-sub">Notiziari fitosanitari settimanali, mosca olivo e dati agro-meteo. Recuperati in automatico, sempre aggiornati.</div>
       </div>
     </div>
+
+    <div class="mosca-section-title" style="margin-top:0">📄 Ultimo Notiziario Agrometeo</div>
+    <div id="amap-notiziari"><div class="amap-loading">Caricamento notiziari…</div></div>
+
+    <div class="mosca-section-title">🔗 Link utili</div>
     <div class="amap-links-grid">
       <div class="amap-link-card">
-        <div class="amap-link-ic">🏛️</div>
-        <div class="amap-link-title">Sito AMAP Marche</div>
-        <div class="amap-link-desc">Portale ufficiale con tutti i servizi e le pubblicazioni dell'agenzia</div>
-        <a class="amap-link-btn" href="https://www.amap.marche.it" target="_blank" rel="noopener">Apri ↗</a>
-      </div>
-      <div class="amap-link-card">
-        <div class="amap-link-ic">📋</div>
-        <div class="amap-link-title">Bollettini Fitosanitari</div>
-        <div class="amap-link-desc">Avvisi settimanali su patologie, parassiti e consigli di difesa per olivicoltura e altre colture</div>
-        <a class="amap-link-btn" href="https://www.amap.marche.it/content.asp?ID_Link=136&area=5" target="_blank" rel="noopener">Apri ↗</a>
+        <div class="amap-link-ic">🌐</div>
+        <div class="amap-link-title">Portale Agrometeo</div>
+        <div class="amap-link-desc">Notiziari, previsioni e monitoraggi del servizio regionale</div>
+        <a class="amap-link-btn" href="https://meteo.regione.marche.it/Notiziari/Agrometeo" target="_blank" rel="noopener">Apri ↗</a>
       </div>
       <div class="amap-link-card">
         <div class="amap-link-ic">🪰</div>
-        <div class="amap-link-title">Mosca Olivo — Rete Trappole</div>
-        <div class="amap-link-desc">Dati aggiornati sulle catture di <em>Bactrocera oleae</em> nelle stazioni di monitoraggio regionali</div>
-        <a class="amap-link-btn" href="https://www.amap.marche.it/content.asp?ID_Link=228&area=5" target="_blank" rel="noopener">Apri ↗</a>
+        <div class="amap-link-title">Mosca Olivo — scheda</div>
+        <div class="amap-link-desc">Pagina dedicata a <em>Bactrocera oleae</em> del servizio regionale</div>
+        <a class="amap-link-btn" href="https://meteo.regione.marche.it/Fitopatologia/Parassita/7" target="_blank" rel="noopener">Apri ↗</a>
       </div>
       <div class="amap-link-card">
-        <div class="amap-link-ic">🌤️</div>
-        <div class="amap-link-title">Agrometeorologia</div>
-        <div class="amap-link-desc">Dati climatici e previsioni meteo-agronomiche per la programmazione degli interventi</div>
-        <a class="amap-link-btn" href="https://www.amap.marche.it/content.asp?ID_Link=141&area=5" target="_blank" rel="noopener">Apri ↗</a>
+        <div class="amap-link-ic">🗂️</div>
+        <div class="amap-link-title">Archivio notiziari</div>
+        <div class="amap-link-desc">Tutti i notiziari passati, per provincia e data</div>
+        <a class="amap-link-btn" href="https://meteo.regione.marche.it/Notiziari/Archivio" target="_blank" rel="noopener">Apri ↗</a>
+      </div>
+      <div class="amap-link-card">
+        <div class="amap-link-ic">🏛️</div>
+        <div class="amap-link-title">Sito AMAP</div>
+        <div class="amap-link-desc">Portale istituzionale dell'agenzia</div>
+        <a class="amap-link-btn" href="https://www.amap.marche.it" target="_blank" rel="noopener">Apri ↗</a>
       </div>
     </div>
-    <div class="mosca-section-title" style="margin-top:4px">Note / Estratto Bollettino Corrente</div>
+
+    <div class="mosca-section-title">📝 Le mie note</div>
     <div style="background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:22px">
-      <div style="font-size:.74rem;color:var(--muted);margin-bottom:8px">Incolla qui il testo del bollettino AMAP corrente — salvato automaticamente sul dispositivo</div>
-      <textarea id="amap-note" rows="5" placeholder="Incolla il testo del bollettino settimanale AMAP..." oninput="saveAmapNote()" style="resize:vertical"></textarea>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:8px">Appunti personali sul bollettino — salvati sul dispositivo</div>
+      <textarea id="amap-note" rows="4" placeholder="Es. catture mosca, soglie, cosa fare…" oninput="saveAmapNote()" style="resize:vertical"></textarea>
       <div style="font-size:.7rem;color:var(--muted);margin-top:6px" id="amap-note-ts"></div>
-    </div>
-    <div class="iframe-box">
-      <div class="iframe-box-hd">
-        <h4>🌐 AMAP Marche — accesso diretto</h4>
-        <a href="https://www.amap.marche.it" target="_blank" rel="noopener">Apri nel browser ↗</a>
-      </div>
-      <iframe class="amap-frame" src="https://www.amap.marche.it" title="AMAP Marche" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"></iframe>
     </div>
   </div>
 </div>
@@ -1061,8 +1064,8 @@ iframe.amap-frame{width:100%;height:560px;border:none;display:block;background:v
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.52';
-if (!location.search.includes('v=11.52')) { location.replace(location.pathname + '?v=11.52'); }
+const VERSION      = 'v11.53';
+if (!location.search.includes('v=11.53')) { location.replace(location.pathname + '?v=11.53'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2890,13 +2893,45 @@ function currentWeek() {
 // AMAP MARCHE
 // ============================================================
 
-function loadAmap() {
+async function loadAmap() {
+  // Note personali (salvate sul dispositivo)
   const ta = document.getElementById('amap-note');
   const ts = document.getElementById('amap-note-ts');
   const saved = localStorage.getItem('amap_note');
   const savedTs = localStorage.getItem('amap_note_ts');
   if (ta) ta.value = saved || '';
   if (ts && savedTs) ts.textContent = 'Ultimo aggiornamento: ' + savedTs;
+
+  // Ultimo notiziario agrometeo per provincia (dal backend, sempre aggiornato)
+  const box = document.getElementById('amap-notiziari');
+  if (!box) return;
+  box.innerHTML = '<div class="amap-loading">Caricamento notiziari…</div>';
+  const PORTALE = 'https://meteo.regione.marche.it/Notiziari/Agrometeo';
+  try {
+    const d = await api('getNotiziariAMAP');
+    const prov = (d && d.province) || [];
+    if (!prov.length) {
+      box.innerHTML = '<div class="amap-empty">Notiziari non disponibili al momento.<br><a href="' + PORTALE + '" target="_blank" rel="noopener">Apri il portale ↗</a></div>';
+      return;
+    }
+    const NOSTRE = ['an', 'mc']; // Ancona + Macerata = province dei nostri campi
+    let html = '';
+    prov.forEach(p => {
+      const nostra = NOSTRE.indexOf(p.cod) !== -1;
+      html += '<div class="amap-noti-card' + (nostra ? ' primary' : '') + '">'
+        + '<div class="amap-noti-ic">📄</div>'
+        + '<div class="amap-noti-info">'
+        + '<div class="amap-noti-prov">' + p.nome + (nostra ? ' ⭐' : '') + '</div>'
+        + '<div class="amap-noti-meta">Notiziario n.' + p.num + ' · ' + fd(p.data) + '</div>'
+        + '</div>'
+        + '<a class="amap-noti-btn" href="' + p.url + '" target="_blank" rel="noopener">👁 Apri PDF</a>'
+        + '</div>';
+    });
+    if (d.updated) html += '<div class="amap-upd">Aggiornato: ' + d.updated + '</div>';
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = '<div class="amap-empty">Errore nel caricamento.<br><a href="' + PORTALE + '" target="_blank" rel="noopener">Apri il portale ↗</a></div>';
+  }
 }
 
 function saveAmapNote() {

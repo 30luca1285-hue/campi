@@ -56,6 +56,7 @@ function doGet(e) {
       case 'getMosca':          result = getMosca(); break;
       case 'saveMosca':         result = saveMoscaEntry(JSON.parse(e.parameter.data)); break;
       case 'deleteMosca':       result = deleteMoscaEntry(+e.parameter.rowId); break;
+      case 'getNotiziariAMAP':  result = getNotiziariAMAP(); break;
       case 'riordinaCampi':     result = riordinaCampi(JSON.parse(e.parameter.data)); break;
       case 'setup':             result = setupSheets(); break;
       default: result = { error: 'Unknown action: ' + action };
@@ -426,6 +427,43 @@ function saveMoscaEntry(m) {
 }
 
 function deleteMoscaEntry(rowId) { getSheet(SHEETS.MOSCA).deleteRow(rowId); return { success: true }; }
+
+// ============================================================
+// NOTIZIARI AMAP — ultimo bollettino agrometeo per provincia
+// Fonte: meteo.regione.marche.it (servizio agrometeo regionale).
+// La pagina elenca l'ultimo PDF per provincia (an/mc/pu/ap) nell'HTML
+// server-side: lo recuperiamo con UrlFetchApp + regex. Cache 6h.
+// ============================================================
+
+function getNotiziariAMAP() {
+  const cache  = CacheService.getScriptCache();
+  const cached = cache.get('amap_notiziari');
+  if (cached) return JSON.parse(cached);
+
+  const NOMI = { an: 'Ancona', mc: 'Macerata', pu: 'Pesaro-Urbino', ap: 'Ascoli-Fermo' };
+  const ORD  = { an: 0, mc: 1, pu: 2, ap: 3 };
+  const out  = { updated: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm'), province: [] };
+
+  try {
+    const resp = UrlFetchApp.fetch('https://meteo.regione.marche.it/Notiziari/Agrometeo', { muteHttpExceptions: true, followRedirects: true });
+    const html = resp.getContentText();
+    const re   = /assets\/notiziario\/no_([a-z]{2})_(\d+)_(\d{4}-\d{2}-\d{2})\.pdf/g;
+    const seen = {};
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const cod = m[1];
+      if (seen[cod]) continue;          // primo match = ultimo notiziario per quella provincia
+      seen[cod] = true;
+      out.province.push({ cod: cod, nome: NOMI[cod] || cod.toUpperCase(), num: m[2], data: m[3], url: 'https://meteo.regione.marche.it/' + m[0] });
+    }
+    out.province.sort((a, b) => (ORD[a.cod] != null ? ORD[a.cod] : 9) - (ORD[b.cod] != null ? ORD[b.cod] : 9));
+  } catch (err) {
+    out.error = String(err && err.message ? err.message : err);
+  }
+
+  if (out.province.length) cache.put('amap_notiziari', JSON.stringify(out), 21600); // 6h
+  return out;
+}
 
 // ============================================================
 // OVERVIEW
