@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.56</title>
+<title>Gestione Oliveto v11.57</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -233,6 +233,14 @@ input[readonly]{background:var(--bg)}
 .amap-loading,.amap-empty{font-size:.82rem;color:var(--muted);padding:16px;text-align:center;background:var(--card);border-radius:12px;border:1px solid var(--border);line-height:1.5}
 .amap-empty a{color:var(--green);font-weight:600}
 .amap-upd{font-size:.68rem;color:var(--muted);margin:2px 2px 18px;text-align:right}
+.ore-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.ora-card{background:var(--card);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.ora-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ora-card-dip{font-weight:700;font-size:.9rem}
+.ora-card-data{font-size:.78rem;color:var(--muted)}
+.ora-card-ore{font-size:.95rem;font-weight:700;color:var(--green-dark);margin-top:4px}
+.ora-card-note{font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.4}
+.ora-card-act{display:flex;gap:6px;flex-shrink:0}
 
 /* PIANO AGRONOMICO */
 .piano-intro{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:center;box-shadow:var(--shadow);border:1px solid var(--border)}
@@ -628,13 +636,10 @@ input[readonly]{background:var(--bg)}
     </div>
     <div class="mosca-status-grid" id="dip-riepilogo"></div>
     <div class="mosca-section-title">Ore registrate</div>
-    <div class="tw">
-      <div class="tb-bar"><div class="fb">
-        <select id="df-dip" onchange="renderOre()"><option value="">Tutti i dipendenti</option></select>
-      </div></div>
-      <table><thead><tr><th>Data</th><th>Dipendente</th><th>Ore</th><th>Note</th><th></th></tr></thead>
-      <tbody id="ore-tb"></tbody></table>
-    </div>
+    <div class="tb-bar" style="margin-bottom:10px"><div class="fb">
+      <select id="df-dip" onchange="renderOre()"><option value="">Tutti i dipendenti</option></select>
+    </div></div>
+    <div id="ore-list" class="ore-list"></div>
   </div>
 </div>
 
@@ -1102,8 +1107,8 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.56';
-if (!location.search.includes('v=11.56')) { location.replace(location.pathname + '?v=11.56'); }
+const VERSION      = 'v11.57';
+if (!location.search.includes('v=11.57')) { location.replace(location.pathname + '?v=11.57'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2935,7 +2940,7 @@ async function delMosca(id) {
 // DIPENDENTI / ORE — registro ore lavorate (senza valorizzazione €)
 // ============================================================
 async function loadDipendenti() {
-  document.getElementById('ore-tb').innerHTML = `<tr><td colspan="5"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></td></tr>`;
+  document.getElementById('ore-list').innerHTML = '<div class="spin-wrap"><div class="spinner"></div>Caricamento...</div>';
   const [dip, ore] = await Promise.all([api('getDipendenti'), api('getOre')]);
   S.dipendenti = dip; S.ore = ore;
   const opt = S.dipendenti.map(d => `<option value="${esc(d.nome)}">${d.nome}</option>`).join('');
@@ -2967,18 +2972,22 @@ function renderDipRiepilogo() {
 }
 
 function renderOre() {
-  const tb = document.getElementById('ore-tb');
+  const el = document.getElementById('ore-list');
   const f = gv('df-dip');
   const d = S.ore.filter(o => !f || o.dipendente === f).sort((a, b) => new Date(b.data) - new Date(a.data));
-  if (!d.length) { tb.innerHTML = er(5, '👷', 'Nessuna registrazione. Aggiungi le prime ore!'); return; }
+  if (!d.length) { el.innerHTML = '<div class="empty"><div class="empty-ic">👷</div><p>Nessuna registrazione. Aggiungi le prime ore!</p></div>'; return; }
   const n = x => +(parseFloat(x) || 0).toFixed(2);
-  tb.innerHTML = d.map(o => `<tr>
-    <td>${fd(o.data)}</td><td>${o.dipendente}</td><td><strong>${n(o.ore)}</strong></td>
-    <td style="max-width:220px;font-size:.78rem">${o.note || '—'}</td>
-    <td><div class="act">
-      <button class="btn-ic" onclick="editOra(${o.id})">✏️</button>
-      <button class="btn-ic" onclick="delOra(${o.id})">🗑️</button>
-    </div></td></tr>`).join('');
+  el.innerHTML = d.map(o => `<div class="ora-card">
+    <div class="ora-card-top">
+      <div><span class="ora-card-dip">${o.dipendente}</span> <span class="ora-card-data">· ${fd(o.data)}</span></div>
+      <div class="ora-card-act">
+        <button class="btn-ic" onclick="editOra(${o.id})">✏️</button>
+        <button class="btn-ic" onclick="delOra(${o.id})">🗑️</button>
+      </div>
+    </div>
+    <div class="ora-card-ore">${n(o.ore)} ore</div>
+    ${o.note ? `<div class="ora-card-note">${o.note}</div>` : ''}
+  </div>`).join('');
 }
 
 function openOreModal(o) {
