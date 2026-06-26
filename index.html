@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.55</title>
+<title>Gestione Oliveto v11.56</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -622,6 +622,10 @@ input[readonly]{background:var(--bg)}
 <div id="view-dipendenti" class="view">
   <div class="ph"><h2>👷 Dipendenti</h2><button class="btn btn-p" onclick="openOreModal()">+ Registra Ore</button></div>
   <div class="pb">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <label style="font-size:.8rem;font-weight:700;color:var(--muted)">📅 Mese (per busta paga):</label>
+      <input type="month" id="dip-mese" onchange="renderDipRiepilogo()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:var(--card)">
+    </div>
     <div class="mosca-status-grid" id="dip-riepilogo"></div>
     <div class="mosca-section-title">Ore registrate</div>
     <div class="tw">
@@ -1098,8 +1102,8 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.55';
-if (!location.search.includes('v=11.55')) { location.replace(location.pathname + '?v=11.55'); }
+const VERSION      = 'v11.56';
+if (!location.search.includes('v=11.56')) { location.replace(location.pathname + '?v=11.56'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -2937,13 +2941,17 @@ async function loadDipendenti() {
   const opt = S.dipendenti.map(d => `<option value="${esc(d.nome)}">${d.nome}</option>`).join('');
   document.getElementById('or-dip').innerHTML = '<option value="">Seleziona...</option>' + opt;
   document.getElementById('df-dip').innerHTML = '<option value="">Tutti i dipendenti</option>' + opt;
+  const mInput = document.getElementById('dip-mese');
+  if (mInput && !mInput.value) mInput.value = new Date().toISOString().slice(0, 7);
   renderDipRiepilogo();
   renderOre();
 }
 
 function renderDipRiepilogo() {
   const el = document.getElementById('dip-riepilogo');
-  const ym = new Date().toISOString().slice(0, 7);
+  const ym = gv('dip-mese') || new Date().toISOString().slice(0, 7);
+  const [yy, mm] = ym.split('-');
+  const meseLbl = new Date(+yy, +mm - 1, 1).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
   const n = x => +(parseFloat(x) || 0).toFixed(2);
   el.innerHTML = S.dipendenti.map(d => {
     const sue = S.ore.filter(o => o.dipendente === d.nome);
@@ -2952,7 +2960,7 @@ function renderDipRiepilogo() {
     return `<div class="mosca-campo-card">
       <div class="mosca-campo-name">${d.nome}</div>
       <div class="semaforo" style="background:var(--green-light);color:var(--green-dark)">${n(mese)}</div>
-      <div class="semaforo-lbl" style="color:var(--muted)">ore questo mese</div>
+      <div class="semaforo-lbl" style="color:var(--muted)">ore ${meseLbl}</div>
       <div class="mosca-data">${n(tot)} ore totali</div>
     </div>`;
   }).join('') || '<div class="empty" style="grid-column:1/-1"><p>Nessun dipendente</p></div>';
