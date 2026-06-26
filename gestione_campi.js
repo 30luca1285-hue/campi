@@ -10,7 +10,9 @@ const SHEETS = {
   RACCOLTA:    'Raccolta',
   ENTRATE:     'PAC-Biologico',
   APPUNTI:     'Appunti',
-  MOSCA:       'Mosca'
+  MOSCA:       'Mosca',
+  DIPENDENTI:  'Dipendenti',
+  ORE:         'Ore'
 };
 
 const SECRET_TOKEN = 'oliveto_gall_2025';
@@ -57,6 +59,12 @@ function doGet(e) {
       case 'saveMosca':         result = saveMoscaEntry(JSON.parse(e.parameter.data)); break;
       case 'deleteMosca':       result = deleteMoscaEntry(+e.parameter.rowId); break;
       case 'getNotiziariAMAP':  result = getNotiziariAMAP(); break;
+      case 'getDipendenti':     result = getDipendenti(); break;
+      case 'saveDipendente':    result = saveDipendente(JSON.parse(e.parameter.data)); break;
+      case 'deleteDipendente':  result = deleteDipendente(+e.parameter.rowId); break;
+      case 'getOre':            result = getOre(); break;
+      case 'saveOra':           result = saveOra(JSON.parse(e.parameter.data)); break;
+      case 'deleteOra':         result = deleteOra(+e.parameter.rowId); break;
       case 'riordinaCampi':     result = riordinaCampi(JSON.parse(e.parameter.data)); break;
       case 'setup':             result = setupSheets(); break;
       default: result = { error: 'Unknown action: ' + action };
@@ -109,7 +117,9 @@ function setupSheets() {
     { name: SHEETS.RACCOLTA,    headers: ['Anno','Campo','Kg Olive','Kg Olio','Resa %','Kg / Ha','Note'],                                                                                                              color:'#E65100' },
     { name: SHEETS.ENTRATE,     headers: ['Anno','Campo','Tipo','Descrizione','Importo €','Note'],                                                                                                                  color:'#0D47A1' },
     { name: SHEETS.APPUNTI,     headers: ['Data / Ora','Campo','Testo / Appunto','Foto URL','Latitudine','Longitudine'],                                                                                           color:'#37474F' },
-    { name: SHEETS.MOSCA,       headers: ['Data','Campo','Settimana','N. Catture','Tipo Trappola','Note Bollettino'],                                                                                              color:'#BF360C' }
+    { name: SHEETS.MOSCA,       headers: ['Data','Campo','Settimana','N. Catture','Tipo Trappola','Note Bollettino'],                                                                                              color:'#BF360C' },
+    { name: SHEETS.DIPENDENTI,  headers: ['Nome'],                                                                                                                                                                color:'#00695C' },
+    { name: SHEETS.ORE,         headers: ['Data','Dipendente','Ore','Note'],                                                                                                                                      color:'#00838F' }
   ];
   config.forEach(c => {
     let s = ss.getSheetByName(c.name);
@@ -427,6 +437,51 @@ function saveMoscaEntry(m) {
 }
 
 function deleteMoscaEntry(rowId) { getSheet(SHEETS.MOSCA).deleteRow(rowId); return { success: true }; }
+
+// ============================================================
+// DIPENDENTI + ORE (registro ore lavorate, senza valorizzazione €)
+// ============================================================
+
+function getDipendenti() {
+  const s = getSheet(SHEETS.DIPENDENTI);
+  if (s.getLastRow() <= 1) {                 // seed iniziale: Tommaso, Lina
+    s.getRange(2, 1, 2, 1).setValues([['Tommaso'], ['Lina']]);
+    SpreadsheetApp.flush();
+  }
+  return sheetRows(SHEETS.DIPENDENTI, 1)
+    .filter(r => r[0] !== '')
+    .map((r, i) => ({ id: i + 2, nome: r[0] }));
+}
+
+function saveDipendente(d) {
+  const s = getSheet(SHEETS.DIPENDENTI);
+  const nr = d.id ? d.id : s.getLastRow() + 1;
+  s.getRange(nr, 1).setValue(d.nome);
+  return { success: true };
+}
+
+function deleteDipendente(rowId) { getSheet(SHEETS.DIPENDENTI).deleteRow(rowId); return { success: true }; }
+
+function getOre() {
+  return sheetRows(SHEETS.ORE, 4)
+    .filter(r => r[1] !== '' || r[0] !== '')
+    .map((r, i) => ({ id: i + 2, data: fmtDate(r[0]), dipendente: r[1], ore: r[2], note: r[3] }));
+}
+
+function saveOra(o) {
+  const s   = getSheet(SHEETS.ORE);
+  const row = [toDate(o.data), o.dipendente, parseFloat(o.ore) || 0, o.note || ''];
+  if (o.id) { s.getRange(o.id, 1, 1, row.length).setValues([row]); }
+  else {
+    const nr = s.getLastRow() + 1;
+    s.getRange(nr, 1, 1, row.length).setValues([row]);
+    s.getRange(nr, 1).setNumberFormat('dd/mm/yyyy');
+    s.getRange(nr, 3).setNumberFormat('0.##');
+  }
+  return { success: true };
+}
+
+function deleteOra(rowId) { getSheet(SHEETS.ORE).deleteRow(rowId); return { success: true }; }
 
 // ============================================================
 // NOTIZIARI AMAP — ultimo bollettino agrometeo per provincia

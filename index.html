@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Gestione Oliveto v11.54</title>
+<title>Gestione Oliveto v11.55</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -462,6 +462,7 @@ input[readonly]{background:var(--bg)}
     <div class="nav-item" data-view="mosca"><span class="nav-ic">🪰</span>Mosca Olivo</div>
     <div class="nav-item" data-view="amap"><span class="nav-ic">📡</span>AMAP Marche</div>
     <div class="nav-item" data-view="piano"><span class="nav-ic">📅</span>Piano Agronomico</div>
+    <div class="nav-item" data-view="dipendenti"><span class="nav-ic">👷</span>Dipendenti</div>
   </div>
   <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:10px">
     <div id="sync-dot" style="display:flex;align-items:center;gap:7px;font-size:.72rem;font-family:'Inter',sans-serif;color:rgba(255,255,255,.5)">
@@ -613,6 +614,22 @@ input[readonly]{background:var(--bg)}
       </div></div>
       <table><thead><tr><th>Data</th><th>Campo</th><th>Settimana</th><th>N. Catture</th><th>Trappola</th><th>Stato</th><th>Note Bollettino</th><th></th></tr></thead>
       <tbody id="mosca-tb"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- DIPENDENTI -->
+<div id="view-dipendenti" class="view">
+  <div class="ph"><h2>👷 Dipendenti</h2><button class="btn btn-p" onclick="openOreModal()">+ Registra Ore</button></div>
+  <div class="pb">
+    <div class="mosca-status-grid" id="dip-riepilogo"></div>
+    <div class="mosca-section-title">Ore registrate</div>
+    <div class="tw">
+      <div class="tb-bar"><div class="fb">
+        <select id="df-dip" onchange="renderOre()"><option value="">Tutti i dipendenti</option></select>
+      </div></div>
+      <table><thead><tr><th>Data</th><th>Dipendente</th><th>Ore</th><th>Note</th><th></th></tr></thead>
+      <tbody id="ore-tb"></tbody></table>
     </div>
   </div>
 </div>
@@ -1041,6 +1058,23 @@ input[readonly]{background:var(--bg)}
   </div>
 </div>
 
+<!-- MODAL ORE -->
+<div id="m-ore" class="ov">
+  <div class="modal">
+    <div class="mh"><h3 id="or-title">Registra Ore</h3><button class="btn-ic" onclick="cm('m-ore')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="or-id">
+      <div class="fr">
+        <div class="fg"><label>Data *</label><input id="or-data" type="date"></div>
+        <div class="fg"><label>Dipendente *</label><select id="or-dip"><option value="">Seleziona...</option></select></div>
+      </div>
+      <div class="fg"><label>Ore *</label><input id="or-ore" type="number" min="0" step="0.5" placeholder="es. 8"></div>
+      <div class="fg"><label>Note</label><textarea id="or-note" rows="2" placeholder="Cosa ha fatto (facoltativo)"></textarea></div>
+    </div>
+    <div class="mf"><button class="btn btn-s" onclick="cm('m-ore')">Annulla</button><button class="btn btn-p" onclick="saveOra()">Salva</button></div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <!-- MODAL Piano Agronomico — Approfondisci -->
@@ -1064,8 +1098,8 @@ input[readonly]{background:var(--bg)}
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION      = 'v11.54';
-if (!location.search.includes('v=11.54')) { location.replace(location.pathname + '?v=11.54'); }
+const VERSION      = 'v11.55';
+if (!location.search.includes('v=11.55')) { location.replace(location.pathname + '?v=11.55'); }
 const APP_PASSWORD = 'oliveto2025';   // ← cambia qui la password
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxzuyO-9JOAiKyx3zwOidpFV0L1Gpse5NoEO1ZGFigPprow18Xeb4qq8cWR6GmvqkzbPA/exec';
 const TOKEN   = 'oliveto_gall_2025';
@@ -1159,7 +1193,7 @@ async function _flushQueue() {
   _updateOfflineBanner();
   toast('✅ Sincronizzazione completata!');
   const v = document.querySelector('.nav-item.active')?.dataset?.view;
-  if (v) ({overview:loadOverview,campi:loadCampi,lavorazioni:loadLav,costi:loadCosti,raccolta:loadRacc,entrate:loadEntrate,mosca:loadMosca,piano:loadPianoAgronomico})[v]?.();
+  if (v) ({overview:loadOverview,campi:loadCampi,lavorazioni:loadLav,costi:loadCosti,raccolta:loadRacc,entrate:loadEntrate,mosca:loadMosca,piano:loadPianoAgronomico,dipendenti:loadDipendenti})[v]?.();
 }
 
 // ============================================================
@@ -1216,7 +1250,7 @@ async function api(action, params = {}, _sync = false) {
 // ============================================================
 // STATE
 // ============================================================
-const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[], mosca:[], upBio:[] };
+const S = { campi:[], lav:[], costi:[], racc:[], entrate:[], appunti:[], mosca:[], upBio:[], dipendenti:[], ore:[] };
 
 // Carica registry UP biologiche da JSON estratto dalla Notifica BioAgriCert 2026
 async function loadUpBio() {
@@ -1246,7 +1280,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('view-'+el.dataset.view).classList.add('active');
-      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate, mosca:loadMosca, amap:loadAmap, piano:loadPianoAgronomico})[el.dataset.view]?.();
+      ({overview:loadOverview, campi:loadCampi, lavorazioni:loadLav, costi:loadCosti, raccolta:loadRacc, entrate:loadEntrate, mosca:loadMosca, amap:loadAmap, piano:loadPianoAgronomico, dipendenti:loadDipendenti})[el.dataset.view]?.();
       closeSidebar();
     });
   });
@@ -2891,6 +2925,71 @@ async function delMosca(id) {
   if (!confirm('Eliminare questa rilevazione?')) return;
   await api('deleteMosca', { rowId: id });
   loadMosca(); toast('Eliminata');
+}
+
+// ============================================================
+// DIPENDENTI / ORE — registro ore lavorate (senza valorizzazione €)
+// ============================================================
+async function loadDipendenti() {
+  document.getElementById('ore-tb').innerHTML = `<tr><td colspan="5"><div class="spin-wrap"><div class="spinner"></div>Caricamento...</div></td></tr>`;
+  const [dip, ore] = await Promise.all([api('getDipendenti'), api('getOre')]);
+  S.dipendenti = dip; S.ore = ore;
+  const opt = S.dipendenti.map(d => `<option value="${esc(d.nome)}">${d.nome}</option>`).join('');
+  document.getElementById('or-dip').innerHTML = '<option value="">Seleziona...</option>' + opt;
+  document.getElementById('df-dip').innerHTML = '<option value="">Tutti i dipendenti</option>' + opt;
+  renderDipRiepilogo();
+  renderOre();
+}
+
+function renderDipRiepilogo() {
+  const el = document.getElementById('dip-riepilogo');
+  const ym = new Date().toISOString().slice(0, 7);
+  const n = x => +(parseFloat(x) || 0).toFixed(2);
+  el.innerHTML = S.dipendenti.map(d => {
+    const sue = S.ore.filter(o => o.dipendente === d.nome);
+    const tot = sue.reduce((s, o) => s + (parseFloat(o.ore) || 0), 0);
+    const mese = sue.filter(o => String(o.data).slice(0, 7) === ym).reduce((s, o) => s + (parseFloat(o.ore) || 0), 0);
+    return `<div class="mosca-campo-card">
+      <div class="mosca-campo-name">${d.nome}</div>
+      <div class="semaforo" style="background:var(--green-light);color:var(--green-dark)">${n(mese)}</div>
+      <div class="semaforo-lbl" style="color:var(--muted)">ore questo mese</div>
+      <div class="mosca-data">${n(tot)} ore totali</div>
+    </div>`;
+  }).join('') || '<div class="empty" style="grid-column:1/-1"><p>Nessun dipendente</p></div>';
+}
+
+function renderOre() {
+  const tb = document.getElementById('ore-tb');
+  const f = gv('df-dip');
+  const d = S.ore.filter(o => !f || o.dipendente === f).sort((a, b) => new Date(b.data) - new Date(a.data));
+  if (!d.length) { tb.innerHTML = er(5, '👷', 'Nessuna registrazione. Aggiungi le prime ore!'); return; }
+  const n = x => +(parseFloat(x) || 0).toFixed(2);
+  tb.innerHTML = d.map(o => `<tr>
+    <td>${fd(o.data)}</td><td>${o.dipendente}</td><td><strong>${n(o.ore)}</strong></td>
+    <td style="max-width:220px;font-size:.78rem">${o.note || '—'}</td>
+    <td><div class="act">
+      <button class="btn-ic" onclick="editOra(${o.id})">✏️</button>
+      <button class="btn-ic" onclick="delOra(${o.id})">🗑️</button>
+    </div></td></tr>`).join('');
+}
+
+function openOreModal(o) {
+  sv({ 'or-id': o?.id || '', 'or-data': o?.data || today(), 'or-dip': o?.dipendente || '', 'or-ore': o?.ore ?? '', 'or-note': o?.note || '' });
+  document.getElementById('or-title').textContent = o ? 'Modifica Ore' : 'Registra Ore';
+  om('m-ore');
+}
+function editOra(id) { openOreModal(S.ore.find(o => o.id === id)); }
+
+async function saveOra() {
+  if (!gv('or-data') || !gv('or-dip') || gv('or-ore') === '') { toast('Compila i campi obbligatori'); return; }
+  await api('saveOra', { data: { id: gv('or-id') ? +gv('or-id') : null, data: gv('or-data'), dipendente: gv('or-dip'), ore: gv('or-ore'), note: gv('or-note') } });
+  cm('m-ore'); loadDipendenti(); toast('Ore salvate!');
+}
+
+async function delOra(id) {
+  if (!confirm('Eliminare questa registrazione?')) return;
+  await api('deleteOra', { rowId: id });
+  loadDipendenti(); toast('Eliminata');
 }
 
 function currentWeek() {
